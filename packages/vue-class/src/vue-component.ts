@@ -5,11 +5,11 @@ import {
   type VNodeChild,
   type EmitsOptions,
 } from "vue";
-import { applyMetadata } from "./decorators";
+import { IoCModuleName } from "./constants";
+import { applyMetadata } from "./metadata";
 import type {
   ComponentProps,
   ComponentPropsObject,
-  DefineEmits,
   VueComponentClass,
   WithSlotTypes,
 } from "./types";
@@ -18,13 +18,17 @@ export class VueComponent<
   Props extends {} = {},
   Emit extends EmitsOptions = {},
 > {
+  static __test__ = false;
   static defineProps: ComponentProps<any> = [];
-  static defineEmits: DefineEmits<any> = [];
 
   constructor() {
-    const curInstance = getCurrentInstance();
-    if (!curInstance)
-      throw new Error("Cannot directly create VueComponent instance");
+    let curInstance = getCurrentInstance()!;
+
+    if (!curInstance) {
+      if (VueComponent.__test__) curInstance = { appContext: {} } as any;
+      else throw new Error("Cannot directly create VueComponent instance");
+    }
+
     this.vueInstance = curInstance;
     this.context = curInstance.appContext as any;
   }
@@ -44,7 +48,7 @@ export function toNative<Props extends {}, Emit extends EmitsOptions>(
 ) {
   return defineComponent<ComponentPropsObject<Props>, Emit>(
     () => {
-      const instance = IoC.getInstance(componentClass);
+      const instance = IoC.getInstance(componentClass, IoCModuleName);
 
       applyMetadata(componentClass, instance);
 
@@ -53,7 +57,7 @@ export function toNative<Props extends {}, Emit extends EmitsOptions>(
     {
       name: componentClass.name,
       props: componentClass.defineProps as any,
-      emits: componentClass.defineEmits as any,
+      // emits: componentClass.defineEmits as any,
     },
   );
 }

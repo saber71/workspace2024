@@ -17,7 +17,7 @@ export type VueComponentClass<
 > = {
   new (...args: any[]): VueComponent<Props>;
   defineProps: ComponentProps<Props>;
-  defineEmits: DefineEmits<Emit>;
+  // defineEmits: DefineEmits<Emit>;
 };
 
 export type DefineEmits<Emit extends EmitsOptions> = Array<keyof Emit>;

@@ -18,11 +18,13 @@ export declare type AllowedComponentProps = {
 
 export declare function applyMetadata(clazz: any, instance: VueComponent | object): void;
 
+export declare function BindThis(): (target: object, arg: string) => void;
+
 export declare type Class<T = any> = {
     new (): T;
 };
 
-export declare function Component(): (clazz: VueComponentClass) => void;
+export declare function Component(): (clazz: VueComponentClass, _?: any) => void;
 
 export declare type ComponentProps<T extends {}> = ComponentPropsObject<T> | Array<KeysOfUnion<DistributiveOmit<T, "slots">>>;
 
@@ -34,7 +36,7 @@ export declare type ComponentSlots<T extends {
     props: any;
 }> = NonNullable<T["props"]["v-slots"]>;
 
-export declare function Computed(): (target: any, name: string) => void;
+export declare function Computed(): (target: any, arg: any) => void;
 
 declare type DefaultSlots = {
     default(): VNodeChild;
@@ -50,17 +52,29 @@ declare type DistributiveVSlots<T extends {}> = T extends T ? WithVSlots<T> : ne
 
 export declare function getMetadata(clazz: any): Metadata;
 
-export declare function Hook(type: HookType): (clazz: VueComponentClass, methodName: string) => void;
+export declare function getOrCreateMetadata(clazz: Class | object): Metadata;
+
+export declare function Hook(type: HookType): (target: object, arg: any) => void;
 
 export declare type HookType = "onMounted" | "onUpdated" | "onUnmounted" | "onBeforeMount" | "onBeforeUnmount" | "onErrorCaptured" | "onRenderTracked" | "onRenderTriggered" | "onActivated" | "onDeactivated" | "onServerPrefetch";
 
+export declare const IoCModuleName = "vue-class";
+
 declare type KeysOfUnion<T> = T extends T ? keyof T : never;
 
-export declare function Link(): (target: VueComponent, propName: string) => void;
+export declare function Link(): (target: VueComponent, arg: any) => void;
 
 declare class Metadata {
-    readonly mutts: string[];
+    readonly mutts: {
+        propName: string;
+        shallow?: boolean;
+    }[];
+    readonly readonlys: {
+        propName: string;
+        shallow?: boolean;
+    }[];
     readonly links: string[];
+    readonly bindThis: string[];
     readonly hooks: {
         methodName: string;
         type: HookType;
@@ -75,10 +89,12 @@ declare class Metadata {
         option?: WatchOptions;
     }[];
     readonly computers: string[];
+    handleBindThis(instance: object): void;
     handleWatchers(instance: object): void;
     handlePropsWatchers(instance: VueComponent): void;
     handleHook(instance: VueComponent): void;
     handleMut(instance: object): void;
+    handleReadonly(instance: object): void;
     handleLink(instance: VueComponent): void;
     handleComputer(instance: object): void;
 }
@@ -91,11 +107,14 @@ declare type ModelProps<T extends {}> = Exclude<{
     } ? Prop : never;
 }[keyof T], undefined>;
 
-export declare function Mut(): (target: object, propName: string) => void;
+export declare function Mut(shallow?: boolean): (target: object, arg: any) => void;
 
-export declare function PropsWatcher(option?: WatchOptions): (clazz: VueComponentClass, methodName: string) => void;
+export declare function PropsWatcher(option?: WatchOptions): (target: object, arg: string) => void;
 
-export declare function Service(option?: Parameters<typeof IoC.Injectable>[0]): (clazz: Class) => void;
+declare function Readonly_2(shallow?: boolean): (target: object, arg: any) => void;
+export { Readonly_2 as Readonly }
+
+export declare function Service(option?: Parameters<typeof IoC.Injectable>[0]): (clazz: Class, _?: any) => void;
 
 export declare function toNative<Props extends {}, Emit extends EmitsOptions>(componentClass: VueComponentClass<Props, Emit>): (props: ComponentPropsObject<Props> & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K_1 in `on${Capitalize<string & keyof Emit>}`]?: (K_1 extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {})) => any;
 
@@ -104,8 +123,8 @@ export declare type TransformModelValue<T extends {}> = "v-model:modelValue" ext
 } : T;
 
 export declare class VueComponent<Props extends {} = {}, Emit extends EmitsOptions = {}> {
+    static __test__: boolean;
     static defineProps: ComponentProps<any>;
-    static defineEmits: DefineEmits<any>;
     constructor();
     readonly vueInstance: NonNullable<ReturnType<typeof getCurrentInstance>>;
     readonly context: WithSlotTypes<Emit, Props>;
@@ -116,17 +135,20 @@ export declare class VueComponent<Props extends {} = {}, Emit extends EmitsOptio
 export declare type VueComponentClass<Props extends {} = {}, Emit extends EmitsOptions = {}> = {
     new (...args: any[]): VueComponent<Props>;
     defineProps: ComponentProps<Props>;
-    defineEmits: DefineEmits<Emit>;
 };
 
 export declare type VueComponentProps<T extends {}> = DistributiveOmit<T, "slots"> & DistributiveVModel<T> & DistributiveVSlots<T> & VNodeProps & AllowedComponentProps & ComponentCustomProps;
 
+export declare class VueService {
+    static getInstance<T>(clazz: Class<T>): T;
+}
+
 export declare function Watcher(option?: {
     source?: WatcherTarget | WatcherTarget[];
     option?: WatchOptions;
-}): (clazz: Class, methodName: string) => void;
+}): (target: object, arg: any) => void;
 
-declare type WatcherTarget = string | ((instance: VueComponent | object) => any);
+export declare type WatcherTarget = string | ((instance: VueComponent | object) => any);
 
 export declare type WithSlotTypes<Emit extends EmitsOptions, T extends {}> = Omit<SetupContext<Emit>, "slots"> & {
     slots: NonNullable<VueComponentProps<T>["v-slots"]>;

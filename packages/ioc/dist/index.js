@@ -35,7 +35,7 @@ var d;
   r(b, "getInjectableOptionOrCreate");
   function h(t) {
     const e = P();
-    return (o) => {
+    return (o, a) => {
       e(o), Object.assign(b(o), t);
     };
   }
