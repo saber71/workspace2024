@@ -1,6 +1,7 @@
 import {
   type ComponentCustomProps,
   type EmitsOptions,
+  type HTMLAttributes,
   type Prop,
   type SetupContext,
   type StyleValue,
@@ -12,7 +13,7 @@ import type { VueComponent } from "./vue-component";
 export type Class<T = any> = { new (...args: any[]): T };
 
 export type VueComponentClass<
-  Props extends {} = {},
+  Props extends Partial<HTMLAttributes> = Partial<HTMLAttributes>,
   Emit extends EmitsOptions = {},
 > = {
   new (...args: any[]): VueComponent<Props>;

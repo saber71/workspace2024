@@ -4,6 +4,7 @@ import type { ComponentPublicInstance } from 'vue';
 import type { DirectiveBinding } from 'vue';
 import { EmitsOptions } from 'vue';
 import { getCurrentInstance } from 'vue';
+import { HTMLAttributes } from 'vue';
 import { IoC } from 'ioc';
 import { ObjectEmitsOptions } from 'vue';
 import { Prop } from 'vue';
@@ -139,7 +140,7 @@ export { Readonly_2 as Readonly }
 
 export declare function Service(option?: Parameters<typeof IoC.Injectable>[0]): (clazz: Class, ctx?: any) => void;
 
-export declare function toNative<Props extends {}, Emit extends EmitsOptions>(componentClass: VueComponentClass<Props, Emit>): (props: ComponentPropsObject<Props> & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K_1 in `on${Capitalize<string & keyof Emit>}`]?: (K_1 extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {})) => any;
+export declare function toNative<Props extends Partial<HTMLAttributes>, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>): (props: Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K_1 in `on${Capitalize<string & keyof Emit>}`]?: (K_1 extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {})) => any;
 
 export declare type TransformModelValue<T extends {}> = "v-model:modelValue" extends keyof T ? Omit<T, "v-model:modelValue"> & {
     ["v-model"]?: T["v-model:modelValue"];
@@ -150,9 +151,9 @@ export declare class VueClass {
     static install(app: App, imports: Record<string, () => Promise<any>>): Promise<void>;
 }
 
-export declare class VueComponent<Props extends {} = {}, Emit extends EmitsOptions = {}> {
+export declare class VueComponent<Props extends Partial<HTMLAttributes> = Partial<HTMLAttributes>, Emit extends EmitsOptions = {}> {
     static __test__: boolean;
-    static defineProps: ComponentProps<any>;
+    static readonly defineProps: ComponentProps<Partial<HTMLAttributes> & any>;
     constructor();
     readonly vueInstance: NonNullable<ReturnType<typeof getCurrentInstance>>;
     readonly context: WithSlotTypes<Emit, Props>;
@@ -160,7 +161,7 @@ export declare class VueComponent<Props extends {} = {}, Emit extends EmitsOptio
     render(): VNodeChild;
 }
 
-export declare type VueComponentClass<Props extends {} = {}, Emit extends EmitsOptions = {}> = {
+export declare type VueComponentClass<Props extends Partial<HTMLAttributes> = Partial<HTMLAttributes>, Emit extends EmitsOptions = {}> = {
     new (...args: any[]): VueComponent<Props>;
     defineProps: ComponentProps<Props>;
 };

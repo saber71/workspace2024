@@ -8,8 +8,11 @@ import {
   Readonly,
   Service,
   VueClass,
+  VueComponent,
   Watcher,
 } from "../src";
+
+VueComponent.__test__ = true;
 
 @Service()
 class A {

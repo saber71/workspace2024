@@ -4,22 +4,19 @@ import {
   getCurrentInstance,
   type VNodeChild,
   type EmitsOptions,
+  type HTMLAttributes,
 } from "vue";
 import { ModuleName } from "./constants";
 import { applyMetadata } from "./metadata";
-import type {
-  ComponentProps,
-  ComponentPropsObject,
-  VueComponentClass,
-  WithSlotTypes,
-} from "./types";
+import type { ComponentProps, VueComponentClass, WithSlotTypes } from "./types";
 
 export class VueComponent<
-  Props extends {} = {},
+  Props extends Partial<HTMLAttributes> = Partial<HTMLAttributes>,
   Emit extends EmitsOptions = {},
 > {
   static __test__ = false;
-  static defineProps: ComponentProps<any> = [];
+  static readonly defineProps: ComponentProps<Partial<HTMLAttributes> & any> =
+    [];
 
   constructor() {
     let curInstance = getCurrentInstance()!;
@@ -43,10 +40,11 @@ export class VueComponent<
   render(): VNodeChild {}
 }
 
-export function toNative<Props extends {}, Emit extends EmitsOptions>(
-  componentClass: VueComponentClass<Props, Emit>,
-) {
-  return defineComponent<ComponentPropsObject<Props>, Emit>(
+export function toNative<
+  Props extends Partial<HTMLAttributes>,
+  Emit extends EmitsOptions = {},
+>(componentClass: VueComponentClass<Props, Emit>) {
+  return defineComponent<Props, Emit>(
     () => {
       const instance = IoC.getInstance(componentClass, ModuleName);
 
