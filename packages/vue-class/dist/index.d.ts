@@ -1,13 +1,16 @@
-import type { ComponentCustomProps } from 'vue';
+import type { App } from 'vue';
+import { ComponentCustomProps } from 'vue';
+import type { ComponentPublicInstance } from 'vue';
+import type { DirectiveBinding } from 'vue';
 import { EmitsOptions } from 'vue';
 import { getCurrentInstance } from 'vue';
 import { IoC } from 'ioc';
 import { ObjectEmitsOptions } from 'vue';
-import type { Prop } from 'vue';
-import type { SetupContext } from 'vue';
-import type { StyleValue } from 'vue';
+import { Prop } from 'vue';
+import { SetupContext } from 'vue';
+import { StyleValue } from 'vue';
 import { VNodeChild } from 'vue';
-import type { VNodeProps } from 'vue';
+import { VNodeProps } from 'vue';
 import { WatchOptions } from 'vue';
 
 export declare type AllowedComponentProps = {
@@ -21,7 +24,7 @@ export declare function applyMetadata(clazz: any, instance: VueComponent | objec
 export declare function BindThis(): (target: object, arg: string) => void;
 
 export declare type Class<T = any> = {
-    new (): T;
+    new (...args: any[]): T;
 };
 
 export declare function Component(): (clazz: VueComponentClass, _?: any) => void;
@@ -44,11 +47,15 @@ declare type DefaultSlots = {
 
 export declare type DefineEmits<Emit extends EmitsOptions> = Array<keyof Emit>;
 
+export declare function Directive(name?: string): (clazz: Class<VueDirective>, _?: any) => void;
+
 export declare type DistributiveOmit<T, K extends keyof any> = T extends T ? Omit<T, K> : never;
 
 declare type DistributiveVModel<T extends {}> = T extends T ? WithVModel<T> : never;
 
 declare type DistributiveVSlots<T extends {}> = T extends T ? WithVSlots<T> : never;
+
+export declare function getAllMetadata(): [Class, Metadata][];
 
 export declare function getMetadata(clazz: any): Metadata;
 
@@ -58,13 +65,19 @@ export declare function Hook(type: HookType): (target: object, arg: any) => void
 
 export declare type HookType = "onMounted" | "onUpdated" | "onUnmounted" | "onBeforeMount" | "onBeforeUnmount" | "onErrorCaptured" | "onRenderTracked" | "onRenderTriggered" | "onActivated" | "onDeactivated" | "onServerPrefetch";
 
-export declare const IoCModuleName = "vue-class";
-
 declare type KeysOfUnion<T> = T extends T ? keyof T : never;
 
-export declare function Link(): (target: VueComponent, arg: any) => void;
+export declare function Link(option?: {
+    refName?: string;
+    isDirective?: boolean;
+    directiveName?: string;
+}): (target: VueComponent, arg: any) => void;
 
-declare class Metadata {
+export declare class Metadata {
+    isComponent: boolean;
+    isService: boolean;
+    isDirective: boolean;
+    directiveName: string;
     readonly mutts: {
         propName: string;
         shallow?: boolean;
@@ -73,7 +86,12 @@ declare class Metadata {
         propName: string;
         shallow?: boolean;
     }[];
-    readonly links: string[];
+    readonly links: {
+        refName?: string;
+        propName: string;
+        isDirective?: boolean;
+        directiveName?: string;
+    }[];
     readonly bindThis: string[];
     readonly hooks: {
         methodName: string;
@@ -107,6 +125,8 @@ declare type ModelProps<T extends {}> = Exclude<{
     } ? Prop : never;
 }[keyof T], undefined>;
 
+export declare const ModuleName = "vue-class";
+
 export declare function Mut(shallow?: boolean): (target: object, arg: any) => void;
 
 export declare function PropsWatcher(option?: WatchOptions): (target: object, arg: string) => void;
@@ -121,6 +141,11 @@ export declare function toNative<Props extends {}, Emit extends EmitsOptions>(co
 export declare type TransformModelValue<T extends {}> = "v-model:modelValue" extends keyof T ? Omit<T, "v-model:modelValue"> & {
     ["v-model"]?: T["v-model:modelValue"];
 } : T;
+
+export declare class VueClass {
+    static getInstance<T>(clazz: Class<T>): T;
+    static install(app: App, imports: Record<string, () => Promise<any>>): Promise<void>;
+}
 
 export declare class VueComponent<Props extends {} = {}, Emit extends EmitsOptions = {}> {
     static __test__: boolean;
@@ -139,8 +164,22 @@ export declare type VueComponentClass<Props extends {} = {}, Emit extends EmitsO
 
 export declare type VueComponentProps<T extends {}> = DistributiveOmit<T, "slots"> & DistributiveVModel<T> & DistributiveVSlots<T> & VNodeProps & AllowedComponentProps & ComponentCustomProps;
 
-export declare class VueService {
-    static getInstance<T>(clazz: Class<T>): T;
+export declare class VueDirective<El extends HTMLElement | ComponentPublicInstance = HTMLElement, Value = any> {
+    readonly el: El;
+    readonly name: string;
+    private static readonly _elMapVueDirective;
+    private static readonly _directiveNameMapVueDirective;
+    static install(app: App): void;
+    static getInstance<T extends VueDirective>(el: any, directiveName: string, clazz?: Class<T>): T;
+    constructor(el: El, name: string);
+    mountedAndUpdated(binding: DirectiveBinding<Value>): void;
+    created(binding: DirectiveBinding<Value>): void;
+    beforeMount(binding: DirectiveBinding<Value>): void;
+    mounted(binding: DirectiveBinding<Value>): void;
+    beforeUpdate(binding: DirectiveBinding<Value>): void;
+    updated(binding: DirectiveBinding<Value>): void;
+    beforeUnmount(binding: DirectiveBinding<Value>): void;
+    unmounted(binding: DirectiveBinding<Value>): void;
 }
 
 export declare function Watcher(option?: {

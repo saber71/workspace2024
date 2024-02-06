@@ -1,15 +1,15 @@
-import type {
-  ComponentCustomProps,
-  EmitsOptions,
-  Prop,
-  SetupContext,
-  StyleValue,
-  VNodeChild,
-  VNodeProps,
+import {
+  type ComponentCustomProps,
+  type EmitsOptions,
+  type Prop,
+  type SetupContext,
+  type StyleValue,
+  type VNodeChild,
+  type VNodeProps,
 } from "vue";
 import type { VueComponent } from "./vue-component";
 
-export type Class<T = any> = { new (): T };
+export type Class<T = any> = { new (...args: any[]): T };
 
 export type VueComponentClass<
   Props extends {} = {},

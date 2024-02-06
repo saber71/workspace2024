@@ -1,1 +1,1 @@
-export const IoCModuleName = "vue-class";
+export const ModuleName = "vue-class";

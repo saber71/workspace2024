@@ -1,9 +1,10 @@
 import { IoC } from "ioc";
 import { type WatchOptions } from "vue";
-import { IoCModuleName } from "./constants";
+import { ModuleName } from "./constants";
 import { applyMetadata, getOrCreateMetadata } from "./metadata";
 import type { Class, VueComponentClass } from "./types";
 import { VueComponent } from "./vue-component";
+import type { VueDirective } from "./vue-directive";
 
 export type WatcherTarget = string | ((instance: VueComponent | object) => any);
 
@@ -22,10 +23,10 @@ export type HookType =
 
 /* 适用于类 */
 export function Component() {
-  const fn = IoC.Injectable({ moduleName: IoCModuleName });
+  const fn = IoC.Injectable({ moduleName: ModuleName });
   return (clazz: VueComponentClass, _?: any) => {
     fn(clazz, _);
-    getOrCreateMetadata(clazz);
+    getOrCreateMetadata(clazz).isComponent = true;
   };
 }
 
@@ -34,7 +35,7 @@ export function Service(option?: Parameters<typeof IoC.Injectable>[0]) {
   const fn = IoC.Injectable(
     Object.assign(
       {
-        moduleName: IoCModuleName,
+        moduleName: ModuleName,
         onCreate: (instance: object) =>
           applyMetadata(instance.constructor, instance),
       },
@@ -43,7 +44,22 @@ export function Service(option?: Parameters<typeof IoC.Injectable>[0]) {
   );
   return (clazz: Class, _?: any) => {
     fn(clazz, _);
-    getOrCreateMetadata(clazz);
+    getOrCreateMetadata(clazz).isService = true;
+  };
+}
+
+/* 适用于类 */
+export function Directive(name?: string) {
+  const fn = IoC.Injectable({ moduleName: ModuleName });
+  return (clazz: Class<VueDirective>, _?: any) => {
+    fn(clazz, _);
+    const metadata = getOrCreateMetadata(clazz);
+    metadata.isDirective = true;
+    if (!name) {
+      name = clazz.name.replace(/Directive$/, "");
+      name = name[0].toLowerCase() + name.slice(1);
+    }
+    metadata.directiveName = name;
   };
 }
 
@@ -64,9 +80,18 @@ export function Readonly(shallow?: boolean) {
 }
 
 /* 适用于属性 */
-export function Link() {
+export function Link(option?: {
+  refName?: string;
+  isDirective?: boolean;
+  directiveName?: string;
+}) {
   return (target: VueComponent, arg: any) => {
-    getOrCreateMetadata(target).links.push(getName(arg));
+    getOrCreateMetadata(target).links.push({
+      propName: getName(arg),
+      refName: option?.refName,
+      isDirective: !!(option?.isDirective || option?.directiveName),
+      directiveName: option?.directiveName,
+    });
   };
 }
 

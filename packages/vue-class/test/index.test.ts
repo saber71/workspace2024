@@ -3,11 +3,11 @@ import { expect, test } from "vitest";
 import { isRef } from "vue";
 import {
   Computed,
-  IoCModuleName,
+  ModuleName,
   Mut,
   Readonly,
   Service,
-  VueService,
+  VueClass,
   Watcher,
 } from "../src";
 
@@ -33,10 +33,10 @@ class A {
   }
 }
 
-IoC.load(IoCModuleName);
+IoC.load(ModuleName);
 
 test("vue-class:Service", () => {
-  const a = VueService.getInstance(A);
+  const a = VueClass.getInstance(A);
   a.a++;
   a.obj.a = 0;
 

@@ -22,13 +22,27 @@ import {
 import type { HookType, WatcherTarget } from "./decorators";
 import type { Class } from "./types";
 import { VueComponent } from "./vue-component";
+import { VueDirective } from "./vue-directive";
 
-class Metadata {
+export class Metadata {
+  isComponent = false;
+
+  isService = false;
+
+  isDirective = false;
+
+  directiveName = "";
+
   readonly mutts: { propName: string; shallow?: boolean }[] = [];
 
   readonly readonlys: { propName: string; shallow?: boolean }[] = [];
 
-  readonly links: string[] = [];
+  readonly links: {
+    refName?: string;
+    propName: string;
+    isDirective?: boolean;
+    directiveName?: string;
+  }[] = [];
 
   readonly bindThis: string[] = [];
 
@@ -162,12 +176,28 @@ class Metadata {
   }
 
   handleLink(instance: VueComponent) {
-    for (let propName of this.links) {
-      Object.defineProperty(instance, propName, {
+    for (let data of this.links) {
+      let refName = data.propName;
+      let directiveName = "";
+      if (data.refName) {
+        refName = data.refName;
+      } else if (data.isDirective) {
+        refName = refName.replace(/Directive$/, "");
+      }
+      if (data.isDirective) {
+        directiveName = data.directiveName ?? "";
+        if (!directiveName) directiveName = refName;
+      }
+      Object.defineProperty(instance, data.propName, {
         configurable: true,
         enumerable: true,
         get(): any {
-          return instance.vueInstance.refs?.[propName];
+          const el = instance.vueInstance.refs?.[refName];
+          if (data.isDirective) {
+            if (!el) throw new Error("There is no ref named " + refName);
+            return VueDirective.getInstance(el, directiveName);
+          }
+          return el;
         },
       });
     }
@@ -204,6 +234,10 @@ class Metadata {
 }
 
 const metadataMap = new Map<any, Metadata>();
+
+export function getAllMetadata(): [Class, Metadata][] {
+  return Array.from(metadataMap.entries());
+}
 
 export function getMetadata(clazz: any) {
   const metadata = metadataMap.get(clazz);

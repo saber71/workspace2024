@@ -5,7 +5,7 @@ import {
   type VNodeChild,
   type EmitsOptions,
 } from "vue";
-import { IoCModuleName } from "./constants";
+import { ModuleName } from "./constants";
 import { applyMetadata } from "./metadata";
 import type {
   ComponentProps,
@@ -48,7 +48,7 @@ export function toNative<Props extends {}, Emit extends EmitsOptions>(
 ) {
   return defineComponent<ComponentPropsObject<Props>, Emit>(
     () => {
-      const instance = IoC.getInstance(componentClass, IoCModuleName);
+      const instance = IoC.getInstance(componentClass, ModuleName);
 
       applyMetadata(componentClass, instance);
 
