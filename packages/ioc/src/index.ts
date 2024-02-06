@@ -10,6 +10,7 @@ export namespace IoC {
     prototypeNames: string[];
     singleton: boolean;
     targetClass: Class;
+    onCreate?: (instance: any) => void;
   }
 
   const classNameMapInjectableOption = new Map<string, InjectableOption>();
@@ -47,11 +48,9 @@ export namespace IoC {
     return result;
   }
 
-  export function Injectable(
-    option: Pick<InjectableOption, "moduleName" | "createOnLoad" | "singleton">,
-  ) {
+  export function Injectable(option?: Partial<InjectableOption>) {
     const fn = injectable();
-    return (clazz: Class) => {
+    return (clazz: Class, _: any) => {
       fn(clazz);
       Object.assign(getInjectableOptionOrCreate(clazz), option);
     };
@@ -86,6 +85,10 @@ export namespace IoC {
               .bind(name)
               .toDynamicValue(() => container.get(option.targetClass.name));
         } else result = container.bind(name).to(option.targetClass);
+        result.onActivation((_, instance) => {
+          option.onCreate?.(instance);
+          return instance;
+        });
       }
     }
     for (let option of needCreates) {

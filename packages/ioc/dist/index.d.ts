@@ -12,9 +12,10 @@ export declare namespace IoC {
         prototypeNames: string[];
         singleton: boolean;
         targetClass: Class;
+        onCreate?: (instance: any) => void;
     }
     export function getContainer(moduleName?: string): Container;
-    export function Injectable(option: Pick<InjectableOption, "moduleName" | "createOnLoad" | "singleton">): (clazz: Class) => void;
+    export function Injectable(option: Partial<InjectableOption>): (clazz: Class) => void;
     export function Inject(label: string): (target: DecoratorTarget<unknown>, targetKey?: string | symbol | undefined, indexOrPropertyDescriptor?: number | TypedPropertyDescriptor<unknown> | undefined) => void;
     export function load(moduleName?: string): void;
     export function unload(moduleName?: string): void;

@@ -9,6 +9,7 @@
     "watch": "vite build --watch"
   },
   "dependencies": {
+    "ioc": "workspace:*",
     "vue": "3.4.15"
   }
 }
