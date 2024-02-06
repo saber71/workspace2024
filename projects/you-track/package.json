@@ -1,0 +1,21 @@
+{
+  "name": "you-track",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "7.0.1",
+    "@vueuse/core": "10.7.2",
+    "ant-design-vue": "4.1.1",
+    "check-password-strength": "2.0.7",
+    "dayjs": "1.11.10",
+    "dexie": "3.2.4",
+    "pinia": "2.1.7",
+    "vue": "3.4.15",
+    "vue-class": "workspace:*",
+    "vue-router": "4.2.5"
+  }
+}

@@ -24,9 +24,9 @@ export type HookType =
 /* 适用于类 */
 export function Component() {
   const fn = IoC.Injectable({ moduleName: ModuleName });
-  return (clazz: VueComponentClass, _?: any) => {
-    fn(clazz, _);
-    getOrCreateMetadata(clazz).isComponent = true;
+  return (clazz: VueComponentClass, ctx?: ClassDecoratorContext) => {
+    fn(clazz, ctx);
+    getOrCreateMetadata(clazz, ctx).isComponent = true;
   };
 }
 
@@ -42,18 +42,18 @@ export function Service(option?: Parameters<typeof IoC.Injectable>[0]) {
       option,
     ),
   );
-  return (clazz: Class, _?: any) => {
-    fn(clazz, _);
-    getOrCreateMetadata(clazz).isService = true;
+  return (clazz: Class, ctx?: any) => {
+    fn(clazz, ctx);
+    getOrCreateMetadata(clazz, ctx).isService = true;
   };
 }
 
 /* 适用于类 */
 export function Directive(name?: string) {
   const fn = IoC.Injectable({ moduleName: ModuleName });
-  return (clazz: Class<VueDirective>, _?: any) => {
-    fn(clazz, _);
-    const metadata = getOrCreateMetadata(clazz);
+  return (clazz: Class<VueDirective>, ctx?: any) => {
+    fn(clazz, ctx);
+    const metadata = getOrCreateMetadata(clazz, ctx);
     metadata.isDirective = true;
     if (!name) {
       name = clazz.name.replace(/Directive$/, "");
@@ -66,7 +66,7 @@ export function Directive(name?: string) {
 /* 适用于属性 */
 export function Mut(shallow?: boolean) {
   return (target: object, arg: any) => {
-    const metadata = getOrCreateMetadata(target);
+    const metadata = getOrCreateMetadata(target, arg);
     metadata.mutts.push({ propName: getName(arg), shallow });
   };
 }
@@ -74,7 +74,7 @@ export function Mut(shallow?: boolean) {
 /* 适用于属性 */
 export function Readonly(shallow?: boolean) {
   return (target: object, arg: any) => {
-    const metadata = getOrCreateMetadata(target);
+    const metadata = getOrCreateMetadata(target, arg);
     metadata.readonlys.push({ propName: getName(arg), shallow });
   };
 }
@@ -86,7 +86,7 @@ export function Link(option?: {
   directiveName?: string;
 }) {
   return (target: VueComponent, arg: any) => {
-    getOrCreateMetadata(target).links.push({
+    getOrCreateMetadata(target, arg).links.push({
       propName: getName(arg),
       refName: option?.refName,
       isDirective: !!(option?.isDirective || option?.directiveName),
@@ -101,14 +101,14 @@ export function Link(option?: {
  */
 export function Computed() {
   return (target: any, arg: any) => {
-    getOrCreateMetadata(target).computers.push(getName(arg));
+    getOrCreateMetadata(target, arg).computers.push(getName(arg));
   };
 }
 
 /* 适用于方法 */
 export function Hook(type: HookType) {
   return (target: object, arg: any) => {
-    getOrCreateMetadata(target).hooks.push({
+    getOrCreateMetadata(target, arg).hooks.push({
       methodName: getName(arg),
       type,
     });
@@ -118,7 +118,7 @@ export function Hook(type: HookType) {
 /* 适用于方法 */
 export function PropsWatcher(option?: WatchOptions) {
   return (target: object, arg: string) => {
-    getOrCreateMetadata(target).propsWatchers.push({
+    getOrCreateMetadata(target, arg).propsWatchers.push({
       methodName: getName(arg),
       option,
     });
@@ -131,7 +131,7 @@ export function Watcher(option?: {
   option?: WatchOptions;
 }) {
   return (target: object, arg: any) => {
-    getOrCreateMetadata(target).watchers.push({
+    getOrCreateMetadata(target, arg).watchers.push({
       methodName: getName(arg),
       ...option,
     });
@@ -140,8 +140,8 @@ export function Watcher(option?: {
 
 /* 适用于方法 */
 export function BindThis() {
-  return (target: object, arg: string) => {
-    getOrCreateMetadata(target).bindThis.push(getName(arg));
+  return (target: object, arg: any) => {
+    getOrCreateMetadata(target, arg).bindThis.push(getName(arg));
   };
 }
 

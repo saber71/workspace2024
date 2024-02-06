@@ -21,13 +21,13 @@ export declare type AllowedComponentProps = {
 
 export declare function applyMetadata(clazz: any, instance: VueComponent | object): void;
 
-export declare function BindThis(): (target: object, arg: string) => void;
+export declare function BindThis(): (target: object, arg: any) => void;
 
 export declare type Class<T = any> = {
     new (...args: any[]): T;
 };
 
-export declare function Component(): (clazz: VueComponentClass, _?: any) => void;
+export declare function Component(): (clazz: VueComponentClass, ctx?: ClassDecoratorContext) => void;
 
 export declare type ComponentProps<T extends {}> = ComponentPropsObject<T> | Array<KeysOfUnion<DistributiveOmit<T, "slots">>>;
 
@@ -47,7 +47,7 @@ declare type DefaultSlots = {
 
 export declare type DefineEmits<Emit extends EmitsOptions> = Array<keyof Emit>;
 
-export declare function Directive(name?: string): (clazz: Class<VueDirective>, _?: any) => void;
+export declare function Directive(name?: string): (clazz: Class<VueDirective>, ctx?: any) => void;
 
 export declare type DistributiveOmit<T, K extends keyof any> = T extends T ? Omit<T, K> : never;
 
@@ -59,7 +59,10 @@ export declare function getAllMetadata(): [Class, Metadata][];
 
 export declare function getMetadata(clazz: any): Metadata;
 
-export declare function getOrCreateMetadata(clazz: Class | object): Metadata;
+export declare function getOrCreateMetadata(clazz: Class | object | any, ctx?: ClassDecoratorContext | {
+    kind: string;
+    metadata: Record<string, any>;
+} | string): any;
 
 export declare function Hook(type: HookType): (target: object, arg: any) => void;
 
@@ -134,7 +137,7 @@ export declare function PropsWatcher(option?: WatchOptions): (target: object, ar
 declare function Readonly_2(shallow?: boolean): (target: object, arg: any) => void;
 export { Readonly_2 as Readonly }
 
-export declare function Service(option?: Parameters<typeof IoC.Injectable>[0]): (clazz: Class, _?: any) => void;
+export declare function Service(option?: Parameters<typeof IoC.Injectable>[0]): (clazz: Class, ctx?: any) => void;
 
 export declare function toNative<Props extends {}, Emit extends EmitsOptions>(componentClass: VueComponentClass<Props, Emit>): (props: ComponentPropsObject<Props> & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K_1 in `on${Capitalize<string & keyof Emit>}`]?: (K_1 extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {})) => any;
 

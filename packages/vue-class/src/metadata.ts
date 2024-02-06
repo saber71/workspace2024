@@ -246,7 +246,7 @@ export function getMetadata(clazz: any) {
   return metadata;
 }
 
-const appliedSymbol = Symbol();
+const appliedSymbol = Symbol("__appliedMetadata__");
 
 export function applyMetadata(clazz: any, instance: VueComponent | object) {
   if ((instance as any)[appliedSymbol]) return;
@@ -264,9 +264,22 @@ export function applyMetadata(clazz: any, instance: VueComponent | object) {
   }
 }
 
-export function getOrCreateMetadata(clazz: Class | object) {
-  if (typeof clazz === "object") clazz = clazz.constructor as Class;
-  let metadata = metadataMap.get(clazz);
-  if (!metadata) metadataMap.set(clazz, (metadata = new Metadata()));
-  return metadata;
+export function getOrCreateMetadata(
+  clazz: Class | object | any,
+  ctx?:
+    | ClassDecoratorContext
+    | { kind: string; metadata: Record<string, any> }
+    | string,
+) {
+  if (!ctx || typeof ctx === "string") {
+    if (typeof clazz === "object") clazz = clazz.constructor as Class;
+    let metadata = metadataMap.get(clazz);
+    if (!metadata) metadataMap.set(clazz, (metadata = new Metadata()));
+    return metadata;
+  } else {
+    let metadata = ctx.metadata.metadata;
+    if (!metadata) metadata = ctx.metadata.metadata = new Metadata();
+    if (ctx.kind === "class") metadataMap.set(clazz, metadata);
+    return metadata;
+  }
 }

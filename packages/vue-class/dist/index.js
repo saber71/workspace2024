@@ -1,12 +1,12 @@
 var P = Object.defineProperty;
 var s = (o, e) => P(o, "name", { value: e, configurable: !0 });
-import { IoC as h } from "ioc";
-import { getCurrentInstance as E, defineComponent as S, watchEffect as T, watch as k, onServerPrefetch as j, onRenderTriggered as O, onRenderTracked as W, onErrorCaptured as C, onDeactivated as A, onActivated as R, onUpdated as B, onBeforeUnmount as $, onBeforeMount as H, onUnmounted as x, onMounted as L, shallowRef as q, ref as F, shallowReadonly as G, readonly as J, computed as M } from "vue";
-const m = "vue-class", l = class l {
+import { IoC as l } from "ioc";
+import { getCurrentInstance as E, defineComponent as S, watchEffect as T, watch as k, onServerPrefetch as j, onRenderTriggered as O, onRenderTracked as W, onErrorCaptured as C, onDeactivated as A, onActivated as R, onUpdated as B, onBeforeUnmount as $, onBeforeMount as H, onUnmounted as L, onMounted as _, shallowRef as q, ref as F, shallowReadonly as G, readonly as J, computed as M } from "vue";
+const m = "vue-class", h = class h {
   constructor() {
     let e = E();
     if (!e)
-      if (l.__test__)
+      if (h.__test__)
         e = { appContext: {} };
       else
         throw new Error("Cannot directly create VueComponent instance");
@@ -18,12 +18,12 @@ const m = "vue-class", l = class l {
   render() {
   }
 };
-s(l, "VueComponent"), l.__test__ = !1, l.defineProps = [];
-let v = l;
+s(h, "VueComponent"), h.__test__ = !1, h.defineProps = [];
+let y = h;
 function Z(o) {
   return S(
     () => {
-      const e = h.getInstance(o, m);
+      const e = l.getInstance(o, m);
       return U(o, e), e.render.bind(e);
     },
     {
@@ -34,44 +34,44 @@ function Z(o) {
   );
 }
 s(Z, "toNative");
-const d = class d {
+const c = class c {
   constructor(e, t) {
     this.el = e, this.name = t;
   }
   static install(e) {
     const t = K().filter((r) => r[1].isDirective).map((r) => [r[1].directiveName, r]);
-    d._directiveNameMapVueDirective = new Map(t);
+    c._directiveNameMapVueDirective = new Map(t);
     for (let r of t) {
       const n = r[1][1].directiveName, a = r[1][0];
       e.directive(n, {
-        created(i, c) {
-          d.getInstance(i, n, a).created(c);
+        created(i, d) {
+          c.getInstance(i, n, a).created(d);
         },
-        mounted(i, c) {
-          const p = d.getInstance(i, n, a);
-          p.mounted(c), p.mountedAndUpdated(c);
+        mounted(i, d) {
+          const p = c.getInstance(i, n, a);
+          p.mounted(d), p.mountedAndUpdated(d);
         },
-        updated(i, c) {
-          const p = d.getInstance(i, n, a);
-          p.updated(c), p.mountedAndUpdated(c);
+        updated(i, d) {
+          const p = c.getInstance(i, n, a);
+          p.updated(d), p.mountedAndUpdated(d);
         },
-        beforeUnmount(i, c) {
-          d.getInstance(i, n, a).beforeUnmount(
-            c
+        beforeUnmount(i, d) {
+          c.getInstance(i, n, a).beforeUnmount(
+            d
           );
         },
-        beforeUpdate(i, c) {
-          d.getInstance(i, n, a).beforeUpdate(
-            c
+        beforeUpdate(i, d) {
+          c.getInstance(i, n, a).beforeUpdate(
+            d
           );
         },
-        beforeMount(i, c) {
-          d.getInstance(i, n, a).beforeMount(
-            c
+        beforeMount(i, d) {
+          c.getInstance(i, n, a).beforeMount(
+            d
           );
         },
-        unmounted(i, c) {
-          d.getInstance(i, n, a).unmounted(c);
+        unmounted(i, d) {
+          c.getInstance(i, n, a).unmounted(d);
         }
       });
     }
@@ -101,13 +101,13 @@ const d = class d {
   beforeUnmount(e) {
   }
   unmounted(e) {
-    const t = d._elMapVueDirective.get(this.el);
-    t && (t.delete(this.name), t.size || d._elMapVueDirective.delete(this.el));
+    const t = c._elMapVueDirective.get(this.el);
+    t && (t.delete(this.name), t.size || c._elMapVueDirective.delete(this.el));
   }
 };
-s(d, "VueDirective"), d._elMapVueDirective = /* @__PURE__ */ new Map(), d._directiveNameMapVueDirective = /* @__PURE__ */ new Map();
-let b = d;
-const N = class N {
+s(c, "VueDirective"), c._elMapVueDirective = /* @__PURE__ */ new Map(), c._directiveNameMapVueDirective = /* @__PURE__ */ new Map();
+let v = c;
+const w = class w {
   constructor() {
     this.isComponent = !1, this.isService = !1, this.isDirective = !1, this.directiveName = "", this.mutts = [], this.readonlys = [], this.links = [], this.bindThis = [], this.hooks = [], this.watchers = [], this.propsWatchers = [], this.computers = [];
   }
@@ -146,10 +146,10 @@ const N = class N {
         throw new Error("Decorator Hook can only be used for methods");
       switch (r = r.bind(e), t.type) {
         case "onMounted":
-          L(r);
+          _(r);
           break;
         case "onUnmounted":
-          x(r);
+          L(r);
           break;
         case "onBeforeMount":
           H(r);
@@ -222,7 +222,7 @@ const N = class N {
           if (t.isDirective) {
             if (!a)
               throw new Error("There is no ref named " + r);
-            return b.getInstance(a, n);
+            return v.getInstance(a, n);
           }
           return a;
         }
@@ -237,8 +237,8 @@ const N = class N {
     for (let n of this.computers) {
       const a = e[n];
       if (typeof a == "function") {
-        const i = a.bind(e), c = M(i);
-        e[Symbol.for(n)] = c, e[n] = () => c.value;
+        const i = a.bind(e), d = M(i);
+        e[Symbol.for(n)] = d, e[n] = () => d.value;
       } else {
         const i = (r = Object.getOwnPropertyDescriptor(
           t,
@@ -248,53 +248,58 @@ const N = class N {
           throw new Error(
             "Computer can only be used on getters or no parameter methods"
           );
-        const c = M(() => i.call(e));
-        e[Symbol.for(n)] = c, Object.defineProperty(e, n, {
+        const d = M(() => i.call(e));
+        e[Symbol.for(n)] = d, Object.defineProperty(e, n, {
           configurable: !0,
-          get: () => c.value
+          get: () => d.value
         });
       }
     }
   }
 };
-s(N, "Metadata");
-let y = N;
-const g = /* @__PURE__ */ new Map();
+s(w, "Metadata");
+let g = w;
+const b = /* @__PURE__ */ new Map();
 function K() {
-  return Array.from(g.entries());
+  return Array.from(b.entries());
 }
 s(K, "getAllMetadata");
 function Q(o) {
-  const e = g.get(o);
+  const e = b.get(o);
   if (!e)
     throw new Error("Unable to find corresponding Metadata instance");
   return e;
 }
 s(Q, "getMetadata");
-const D = Symbol();
+const D = Symbol("__appliedMetadata__");
 function U(o, e) {
   if (e[D])
     return;
   e[D] = !0;
   const t = Q(o);
-  t.handleMut(e), t.handleReadonly(e), t.handleComputer(e), t.handleWatchers(e), t.handleBindThis(e), e instanceof v && (t.handleLink(e), t.handleHook(e), t.handlePropsWatchers(e));
+  t.handleMut(e), t.handleReadonly(e), t.handleComputer(e), t.handleWatchers(e), t.handleBindThis(e), e instanceof y && (t.handleLink(e), t.handleHook(e), t.handlePropsWatchers(e));
 }
 s(U, "applyMetadata");
-function u(o) {
-  typeof o == "object" && (o = o.constructor);
-  let e = g.get(o);
-  return e || g.set(o, e = new y()), e;
+function u(o, e) {
+  if (!e || typeof e == "string") {
+    typeof o == "object" && (o = o.constructor);
+    let t = b.get(o);
+    return t || b.set(o, t = new g()), t;
+  } else {
+    let t = e.metadata.metadata;
+    return t || (t = e.metadata.metadata = new g()), e.kind === "class" && b.set(o, t), t;
+  }
 }
 s(u, "getOrCreateMetadata");
-function _() {
-  const o = h.Injectable({ moduleName: m });
+function x() {
+  const o = l.Injectable({ moduleName: m });
   return (e, t) => {
-    o(e, t), u(e).isComponent = !0;
+    o(e, t), u(e, t).isComponent = !0;
   };
 }
-s(_, "Component");
+s(x, "Component");
 function z(o) {
-  const e = h.Injectable(
+  const e = l.Injectable(
     Object.assign(
       {
         moduleName: m,
@@ -304,34 +309,34 @@ function z(o) {
     )
   );
   return (t, r) => {
-    e(t, r), u(t).isService = !0;
+    e(t, r), u(t, r).isService = !0;
   };
 }
 s(z, "Service");
 function ee(o) {
-  const e = h.Injectable({ moduleName: m });
+  const e = l.Injectable({ moduleName: m });
   return (t, r) => {
     e(t, r);
-    const n = u(t);
+    const n = u(t, r);
     n.isDirective = !0, o || (o = t.name.replace(/Directive$/, ""), o = o[0].toLowerCase() + o.slice(1)), n.directiveName = o;
   };
 }
 s(ee, "Directive");
 function te(o) {
   return (e, t) => {
-    u(e).mutts.push({ propName: f(t), shallow: o });
+    u(e, t).mutts.push({ propName: f(t), shallow: o });
   };
 }
 s(te, "Mut");
 function re(o) {
   return (e, t) => {
-    u(e).readonlys.push({ propName: f(t), shallow: o });
+    u(e, t).readonlys.push({ propName: f(t), shallow: o });
   };
 }
 s(re, "Readonly");
 function oe(o) {
   return (e, t) => {
-    u(e).links.push({
+    u(e, t).links.push({
       propName: f(t),
       refName: o == null ? void 0 : o.refName,
       isDirective: !!(o != null && o.isDirective || o != null && o.directiveName),
@@ -342,13 +347,13 @@ function oe(o) {
 s(oe, "Link");
 function ne() {
   return (o, e) => {
-    u(o).computers.push(f(e));
+    u(o, e).computers.push(f(e));
   };
 }
 s(ne, "Computed");
 function ae(o) {
   return (e, t) => {
-    u(e).hooks.push({
+    u(e, t).hooks.push({
       methodName: f(t),
       type: o
     });
@@ -357,7 +362,7 @@ function ae(o) {
 s(ae, "Hook");
 function ie(o) {
   return (e, t) => {
-    u(e).propsWatchers.push({
+    u(e, t).propsWatchers.push({
       methodName: f(t),
       option: o
     });
@@ -366,49 +371,49 @@ function ie(o) {
 s(ie, "PropsWatcher");
 function se(o) {
   return (e, t) => {
-    u(e).watchers.push({
+    u(e, t).watchers.push({
       methodName: f(t),
       ...o
     });
   };
 }
 s(se, "Watcher");
-function ce() {
+function de() {
   return (o, e) => {
-    u(o).bindThis.push(f(e));
+    u(o, e).bindThis.push(f(e));
   };
 }
-s(ce, "BindThis");
+s(de, "BindThis");
 function f(o) {
   return typeof o == "string" ? o : o.name;
 }
 s(f, "getName");
-const w = class w {
+const N = class N {
   static getInstance(e) {
-    return h.getInstance(e, m);
+    return l.getInstance(e, m);
   }
   static async install(e, t) {
-    await h.importAll(() => t), b.install(e), h.load(m);
+    await l.importAll(() => t), v.install(e), l.load(m);
   }
 };
-s(w, "VueClass");
-let I = w;
+s(N, "VueClass");
+let I = N;
 export {
-  ce as BindThis,
-  _ as Component,
+  de as BindThis,
+  x as Component,
   ne as Computed,
   ee as Directive,
   ae as Hook,
   oe as Link,
-  y as Metadata,
+  g as Metadata,
   m as ModuleName,
   te as Mut,
   ie as PropsWatcher,
   re as Readonly,
   z as Service,
   I as VueClass,
-  v as VueComponent,
-  b as VueDirective,
+  y as VueComponent,
+  v as VueDirective,
   se as Watcher,
   U as applyMetadata,
   K as getAllMetadata,
