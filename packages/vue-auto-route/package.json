@@ -1,0 +1,14 @@
+{
+  "name": "vue-auto-route",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "devDependencies": {
+    "vue-router": "4.2.5"
+  }
+}
