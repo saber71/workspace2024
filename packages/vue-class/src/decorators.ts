@@ -1,5 +1,5 @@
 import { IoC } from "ioc";
-import { type WatchOptions } from "vue";
+import { type HTMLAttributes, type WatchOptions } from "vue";
 import { ModuleName } from "./constants";
 import { applyMetadata, getOrCreateMetadata } from "./metadata";
 import type { Class, VueComponentClass } from "./types";
@@ -22,9 +22,9 @@ export type HookType =
   | "onServerPrefetch";
 
 /* 适用于类 */
-export function Component() {
+export function Component<Props extends Partial<HTMLAttributes>>() {
   const fn = IoC.Injectable({ moduleName: ModuleName });
-  return (clazz: VueComponentClass, ctx?: ClassDecoratorContext) => {
+  return (clazz: VueComponentClass<Props>, ctx?: ClassDecoratorContext) => {
     fn(clazz, ctx);
     getOrCreateMetadata(clazz, ctx).isComponent = true;
   };

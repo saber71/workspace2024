@@ -28,7 +28,7 @@ export declare type Class<T = any> = {
     new (...args: any[]): T;
 };
 
-export declare function Component(): (clazz: VueComponentClass, ctx?: ClassDecoratorContext) => void;
+export declare function Component<Props extends Partial<HTMLAttributes>>(): (clazz: VueComponentClass<Props>, ctx?: ClassDecoratorContext) => void;
 
 export declare type ComponentProps<T extends {}> = ComponentPropsObject<T> | Array<KeysOfUnion<DistributiveOmit<T, "slots">>>;
 
