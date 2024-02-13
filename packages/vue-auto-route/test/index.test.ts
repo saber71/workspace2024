@@ -2,14 +2,14 @@ import { expect, test } from "vitest";
 import { RouteRecordRaw } from "vue-router";
 import { autoRoutes } from "../src";
 
-test("vue-auto-route:autoRoutes", () => {
-  const routes = autoRoutes(
+test("vue-auto-route:autoRoutes", async () => {
+  const routes = await autoRoutes(
     {
-      "./view1.ts": 1,
-      "./view2-p2-view.ts": 2,
-      "./view/view4.ts": 4,
-      "./view/view3-p3.view.ts": 3,
-      "./view2/empty/view5.home.ts": 5,
+      "./view1.ts": { default: 1 },
+      "./view2-p2-view.ts": () => ({ default: 2 }),
+      "./view/view4.ts": () => Promise.resolve({ default: 4 }),
+      "./view/view3-p3.view.ts": Promise.resolve({ default: 3 }),
+      "./view2/empty/view5.home.ts": { default: 5 },
     },
     ".",
   );

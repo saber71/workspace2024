@@ -1,9 +1,9 @@
 import type { RouteRecordRaw } from "vue-router";
 
-export function autoRoutes(
+export async function autoRoutes(
   data: Record<string, any>,
   pathPrefix: string,
-): RouteRecordRaw {
+): Promise<RouteRecordRaw> {
   const root: RouteRecordRaw = {
     path: "/",
     children: [],
@@ -11,18 +11,25 @@ export function autoRoutes(
   const reg = new RegExp("^" + pathPrefix);
   const fileReg = /\.(ts|tsx)$/;
   const homeReg = /\.home/;
-  const routeItemsMap = new Map<string[], () => Promise<any>>();
+  const routeItemsMap = new Map<string[], any>();
+  const promises: Promise<any>[] = [];
   const routeItems = Object.entries(data)
     .map(([path, loader]) => {
       path = path.replace(reg, "");
       const arr = path.split("/").filter((item) => !!item);
-      routeItemsMap.set(arr, loader);
+      if (typeof loader === "function") loader = loader();
+      if (loader instanceof Promise)
+        promises.push(
+          loader.then((val) => routeItemsMap.set(arr, val.default)),
+        );
+      else routeItemsMap.set(arr, loader.default);
       return arr;
     })
     .sort((a, b) => {
       if (a.length === b.length) return a.join().localeCompare(b.join());
       return a.length - b.length;
     });
+  await Promise.all(promises);
   for (let routeItem of routeItems) {
     setRouteRecord(routeItem, 0, root, []);
   }
