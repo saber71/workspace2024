@@ -9,7 +9,7 @@ export default defineConfig({
   esbuild: { keepNames: true },
   build: {
     rollupOptions: {
-      external: ["vue", "ioc"],
+      external: ["vue", "ioc", "vue-router"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

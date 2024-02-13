@@ -6,8 +6,12 @@ import { EmitsOptions } from 'vue';
 import { getCurrentInstance } from 'vue';
 import { HTMLAttributes } from 'vue';
 import { IoC } from 'ioc';
+import { NavigationGuardNext } from 'vue-router';
 import { ObjectEmitsOptions } from 'vue';
 import { Prop } from 'vue';
+import { RouteLocationNormalized } from 'vue-router';
+import { RouteLocationNormalizedLoaded } from 'vue-router';
+import { Router } from 'vue-router';
 import { SetupContext } from 'vue';
 import { StyleValue } from 'vue';
 import { VNodeChild } from 'vue';
@@ -63,11 +67,11 @@ export declare function getMetadata(clazz: any): Metadata;
 export declare function getOrCreateMetadata(clazz: Class | object | any, ctx?: ClassDecoratorContext | {
     kind: string;
     metadata: Record<string, any>;
-} | string): any;
+} | string): Metadata;
 
 export declare function Hook(type: HookType): (target: object, arg: any) => void;
 
-export declare type HookType = "onMounted" | "onUpdated" | "onUnmounted" | "onBeforeMount" | "onBeforeUnmount" | "onErrorCaptured" | "onRenderTracked" | "onRenderTriggered" | "onActivated" | "onDeactivated" | "onServerPrefetch";
+export declare type HookType = "onMounted" | "onUpdated" | "onUnmounted" | "onBeforeMount" | "onBeforeUnmount" | "onErrorCaptured" | "onRenderTracked" | "onRenderTriggered" | "onActivated" | "onDeactivated" | "onServerPrefetch" | "onBeforeRouteUpdate" | "onBeforeRouteLeave";
 
 declare type KeysOfUnion<T> = T extends T ? keyof T : never;
 
@@ -81,7 +85,10 @@ export declare class Metadata {
     isComponent: boolean;
     isService: boolean;
     isDirective: boolean;
+    isRouterGuard: boolean;
     directiveName: string;
+    routerGuardMatchTo?: RegExp;
+    routerGuardMatchFrom?: RegExp;
     readonly mutts: {
         propName: string;
         shallow?: boolean;
@@ -138,6 +145,11 @@ export declare function PropsWatcher(option?: WatchOptions): (target: object, ar
 declare function Readonly_2(shallow?: boolean): (target: object, arg: any) => void;
 export { Readonly_2 as Readonly }
 
+export declare function RouterGuard(option?: {
+    matchTo?: RegExp;
+    matchFrom?: RegExp;
+}): (clazz: Class<VueRouterGuard>, ctx?: any) => void;
+
 export declare function Service(option?: Parameters<typeof IoC.Injectable>[0]): (clazz: Class, ctx?: any) => void;
 
 export declare function toNative<Props extends Partial<HTMLAttributes>, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>): (props: Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K_1 in `on${Capitalize<string & keyof Emit>}`]?: (K_1 extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {})) => any;
@@ -148,7 +160,7 @@ export declare type TransformModelValue<T extends {}> = "v-model:modelValue" ext
 
 export declare class VueClass {
     static getInstance<T>(clazz: Class<T>): T;
-    static install(app: App, imports: Record<string, () => Promise<any>>): Promise<void>;
+    static install(app: App, router: Router, imports: Record<string, () => Promise<any>> | any): Promise<void>;
 }
 
 export declare class VueComponent<Props extends Partial<HTMLAttributes> = Partial<HTMLAttributes>, Emit extends EmitsOptions = {}> {
@@ -184,6 +196,14 @@ export declare class VueDirective<El extends HTMLElement | ComponentPublicInstan
     updated(binding: DirectiveBinding<Value>): void;
     beforeUnmount(binding: DirectiveBinding<Value>): void;
     unmounted(binding: DirectiveBinding<Value>): void;
+}
+
+declare class VueRouterGuard {
+    static install(router: Router): void;
+    beforeEach(to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): void;
+    beforeResolve(to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): void;
+    afterEach(to: RouteLocationNormalized, from: RouteLocationNormalized): void;
+    onError(error: Error, to: RouteLocationNormalized, from: RouteLocationNormalizedLoaded): void;
 }
 
 export declare function Watcher(option?: {

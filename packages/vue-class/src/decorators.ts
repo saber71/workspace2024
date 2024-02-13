@@ -5,6 +5,7 @@ import { applyMetadata, getOrCreateMetadata } from "./metadata";
 import type { Class, VueComponentClass } from "./types";
 import { VueComponent } from "./vue-component";
 import type { VueDirective } from "./vue-directive";
+import type { VueRouterGuard } from "./vue-router-guard";
 
 export type WatcherTarget = string | ((instance: VueComponent | object) => any);
 
@@ -19,7 +20,9 @@ export type HookType =
   | "onRenderTriggered"
   | "onActivated"
   | "onDeactivated"
-  | "onServerPrefetch";
+  | "onServerPrefetch"
+  | "onBeforeRouteUpdate"
+  | "onBeforeRouteLeave";
 
 /* 适用于类 */
 export function Component<Props extends Partial<HTMLAttributes>>() {
@@ -45,6 +48,28 @@ export function Service(option?: Parameters<typeof IoC.Injectable>[0]) {
   return (clazz: Class, ctx?: any) => {
     fn(clazz, ctx);
     getOrCreateMetadata(clazz, ctx).isService = true;
+  };
+}
+
+/* 适用于类 */
+export function RouterGuard(option?: { matchTo?: RegExp; matchFrom?: RegExp }) {
+  const fn = IoC.Injectable(
+    Object.assign(
+      {
+        moduleName: ModuleName,
+        singleton: true,
+        onCreate: (instance: object) =>
+          applyMetadata(instance.constructor, instance),
+      },
+      option,
+    ),
+  );
+  return (clazz: Class<VueRouterGuard>, ctx?: any) => {
+    fn(clazz, ctx);
+    const metadata = getOrCreateMetadata(clazz, ctx);
+    metadata.isRouterGuard = true;
+    metadata.routerGuardMatchTo = option?.matchTo;
+    metadata.routerGuardMatchFrom = option?.matchFrom;
   };
 }
 

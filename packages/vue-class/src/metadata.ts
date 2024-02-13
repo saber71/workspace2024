@@ -19,6 +19,7 @@ import {
   watchEffect,
   type WatchOptions,
 } from "vue";
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
 import type { HookType, WatcherTarget } from "./decorators";
 import type { Class } from "./types";
 import { VueComponent } from "./vue-component";
@@ -31,7 +32,13 @@ export class Metadata {
 
   isDirective = false;
 
+  isRouterGuard = false;
+
   directiveName = "";
+
+  routerGuardMatchTo?: RegExp;
+
+  routerGuardMatchFrom?: RegExp;
 
   readonly mutts: { propName: string; shallow?: boolean }[] = [];
 
@@ -135,6 +142,12 @@ export class Metadata {
           break;
         case "onServerPrefetch":
           onServerPrefetch(fn);
+          break;
+        case "onBeforeRouteLeave":
+          onBeforeRouteLeave(fn);
+          break;
+        case "onBeforeRouteUpdate":
+          onBeforeRouteUpdate(fn);
           break;
         default:
           throw new Error("Unknown Hook Type " + hookData.type);
@@ -270,7 +283,7 @@ export function getOrCreateMetadata(
     | ClassDecoratorContext
     | { kind: string; metadata: Record<string, any> }
     | string,
-) {
+): Metadata {
   if (!ctx || typeof ctx === "string") {
     if (typeof clazz === "object") clazz = clazz.constructor as Class;
     let metadata = metadataMap.get(clazz);
