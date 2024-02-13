@@ -84,13 +84,17 @@ export class VueRouterGuard {
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
     next: NavigationGuardNext,
-  ) {}
+  ) {
+    next();
+  }
 
   beforeResolve(
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
     next: NavigationGuardNext,
-  ) {}
+  ) {
+    next();
+  }
 
   afterEach(to: RouteLocationNormalized, from: RouteLocationNormalized) {}
 

@@ -454,8 +454,10 @@ const U = class U {
     d(r, "match");
   }
   beforeEach(e, t, r) {
+    r();
   }
   beforeResolve(e, t, r) {
+    r();
   }
   afterEach(e, t) {
   }
