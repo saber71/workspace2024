@@ -30,7 +30,7 @@ export class VueRouterGuard {
         )
           onError(error, to, from);
       });
-      router.beforeEach((to, from, next) => {
+      router.beforeEach(async (to, from, next) => {
         if (
           match(
             to,
@@ -39,10 +39,10 @@ export class VueRouterGuard {
             metadata.routerGuardMatchFrom,
           )
         )
-          beforeEach(to, from, next);
+          await beforeEach(to, from, next);
         else next();
       });
-      router.afterEach((to, from) => {
+      router.afterEach(async (to, from) => {
         if (
           match(
             to,
@@ -51,9 +51,9 @@ export class VueRouterGuard {
             metadata.routerGuardMatchFrom,
           )
         )
-          afterEach(to, from);
+          await afterEach(to, from);
       });
-      router.beforeResolve((to, from, next) => {
+      router.beforeResolve(async (to, from, next) => {
         if (
           match(
             to,
@@ -62,7 +62,7 @@ export class VueRouterGuard {
             metadata.routerGuardMatchFrom,
           )
         )
-          beforeResolve(to, from, next);
+          await beforeResolve(to, from, next);
         else next();
       });
     }

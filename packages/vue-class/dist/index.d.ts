@@ -198,7 +198,7 @@ export declare class VueDirective<El extends HTMLElement | ComponentPublicInstan
     unmounted(binding: DirectiveBinding<Value>): void;
 }
 
-declare class VueRouterGuard {
+export declare class VueRouterGuard {
     static install(router: Router): void;
     beforeEach(to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): void;
     beforeResolve(to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): void;

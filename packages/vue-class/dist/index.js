@@ -107,7 +107,7 @@ const c = class c {
   }
 };
 d(c, "VueDirective"), c._elMapVueDirective = /* @__PURE__ */ new Map(), c._directiveNameMapVueDirective = /* @__PURE__ */ new Map();
-let N = c;
+let w = c;
 const D = class D {
   constructor() {
     this.isComponent = !1, this.isService = !1, this.isDirective = !1, this.isRouterGuard = !1, this.directiveName = "", this.mutts = [], this.readonlys = [], this.links = [], this.bindThis = [], this.hooks = [], this.watchers = [], this.propsWatchers = [], this.computers = [];
@@ -229,7 +229,7 @@ const D = class D {
           if (t.isDirective) {
             if (!s)
               throw new Error("There is no ref named " + r);
-            return N.getInstance(s, a);
+            return w.getInstance(s, a);
           }
           return s;
         }
@@ -265,7 +265,7 @@ const D = class D {
   }
 };
 d(D, "Metadata");
-let w = D;
+let N = D;
 const y = /* @__PURE__ */ new Map();
 function O() {
   return Array.from(y.entries());
@@ -291,10 +291,10 @@ function u(o, e) {
   if (!e || typeof e == "string") {
     typeof o == "object" && (o = o.constructor);
     let t = y.get(o);
-    return t || y.set(o, t = new w()), t;
+    return t || y.set(o, t = new N()), t;
   } else {
     let t = e.metadata.metadata;
-    return t || (t = e.metadata.metadata = new w()), e.kind === "class" && y.set(o, t), t;
+    return t || (t = e.metadata.metadata = new N()), e.kind === "class" && y.set(o, t), t;
   }
 }
 d(u, "getOrCreateMetadata");
@@ -425,27 +425,27 @@ const U = class U {
           n.routerGuardMatchTo,
           n.routerGuardMatchFrom
         ) && B(l, f, h);
-      }), e.beforeEach((l, f, h) => {
+      }), e.beforeEach(async (l, f, h) => {
         r(
           l,
           f,
           n.routerGuardMatchTo,
           n.routerGuardMatchFrom
-        ) ? i(l, f, h) : h();
-      }), e.afterEach((l, f) => {
+        ) ? await i(l, f, h) : h();
+      }), e.afterEach(async (l, f) => {
         r(
           l,
           f,
           n.routerGuardMatchTo,
           n.routerGuardMatchFrom
-        ) && b(l, f);
-      }), e.beforeResolve((l, f, h) => {
+        ) && await b(l, f);
+      }), e.beforeResolve(async (l, f, h) => {
         r(
           l,
           f,
           n.routerGuardMatchTo,
           n.routerGuardMatchFrom
-        ) ? S(l, f, h) : h();
+        ) ? await S(l, f, h) : h();
       });
     }
     function r(a, s, n, i) {
@@ -469,7 +469,7 @@ const R = class R {
     return m.getInstance(e, v);
   }
   static async install(e, t, r) {
-    await m.importAll(() => r), m.load(v), N.install(e), k.install(t);
+    await m.importAll(() => r), m.load(v), w.install(e), k.install(t);
   }
 };
 d(R, "VueClass");
@@ -481,7 +481,7 @@ export {
   fe as Directive,
   be as Hook,
   me as Link,
-  w as Metadata,
+  N as Metadata,
   v as ModuleName,
   le as Mut,
   ve as PropsWatcher,
@@ -490,7 +490,8 @@ export {
   ce as Service,
   E as VueClass,
   M as VueComponent,
-  N as VueDirective,
+  w as VueDirective,
+  k as VueRouterGuard,
   ge as Watcher,
   I as applyMetadata,
   O as getAllMetadata,
