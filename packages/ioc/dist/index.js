@@ -1,26 +1,26 @@
-var M = Object.defineProperty;
-var r = (i, l) => M(i, "name", { value: l, configurable: !0 });
+var P = Object.defineProperty;
+var s = (a, c) => P(a, "name", { value: c, configurable: !0 });
 import "reflect-metadata";
-import { Container as N, injectable as P, inject as v } from "inversify";
-var d;
-((i) => {
-  const l = /* @__PURE__ */ new Map(), f = /* @__PURE__ */ new Map();
-  function u(t = "") {
-    let e = f.get(t);
-    return e || f.set(
+import { Container as v, injectable as A, inject as I } from "inversify";
+var h;
+((a) => {
+  const c = /* @__PURE__ */ new Map(), p = /* @__PURE__ */ new Map();
+  function m(t = "") {
+    let e = p.get(t);
+    return e || p.set(
       t,
-      e = new N({ skipBaseClassChecks: !0 })
+      e = new v({ skipBaseClassChecks: !0 })
     ), e;
   }
-  r(u, "getContainer"), i.getContainer = u;
-  function b(t) {
-    let e = l.get(t.name);
+  s(m, "getContainer"), a.getContainer = m;
+  function j(t) {
+    let e = c.get(t.name);
     if (!e) {
       const o = [];
-      let a = t;
-      for (; a != null && a.name; )
-        o.push(a.name), a = Object.getPrototypeOf(a);
-      l.set(
+      let i = t;
+      for (; i != null && i.name; )
+        o.push(i.name), i = Object.getPrototypeOf(i);
+      c.set(
         t.name,
         e = {
           singleton: !1,
@@ -32,64 +32,65 @@ var d;
     }
     return e;
   }
-  r(b, "getInjectableOptionOrCreate");
-  function h(t) {
-    const e = P();
-    return (o, a) => {
-      e(o), Object.assign(b(o), t);
+  s(j, "getInjectableOptionOrCreate");
+  function y(t) {
+    const e = A();
+    return (o, i) => {
+      e(o), Object.assign(j(o), t);
     };
   }
-  r(h, "Injectable"), i.Injectable = h;
-  function j(t) {
-    return v(t);
+  s(y, "Injectable"), a.Injectable = y;
+  function w(t) {
+    return I(t);
   }
-  r(j, "Inject"), i.Inject = j;
-  function C(t = "") {
-    const e = u(t), o = new Map(l);
-    for (let [n, s] of l.entries())
-      s.moduleName && t !== s.moduleName ? o.delete(n) : s.prototypeNames.slice(1).forEach((c) => o.delete(c));
-    const a = [];
+  s(w, "Inject"), a.Inject = w, a.Initializer = Symbol("initializer");
+  const g = Symbol("initialized");
+  function O(t = "") {
+    const e = m(t), o = new Map(c);
+    for (let [n, r] of c.entries())
+      r.moduleName && t !== r.moduleName ? o.delete(n) : r.prototypeNames.slice(1).forEach((f) => o.delete(f));
+    const i = [];
     for (let n of o.values()) {
-      n.createOnLoad && a.push(n);
-      for (let s = 0; s < n.prototypeNames.length; s++) {
-        const c = n.prototypeNames[s];
-        let p;
-        n.singleton ? s === 0 ? p = e.bind(c).to(n.targetClass).inSingletonScope() : p = e.bind(c).toDynamicValue(() => e.get(n.targetClass.name)) : p = e.bind(c).to(n.targetClass), p.onActivation((A, m) => {
-          var g;
-          return (g = n.onCreate) == null || g.call(n, m), m;
+      n.createOnLoad && i.push(n);
+      for (let r = 0; r < n.prototypeNames.length; r++) {
+        const f = n.prototypeNames[r];
+        let u;
+        n.singleton ? r === 0 ? u = e.bind(f).to(n.targetClass).inSingletonScope() : u = e.bind(f).toDynamicValue(() => e.get(n.targetClass.name)) : u = e.bind(f).to(n.targetClass), u.onActivation((S, l) => {
+          var d, b;
+          return l[g] || (l[g] = !0, (d = l[a.Initializer]) == null || d.call(l)), (b = n.onCreate) == null || b.call(n, l), l;
         });
       }
     }
-    for (let n of a)
+    for (let n of i)
       e.get(n.targetClass.name);
   }
-  r(C, "load"), i.load = C;
-  function w(t = "") {
-    const e = f.get(t);
-    e && (e.unbindAll(), f.delete(t));
+  s(O, "load"), a.load = O;
+  function C(t = "") {
+    const e = p.get(t);
+    e && (e.unbindAll(), p.delete(t));
   }
-  r(w, "unload"), i.unload = w;
-  function y(t, e) {
-    const o = u(e).get(t.name);
+  s(C, "unload"), a.unload = C;
+  function M(t, e) {
+    const o = m(e).get(t.name);
     if (!o)
       throw new Error(`Unable to find instance of class ${t.name}`);
     return o;
   }
-  r(y, "getInstance"), i.getInstance = y;
-  async function O(t) {
+  s(M, "getInstance"), a.getInstance = M;
+  async function N(t) {
     const e = t(), o = [];
-    for (let a in e) {
-      const n = e[a];
+    for (let i in e) {
+      const n = e[i];
       if (typeof n == "function") {
-        const s = n();
-        s instanceof Promise && o.push(s);
+        const r = n();
+        r instanceof Promise && o.push(r);
       } else
         n instanceof Promise && o.push(n);
     }
     await Promise.all(o);
   }
-  r(O, "importAll"), i.importAll = O;
-})(d || (d = {}));
+  s(N, "importAll"), a.importAll = N;
+})(h || (h = {}));
 export {
-  d as IoC
+  h as IoC
 };

@@ -17,6 +17,7 @@ export declare namespace IoC {
     export function getContainer(moduleName?: string): Container;
     export function Injectable(option?: Partial<InjectableOption>): (clazz: Class, _: any) => void;
     export function Inject<Label extends string = string>(label: Label): (target: DecoratorTarget<unknown>, targetKey?: string | symbol | undefined, indexOrPropertyDescriptor?: number | TypedPropertyDescriptor<unknown> | undefined) => void;
+    const Initializer: unique symbol;
     export function load(moduleName?: string): void;
     export function unload(moduleName?: string): void;
     export function getInstance<T>(clazz: Class<T>, moduleName?: string): T;

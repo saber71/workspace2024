@@ -60,6 +60,9 @@ export namespace IoC {
     return inject(label);
   }
 
+  export const Initializer = Symbol("initializer");
+  const Initialized = Symbol("initialized");
+
   export function load(moduleName: string = "") {
     const container = getContainer(moduleName);
     const map = new Map(classNameMapInjectableOption);
@@ -86,6 +89,10 @@ export namespace IoC {
               .toDynamicValue(() => container.get(option.targetClass.name));
         } else result = container.bind(name).to(option.targetClass);
         result.onActivation((_, instance) => {
+          if (!(instance as any)[Initialized]) {
+            (instance as any)[Initialized] = true;
+            (instance as any)[Initializer]?.();
+          }
           option.onCreate?.(instance);
           return instance;
         });

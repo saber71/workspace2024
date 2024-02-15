@@ -1,10 +1,17 @@
 import { expect, test } from "vitest";
 import { IoC } from "../src";
+import Initializer = IoC.Initializer;
 
 class A {}
 
 @IoC.Injectable()
-class B extends A {}
+class B extends A {
+  initialized = false;
+
+  [Initializer]() {
+    this.initialized = true;
+  }
+}
 
 class A1 {}
 
@@ -33,6 +40,7 @@ test("IoC:getInstance", () => {
 
   expect(b).toBeTruthy();
   expect(b).toBeInstanceOf(B);
+  expect(b.initialized).toEqual(true);
   expect(b).toEqual(a);
   expect(b === b2).toEqual(false);
 });
