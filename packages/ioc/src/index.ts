@@ -56,7 +56,7 @@ export namespace IoC {
     };
   }
 
-  export function Inject(label: string) {
+  export function Inject<Label extends string = string>(label: Label) {
     return inject(label);
   }
 
