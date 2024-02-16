@@ -1,8 +1,8 @@
 var C = Object.defineProperty;
 var c = (o, e) => C(o, "name", { value: e, configurable: !0 });
 import { IoC as m } from "ioc";
-import { getCurrentInstance as T, defineComponent as W, watchEffect as A, watch as R, onServerPrefetch as L, onRenderTriggered as $, onRenderTracked as H, onErrorCaptured as K, onDeactivated as V, onActivated as q, onUpdated as J, onBeforeUnmount as Q, onBeforeMount as X, onUnmounted as Y, onMounted as Z, inject as _, provide as F, shallowRef as x, ref as z, shallowReadonly as ee, readonly as te, computed as P } from "vue";
-import { onBeforeRouteUpdate as re, onBeforeRouteLeave as oe } from "vue-router";
+import { getCurrentInstance as T, defineComponent as W, watchEffect as A, watch as R, onServerPrefetch as L, onRenderTriggered as $, onRenderTracked as H, onErrorCaptured as K, onDeactivated as V, onActivated as q, onUpdated as J, onBeforeUnmount as Q, onBeforeMount as X, onUnmounted as Y, onMounted as Z, inject as _, shallowRef as F, ref as x, shallowReadonly as z, readonly as ee, computed as P } from "vue";
+import { onBeforeRouteUpdate as te, onBeforeRouteLeave as re } from "vue-router";
 const v = "vue-class", g = class g {
   constructor() {
     let e = T();
@@ -21,7 +21,7 @@ const v = "vue-class", g = class g {
 };
 c(g, "VueComponent"), g.__test__ = !1, g.defineProps = [];
 let M = g;
-function de(o) {
+function ce(o) {
   return W(
     () => {
       const e = m.getInstance(o, v);
@@ -34,45 +34,45 @@ function de(o) {
     }
   );
 }
-c(de, "toNative");
-const d = class d {
+c(ce, "toNative");
+const u = class u {
   constructor(e, t) {
     this.el = e, this.name = t;
   }
   static install(e) {
     const t = G().filter((r) => r[1].isDirective).map((r) => [r[1].directiveName, r]);
-    d._directiveNameMapVueDirective = new Map(t);
+    u._directiveNameMapVueDirective = new Map(t);
     for (let r of t) {
       const a = r[1][1].directiveName, s = r[1][0];
       e.directive(a, {
         created(n, i) {
-          d.getInstance(n, a, s).created(i);
+          u.getInstance(n, a, s).created(i);
         },
         mounted(n, i) {
-          const b = d.getInstance(n, a, s);
+          const b = u.getInstance(n, a, s);
           b.mounted(i), b.mountedAndUpdated(i);
         },
         updated(n, i) {
-          const b = d.getInstance(n, a, s);
+          const b = u.getInstance(n, a, s);
           b.updated(i), b.mountedAndUpdated(i);
         },
         beforeUnmount(n, i) {
-          d.getInstance(n, a, s).beforeUnmount(
+          u.getInstance(n, a, s).beforeUnmount(
             i
           );
         },
         beforeUpdate(n, i) {
-          d.getInstance(n, a, s).beforeUpdate(
+          u.getInstance(n, a, s).beforeUpdate(
             i
           );
         },
         beforeMount(n, i) {
-          d.getInstance(n, a, s).beforeMount(
+          u.getInstance(n, a, s).beforeMount(
             i
           );
         },
         unmounted(n, i) {
-          d.getInstance(n, a, s).unmounted(i);
+          u.getInstance(n, a, s).unmounted(i);
         }
       });
     }
@@ -102,12 +102,12 @@ const d = class d {
   beforeUnmount(e) {
   }
   unmounted(e) {
-    const t = d._elMapVueDirective.get(this.el);
-    t && (t.delete(this.name), t.size || d._elMapVueDirective.delete(this.el));
+    const t = u._elMapVueDirective.get(this.el);
+    t && (t.delete(this.name), t.size || u._elMapVueDirective.delete(this.el));
   }
 };
-c(d, "VueDirective"), d._elMapVueDirective = /* @__PURE__ */ new Map(), d._directiveNameMapVueDirective = /* @__PURE__ */ new Map();
-let w = d;
+c(u, "VueDirective"), u._elMapVueDirective = /* @__PURE__ */ new Map(), u._directiveNameMapVueDirective = /* @__PURE__ */ new Map();
+let w = u;
 const D = class D {
   constructor() {
     this.isComponent = !1, this.isService = !1, this.isDirective = !1, this.isRouterGuard = !1, this.directiveName = "", this.mutts = [], this.readonlys = [], this.links = [], this.vueInject = [], this.bindThis = [], this.hooks = [], this.watchers = [], this.propsWatchers = [], this.computers = [];
@@ -180,10 +180,10 @@ const D = class D {
           L(r);
           break;
         case "onBeforeRouteLeave":
-          oe(r);
+          re(r);
           break;
         case "onBeforeRouteUpdate":
-          re(r);
+          te(r);
           break;
         default:
           throw new Error("Unknown Hook Type " + t.type);
@@ -191,17 +191,18 @@ const D = class D {
     }
   }
   handleVueInject(e) {
-    for (let t of this.vueInject)
+    for (let t of this.vueInject) {
+      const r = _(t.provideKey);
       Object.defineProperty(e, t.propName, {
         configurable: !0,
         enumerable: !0,
-        get: () => _(t.provideKey),
-        set: (r) => F(t.provideKey, r)
+        get: () => r
       });
+    }
   }
   handleMut(e) {
     for (let t of this.mutts) {
-      const r = e[t.propName], a = t.shallow ? x(r) : z(r);
+      const r = e[t.propName], a = t.shallow ? F(r) : x(r);
       e[Symbol.for(t.propName)] = a, Object.defineProperty(e, t.propName, {
         configurable: !0,
         enumerable: !0,
@@ -216,7 +217,7 @@ const D = class D {
   }
   handleReadonly(e) {
     for (let t of this.readonlys) {
-      const r = e[t.propName], a = t.shallow ? ee(r) : te(r);
+      const r = e[t.propName], a = t.shallow ? z(r) : ee(r);
       e[Symbol.for(t.propName)] = a, Object.defineProperty(e, t.propName, {
         configurable: !0,
         enumerable: !0,
@@ -280,23 +281,23 @@ function G() {
   return Array.from(y.entries());
 }
 c(G, "getAllMetadata");
-function ae(o) {
+function oe(o) {
   const e = y.get(o);
   if (!e)
     throw new Error("Unable to find corresponding Metadata instance");
   return e;
 }
-c(ae, "getMetadata");
+c(oe, "getMetadata");
 const O = Symbol("__appliedMetadata__");
 function E(o, e) {
   if (e[O])
     return;
   e[O] = !0;
-  const t = ae(o);
+  const t = oe(o);
   t.handleMut(e), t.handleReadonly(e), t.handleVueInject(e), t.handleComputer(e), t.handleWatchers(e), t.handleBindThis(e), e instanceof M && (t.handleLink(e), t.handleHook(e), t.handlePropsWatchers(e));
 }
 c(E, "applyMetadata");
-function u(o, e) {
+function d(o, e) {
   if (!e || typeof e == "string") {
     typeof o == "object" && (o = o.constructor);
     let t = y.get(o);
@@ -306,15 +307,15 @@ function u(o, e) {
     return t || (t = e.metadata.metadata = new N()), e.kind === "class" && y.set(o, t), t;
   }
 }
-c(u, "getOrCreateMetadata");
+c(d, "getOrCreateMetadata");
 function ue() {
   const o = m.Injectable({ moduleName: v });
   return (e, t) => {
-    o(e, t), u(e, t).isComponent = !0;
+    o(e, t), d(e, t).isComponent = !0;
   };
 }
 c(ue, "Component");
-function fe(o) {
+function de(o) {
   const e = m.Injectable(
     Object.assign(
       {
@@ -325,11 +326,11 @@ function fe(o) {
     )
   );
   return (t, r) => {
-    e(t, r), u(t, r).isService = !0;
+    e(t, r), d(t, r).isService = !0;
   };
 }
-c(fe, "Service");
-function le(o) {
+c(de, "Service");
+function fe(o) {
   const e = m.Injectable(
     Object.assign(
       {
@@ -342,35 +343,35 @@ function le(o) {
   );
   return (t, r) => {
     e(t, r);
-    const a = u(t, r);
+    const a = d(t, r);
     a.isRouterGuard = !0, a.routerGuardMatchTo = o == null ? void 0 : o.matchTo, a.routerGuardMatchFrom = o == null ? void 0 : o.matchFrom;
   };
 }
-c(le, "RouterGuard");
-function he(o) {
+c(fe, "RouterGuard");
+function le(o) {
   const e = m.Injectable({ moduleName: v });
   return (t, r) => {
     e(t, r);
-    const a = u(t, r);
+    const a = d(t, r);
     a.isDirective = !0, o || (o = t.name.replace(/Directive$/, ""), o = o[0].toLowerCase() + o.slice(1)), a.directiveName = o;
   };
 }
-c(he, "Directive");
+c(le, "Directive");
+function he(o) {
+  return (e, t) => {
+    d(e, t).mutts.push({ propName: h(t), shallow: o });
+  };
+}
+c(he, "Mut");
 function pe(o) {
   return (e, t) => {
-    u(e, t).mutts.push({ propName: h(t), shallow: o });
+    d(e, t).readonlys.push({ propName: h(t), shallow: o });
   };
 }
-c(pe, "Mut");
+c(pe, "Readonly");
 function me(o) {
   return (e, t) => {
-    u(e, t).readonlys.push({ propName: h(t), shallow: o });
-  };
-}
-c(me, "Readonly");
-function be(o) {
-  return (e, t) => {
-    u(e, t).links.push({
+    d(e, t).links.push({
       propName: h(t),
       refName: o == null ? void 0 : o.refName,
       isDirective: !!(o != null && o.isDirective || o != null && o.directiveName),
@@ -378,55 +379,55 @@ function be(o) {
     });
   };
 }
-c(be, "Link");
-function ve(o) {
+c(me, "Link");
+function be(o) {
   return (e, t) => {
-    u(e, t).vueInject.push({
+    d(e, t).vueInject.push({
       propName: h(t),
       provideKey: o
     });
   };
 }
-c(ve, "VueInject");
-function ge() {
+c(be, "VueInject");
+function ve() {
   return (o, e) => {
-    u(o, e).computers.push(h(e));
+    d(o, e).computers.push(h(e));
   };
 }
-c(ge, "Computed");
-function ye(o) {
+c(ve, "Computed");
+function ge(o) {
   return (e, t) => {
-    u(e, t).hooks.push({
+    d(e, t).hooks.push({
       methodName: h(t),
       type: o
     });
   };
 }
-c(ye, "Hook");
-function we(o) {
+c(ge, "Hook");
+function ye(o) {
   return (e, t) => {
-    u(e, t).propsWatchers.push({
+    d(e, t).propsWatchers.push({
       methodName: h(t),
       option: o
     });
   };
 }
-c(we, "PropsWatcher");
-function Ne(o) {
+c(ye, "PropsWatcher");
+function we(o) {
   return (e, t) => {
-    u(e, t).watchers.push({
+    d(e, t).watchers.push({
       methodName: h(t),
       ...o
     });
   };
 }
-c(Ne, "Watcher");
-function Me() {
+c(we, "Watcher");
+function Ne() {
   return (o, e) => {
-    u(o, e).bindThis.push(h(e));
+    d(o, e).bindThis.push(h(e));
   };
 }
-c(Me, "BindThis");
+c(Ne, "BindThis");
 function h(o) {
   return typeof o == "string" ? o : o.name;
 }
@@ -495,28 +496,28 @@ const U = class U {
 c(U, "VueClass");
 let I = U;
 export {
-  Me as BindThis,
+  Ne as BindThis,
   ue as Component,
-  ge as Computed,
-  he as Directive,
-  ye as Hook,
-  be as Link,
+  ve as Computed,
+  le as Directive,
+  ge as Hook,
+  me as Link,
   N as Metadata,
   v as ModuleName,
-  pe as Mut,
-  we as PropsWatcher,
-  me as Readonly,
-  le as RouterGuard,
-  fe as Service,
+  he as Mut,
+  ye as PropsWatcher,
+  pe as Readonly,
+  fe as RouterGuard,
+  de as Service,
   I as VueClass,
   M as VueComponent,
   w as VueDirective,
-  ve as VueInject,
+  be as VueInject,
   k as VueRouterGuard,
-  Ne as Watcher,
+  we as Watcher,
   E as applyMetadata,
   G as getAllMetadata,
-  ae as getMetadata,
-  u as getOrCreateMetadata,
-  de as toNative
+  oe as getMetadata,
+  d as getOrCreateMetadata,
+  ce as toNative
 };

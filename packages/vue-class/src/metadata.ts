@@ -12,7 +12,6 @@ import {
   onServerPrefetch,
   onUnmounted,
   onUpdated,
-  provide,
   readonly,
   ref,
   shallowReadonly,
@@ -161,11 +160,11 @@ export class Metadata {
 
   handleVueInject(instance: any) {
     for (let item of this.vueInject) {
+      const val = inject(item.provideKey);
       Object.defineProperty(instance, item.propName, {
         configurable: true,
         enumerable: true,
-        get: () => inject(item.provideKey),
-        set: (v: any) => provide(item.provideKey, v),
+        get: () => val,
       });
     }
   }
