@@ -11,7 +11,8 @@ export async function autoRoutes(
   const reg = new RegExp("^" + pathPrefix);
   const fileReg = /\.(ts|tsx)$/;
   const homeReg = /\.home/;
-  const routeItemsMap = new Map<string[], any>();
+  const componentMap = new Map<string[], any>();
+  const metaMap = new Map<string[], any>();
   const promises: Promise<any>[] = [];
   const routeItems = Object.entries(data)
     .map(([path, loader]) => {
@@ -20,9 +21,15 @@ export async function autoRoutes(
       if (typeof loader === "function") loader = loader();
       if (loader instanceof Promise)
         promises.push(
-          loader.then((val) => routeItemsMap.set(arr, val.default)),
+          loader.then((val) => {
+            componentMap.set(arr, val.default);
+            metaMap.set(arr, val.Meta);
+          }),
         );
-      else routeItemsMap.set(arr, loader.default);
+      else {
+        componentMap.set(arr, loader.default);
+        metaMap.set(arr, loader.Meta);
+      }
       return arr;
     })
     .sort((a, b) => {
@@ -59,7 +66,8 @@ export async function autoRoutes(
         children: [],
       };
       if (isFile) {
-        routeRecord.component = routeItemsMap.get(routeItems);
+        routeRecord.component = componentMap.get(routeItems);
+        routeRecord.meta = metaMap.get(routeItems);
         const arr = routeItem
           .split(/[.\-]/)
           .map((str) => str[0].toUpperCase() + str.slice(1));

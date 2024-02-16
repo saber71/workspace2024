@@ -1,48 +1,50 @@
-var y = Object.defineProperty;
-var h = (c, l) => y(c, "name", { value: l, configurable: !0 });
-async function M(c, l) {
-  const f = {
+var C = Object.defineProperty;
+var h = (r, f) => C(r, "name", { value: f, configurable: !0 });
+async function d(r, f) {
+  const l = {
     path: "/",
     children: []
-  }, j = new RegExp("^" + l), R = /\.(ts|tsx)$/, w = /\.home/, p = /* @__PURE__ */ new Map(), u = [], d = Object.entries(c).map(([t, e]) => {
+  }, j = new RegExp("^" + f), w = /\.(ts|tsx)$/, R = /\.home/, p = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), u = [], y = Object.entries(r).map(([t, e]) => {
     t = t.replace(j, "");
-    const o = t.split("/").filter((i) => !!i);
+    const o = t.split("/").filter((s) => !!s);
     return typeof e == "function" && (e = e()), e instanceof Promise ? u.push(
-      e.then((i) => p.set(o, i.default))
-    ) : p.set(o, e.default), o;
+      e.then((s) => {
+        p.set(o, s.default), a.set(o, s.Meta);
+      })
+    ) : (p.set(o, e.default), a.set(o, e.Meta)), o;
   }).sort((t, e) => t.length === e.length ? t.join().localeCompare(e.join()) : t.length - e.length);
   await Promise.all(u);
-  for (let t of d)
-    a(t, 0, f, []);
-  return f;
-  function a(t, e, o, i) {
+  for (let t of y)
+    m(t, 0, l, []);
+  return l;
+  function m(t, e, o, s) {
     if (e >= t.length)
       return;
     let n = t[e];
-    const m = R.test(n);
-    if (m) {
-      const r = w.test(n);
-      n = n.split(".")[0], r && (f.redirect = "/" + [...i, n].join("/"));
+    const g = w.test(n);
+    if (g) {
+      const c = R.test(n);
+      n = n.split(".")[0], c && (l.redirect = "/" + [...s, n].join("/"));
     }
-    let s = o.children.find((r) => r.path === n);
-    if (!s) {
-      if (s = {
+    let i = o.children.find((c) => c.path === n);
+    if (!i) {
+      if (i = {
         path: n,
         children: []
-      }, m) {
-        s.component = p.get(t);
-        const r = n.split(/[.\-]/).map((g) => g[0].toUpperCase() + g.slice(1));
-        s.name = r.join("");
+      }, g) {
+        i.component = p.get(t), i.meta = a.get(t);
+        const c = n.split(/[.\-]/).map((M) => M[0].toUpperCase() + M.slice(1));
+        i.name = c.join("");
       }
-      o.children.push(s);
+      o.children.push(i);
     }
-    a(t, e + 1, s, [
-      ...i,
+    m(t, e + 1, i, [
+      ...s,
       n
     ]);
   }
 }
-h(M, "autoRoutes");
+h(d, "autoRoutes");
 export {
-  M as autoRoutes
+  d as autoRoutes
 };
