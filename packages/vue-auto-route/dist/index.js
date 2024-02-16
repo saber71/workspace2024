@@ -1,50 +1,54 @@
-var C = Object.defineProperty;
-var h = (r, f) => C(r, "name", { value: f, configurable: !0 });
-async function d(r, f) {
+var P = Object.defineProperty;
+var h = (r, f) => P(r, "name", { value: f, configurable: !0 });
+async function x(r, f) {
   const l = {
     path: "/",
     children: []
-  }, j = new RegExp("^" + f), w = /\.(ts|tsx)$/, R = /\.home/, p = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), u = [], y = Object.entries(r).map(([t, e]) => {
-    t = t.replace(j, "");
-    const o = t.split("/").filter((s) => !!s);
-    return typeof e == "function" && (e = e()), e instanceof Promise ? u.push(
-      e.then((s) => {
-        p.set(o, s.default), a.set(o, s.Meta);
+  }, j = new RegExp("^" + f), w = /\.(ts|tsx)$/, R = /\.home/, p = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), m = [], y = Object.entries(r).map(([e, t]) => {
+    e = e.replace(j, "");
+    const i = e.split("/").filter((c) => !!c);
+    return typeof t == "function" && (t = t()), t instanceof Promise ? m.push(
+      t.then((c) => {
+        p.set(i, c.default), a.set(i, c.Meta);
       })
-    ) : (p.set(o, e.default), a.set(o, e.Meta)), o;
-  }).sort((t, e) => t.length === e.length ? t.join().localeCompare(e.join()) : t.length - e.length);
-  await Promise.all(u);
-  for (let t of y)
-    m(t, 0, l, []);
+    ) : (p.set(i, t.default), a.set(i, t.Meta)), i;
+  }).sort((e, t) => e.length === t.length ? e.join().localeCompare(t.join()) : e.length - t.length);
+  await Promise.all(m);
+  for (let e of y)
+    u(e, 0, l, []);
   return l;
-  function m(t, e, o, s) {
-    if (e >= t.length)
+  function u(e, t, i, c) {
+    if (t >= e.length)
       return;
-    let n = t[e];
+    let n = e[t];
     const g = w.test(n);
     if (g) {
-      const c = R.test(n);
-      n = n.split(".")[0], c && (l.redirect = "/" + [...s, n].join("/"));
+      const s = R.test(n);
+      n = n.split(".")[0], s && (l.redirect = "/" + [...c, n].join("/"));
     }
-    let i = o.children.find((c) => c.path === n);
-    if (!i) {
-      if (i = {
+    let o = i.children.find((s) => s.path === n);
+    if (!o) {
+      if (o = {
         path: n,
         children: []
       }, g) {
-        i.component = p.get(t), i.meta = a.get(t);
-        const c = n.split(/[.\-]/).map((M) => M[0].toUpperCase() + M.slice(1));
-        i.name = c.join("");
+        const s = p.get(e);
+        if (o.component = s, o.meta = a.get(e), s != null && s.name)
+          o.name = s.name;
+        else {
+          const C = n.split(/[.\-]/).map((M) => M[0].toUpperCase() + M.slice(1));
+          o.name = C.join("");
+        }
       }
-      o.children.push(i);
+      i.children.push(o);
     }
-    m(t, e + 1, i, [
-      ...s,
+    u(e, t + 1, o, [
+      ...c,
       n
     ]);
   }
 }
-h(d, "autoRoutes");
+h(x, "autoRoutes");
 export {
-  d as autoRoutes
+  x as autoRoutes
 };

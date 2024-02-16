@@ -66,12 +66,16 @@ export async function autoRoutes(
         children: [],
       };
       if (isFile) {
-        routeRecord.component = componentMap.get(routeItems);
+        const component = componentMap.get(routeItems);
+        routeRecord.component = component;
         routeRecord.meta = metaMap.get(routeItems);
-        const arr = routeItem
-          .split(/[.\-]/)
-          .map((str) => str[0].toUpperCase() + str.slice(1));
-        routeRecord.name = arr.join("");
+        if (component?.name) routeRecord.name = component.name;
+        else {
+          const arr = routeItem
+            .split(/[.\-]/)
+            .map((str) => str[0].toUpperCase() + str.slice(1));
+          routeRecord.name = arr.join("");
+        }
       }
       parentRouteRecord.children!.push(routeRecord);
     }
