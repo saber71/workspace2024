@@ -103,6 +103,10 @@ export declare class Metadata {
         isDirective?: boolean;
         directiveName?: string;
     }[];
+    readonly vueInject: Array<{
+        propName: string;
+        provideKey: any;
+    }>;
     readonly bindThis: string[];
     readonly hooks: {
         methodName: string;
@@ -122,6 +126,7 @@ export declare class Metadata {
     handleWatchers(instance: object): void;
     handlePropsWatchers(instance: VueComponent): void;
     handleHook(instance: VueComponent): void;
+    handleVueInject(instance: any): void;
     handleMut(instance: object): void;
     handleReadonly(instance: object): void;
     handleLink(instance: VueComponent): void;
@@ -197,6 +202,8 @@ export declare class VueDirective<El extends HTMLElement | ComponentPublicInstan
     beforeUnmount(binding: DirectiveBinding<Value>): void;
     unmounted(binding: DirectiveBinding<Value>): void;
 }
+
+export declare function VueInject(key: string | symbol): (target: object, arg: any) => void;
 
 export declare class VueRouterGuard {
     static install(router: Router): void;

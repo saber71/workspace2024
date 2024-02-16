@@ -1,5 +1,6 @@
 import {
   computed,
+  inject,
   onActivated,
   onBeforeMount,
   onBeforeUnmount,
@@ -11,6 +12,7 @@ import {
   onServerPrefetch,
   onUnmounted,
   onUpdated,
+  provide,
   readonly,
   ref,
   shallowReadonly,
@@ -50,6 +52,8 @@ export class Metadata {
     isDirective?: boolean;
     directiveName?: string;
   }[] = [];
+
+  readonly vueInject: Array<{ propName: string; provideKey: any }> = [];
 
   readonly bindThis: string[] = [];
 
@@ -152,6 +156,17 @@ export class Metadata {
         default:
           throw new Error("Unknown Hook Type " + hookData.type);
       }
+    }
+  }
+
+  handleVueInject(instance: any) {
+    for (let item of this.vueInject) {
+      Object.defineProperty(instance, item.propName, {
+        configurable: true,
+        enumerable: true,
+        get: () => inject(item.provideKey),
+        set: (v: any) => provide(item.provideKey, v),
+      });
     }
   }
 
@@ -267,6 +282,7 @@ export function applyMetadata(clazz: any, instance: VueComponent | object) {
   const metadata = getMetadata(clazz);
   metadata.handleMut(instance);
   metadata.handleReadonly(instance);
+  metadata.handleVueInject(instance);
   metadata.handleComputer(instance);
   metadata.handleWatchers(instance);
   metadata.handleBindThis(instance);

@@ -120,6 +120,16 @@ export function Link(option?: {
   };
 }
 
+/* 适用于属性 */
+export function VueInject(key: string | symbol) {
+  return (target: object, arg: any) => {
+    getOrCreateMetadata(target, arg).vueInject.push({
+      propName: getName(arg),
+      provideKey: key,
+    });
+  };
+}
+
 /*
  * 适用于方法和getter
  * 初始时会调用两次getter
