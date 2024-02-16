@@ -8,7 +8,6 @@ class AppComponent extends VueComponent {
   render(): VNodeChild {
     return (
       <StyleProvider>
-        <div class={"text-amber-800 bg-black"}>123</div>
         <RouterView />
       </StyleProvider>
     );

@@ -1,4 +1,5 @@
 import AppComponent from "@/app.component.tsx";
+import { RouterKey } from "@/constant.ts";
 import { router } from "@/routes.ts";
 import { createPinia } from "pinia";
 import Antd from "ant-design-vue";
@@ -17,9 +18,18 @@ dayjs.extend(duration);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const app = createApp(AppComponent).use(createPinia()).use(Antd).use(router);
+const app = createApp(AppComponent).use(createPinia()).use(Antd);
 
-await VueClass.install(app, {});
+await VueClass.install(
+  app,
+  router,
+  Object.assign(
+    {},
+    import.meta.glob("@/services/**/*.service.ts"),
+    import.meta.glob("@/router/**/*.guard.ts"),
+    import.meta.glob("@/views/**/*.(view|layout).tsx"),
+  ),
+);
 
 // 挂载至页面上
-app.mount("#app");
+app.use(router).provide(RouterKey, router).mount("#app");

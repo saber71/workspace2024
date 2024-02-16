@@ -11,9 +11,10 @@ export default defineConfig({
         [
           "@babel/plugin-proposal-decorators",
           {
-            version: "2023-05",
+            version: "legacy",
           },
         ],
+        ["@babel/plugin-transform-class-properties"],
       ],
     }),
   ],
@@ -23,6 +24,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      tsconfig: "./tsconfig.json",
     },
   },
 });

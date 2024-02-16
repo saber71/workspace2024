@@ -4,6 +4,7 @@
   "type": "module",
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "7.23.9",
+    "@babel/plugin-transform-class-properties": "7.23.3",
     "@types/lodash": "4.14.202",
     "@types/node": "20.11.16",
     "@vitejs/plugin-vue": "5.0.3",
