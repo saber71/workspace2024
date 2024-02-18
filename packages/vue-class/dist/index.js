@@ -1,11 +1,12 @@
-var T = Object.defineProperty;
-var c = (o, e) => T(o, "name", { value: e, configurable: !0 });
+var A = Object.defineProperty;
+var c = (o, e) => A(o, "name", { value: e, configurable: !0 });
 import { IoC as m } from "ioc";
-import { getCurrentInstance as B, defineComponent as W, provide as A, watchEffect as L, watch as R, onServerPrefetch as $, onRenderTriggered as H, onRenderTracked as K, onErrorCaptured as V, onDeactivated as q, onActivated as J, onUpdated as Q, onBeforeUnmount as X, onBeforeMount as Y, onUnmounted as Z, onMounted as _, inject as F, shallowRef as x, ref as z, shallowReadonly as ee, readonly as te, computed as O } from "vue";
-import { onBeforeRouteUpdate as re, onBeforeRouteLeave as oe } from "vue-router";
+import { getCurrentInstance as L, defineComponent as $, inject as R, provide as O, watchEffect as H, watch as P, onServerPrefetch as K, onRenderTriggered as V, onRenderTracked as q, onErrorCaptured as J, onDeactivated as Q, onActivated as X, onUpdated as Y, onBeforeUnmount as Z, onBeforeMount as _, onUnmounted as F, onMounted as x, shallowRef as z, ref as ee, shallowReadonly as te, readonly as re, computed as C } from "vue";
+import { onBeforeRouteUpdate as oe, onBeforeRouteLeave as ne } from "vue-router";
 const v = "vue-class", g = class g {
   constructor() {
-    let e = B();
+    this.childInstMap = {};
+    let e = L();
     if (!e)
       if (g.__test__)
         e = { appContext: {} };
@@ -19,10 +20,12 @@ const v = "vue-class", g = class g {
   render() {
   }
 };
-c(g, "VueComponent"), g.__test__ = !1, g.defineProps = [];
-let M = g;
-function de(o) {
-  return W(
+c(g, "VueComponent"), g.__test__ = !1, g.defineProps = [
+  "inst"
+];
+let N = g;
+function ue(o) {
+  return $(
     () => {
       const e = m.getInstance(o, v);
       return E(o, e), e.render.bind(e);
@@ -34,13 +37,13 @@ function de(o) {
     }
   );
 }
-c(de, "toNative");
+c(ue, "toNative");
 const d = class d {
   constructor(e, t) {
     this.el = e, this.name = t;
   }
   static install(e) {
-    const t = C().filter((r) => r[1].isDirective).map((r) => [r[1].directiveName, r]);
+    const t = T().filter((r) => r[1].isDirective).map((r) => [r[1].directiveName, r]);
     d._directiveNameMapVueDirective = new Map(t);
     for (let r of t) {
       const n = r[1][1].directiveName, s = r[1][0];
@@ -107,17 +110,21 @@ const d = class d {
   }
 };
 c(d, "VueDirective"), d._elMapVueDirective = /* @__PURE__ */ new Map(), d._directiveNameMapVueDirective = /* @__PURE__ */ new Map();
-let w = d;
-const D = class D {
+let M = d;
+const S = Symbol("childInstMap"), D = class D {
   constructor() {
     this.isComponent = !1, this.isService = !1, this.isDirective = !1, this.isRouterGuard = !1, this.directiveName = "", this.mutts = [], this.readonlys = [], this.links = [], this.vueInject = [], this.bindThis = [], this.hooks = [], this.watchers = [], this.propsWatchers = [], this.computers = [];
   }
   handleComponentOption(e) {
-    if (this.componentOption) {
+    if (e.props.inst) {
+      const t = R(S);
+      t && (t[e.props.inst] = e);
+    }
+    if (O(S, e.childInstMap), this.componentOption) {
       const { provideThis: t } = this.componentOption;
       if (t) {
         const r = typeof t == "boolean" ? e.constructor.name : t;
-        A(r, e);
+        O(r, e);
       }
     }
   }
@@ -133,11 +140,11 @@ const D = class D {
       if (typeof r != "function")
         throw new Error("Decorator Watcher can only be used on methods");
       if (r = r.bind(e), !t.source)
-        L(r, t.option);
+        H(r, t.option);
       else {
         t.source instanceof Array || (t.source = [t.source]);
         const n = t.source.map((s) => typeof s == "string" ? e[Symbol.for(s)] ?? (() => e[s]) : () => s(e));
-        R(n, r, t.option);
+        P(n, r, t.option);
       }
     }
   }
@@ -146,7 +153,7 @@ const D = class D {
       let r = e[t.methodName];
       if (typeof r != "function")
         throw new Error("Decorator PropsWatcher can only be used on methods");
-      r = r.bind(e), R(e.props, r, t.option);
+      r = r.bind(e), P(e.props, r, t.option);
     }
   }
   handleHook(e) {
@@ -156,43 +163,43 @@ const D = class D {
         throw new Error("Decorator Hook can only be used for methods");
       switch (r = r.bind(e), t.type) {
         case "onMounted":
-          _(r);
+          x(r);
           break;
         case "onUnmounted":
-          Z(r);
+          F(r);
           break;
         case "onBeforeMount":
-          Y(r);
+          _(r);
           break;
         case "onBeforeUnmount":
-          X(r);
+          Z(r);
           break;
         case "onUpdated":
-          Q(r);
+          Y(r);
           break;
         case "onActivated":
-          J(r);
+          X(r);
           break;
         case "onDeactivated":
-          q(r);
+          Q(r);
           break;
         case "onErrorCaptured":
-          V(r);
+          J(r);
           break;
         case "onRenderTracked":
-          K(r);
+          q(r);
           break;
         case "onRenderTriggered":
-          H(r);
+          V(r);
           break;
         case "onServerPrefetch":
-          $(r);
+          K(r);
           break;
         case "onBeforeRouteLeave":
-          oe(r);
+          ne(r);
           break;
         case "onBeforeRouteUpdate":
-          re(r);
+          oe(r);
           break;
         default:
           throw new Error("Unknown Hook Type " + t.type);
@@ -201,7 +208,7 @@ const D = class D {
   }
   handleVueInject(e) {
     for (let t of this.vueInject) {
-      const r = F(t.provideKey);
+      const r = R(t.provideKey);
       Object.defineProperty(e, t.propName, {
         configurable: !0,
         enumerable: !0,
@@ -211,7 +218,7 @@ const D = class D {
   }
   handleMut(e) {
     for (let t of this.mutts) {
-      const r = e[t.propName], n = t.shallow ? x(r) : z(r);
+      const r = e[t.propName], n = t.shallow ? z(r) : ee(r);
       e[Symbol.for(t.propName)] = n, Object.defineProperty(e, t.propName, {
         configurable: !0,
         enumerable: !0,
@@ -226,7 +233,7 @@ const D = class D {
   }
   handleReadonly(e) {
     for (let t of this.readonlys) {
-      const r = e[t.propName], n = t.shallow ? ee(r) : te(r);
+      const r = e[t.propName], n = t.shallow ? te(r) : re(r);
       e[Symbol.for(t.propName)] = n, Object.defineProperty(e, t.propName, {
         configurable: !0,
         enumerable: !0,
@@ -244,11 +251,11 @@ const D = class D {
         enumerable: !0,
         get() {
           var a;
-          const s = (a = e.vueInstance.refs) == null ? void 0 : a[r];
+          const s = e.childInstMap[r] ?? ((a = e.vueInstance.refs) == null ? void 0 : a[r]);
           if (t.isDirective) {
             if (!s)
               throw new Error("There is no ref named " + r);
-            return w.getInstance(s, n);
+            return M.getInstance(s, n);
           }
           return s;
         }
@@ -263,7 +270,7 @@ const D = class D {
     for (let n of this.computers) {
       const s = e[n];
       if (typeof s == "function") {
-        const a = s.bind(e), i = O(a);
+        const a = s.bind(e), i = C(a);
         e[Symbol.for(n)] = i, e[n] = () => i.value;
       } else {
         const a = (r = Object.getOwnPropertyDescriptor(
@@ -274,7 +281,7 @@ const D = class D {
           throw new Error(
             "Computer can only be used on getters or no parameter methods"
           );
-        const i = O(() => a.call(e));
+        const i = C(() => a.call(e));
         e[Symbol.for(n)] = i, Object.defineProperty(e, n, {
           configurable: !0,
           get: () => i.value
@@ -284,40 +291,40 @@ const D = class D {
   }
 };
 c(D, "Metadata");
-let N = D;
+let w = D;
 const y = /* @__PURE__ */ new Map();
-function C() {
+function T() {
   return Array.from(y.entries());
 }
-c(C, "getAllMetadata");
-function ne(o) {
+c(T, "getAllMetadata");
+function ae(o) {
   const e = y.get(o);
   if (!e)
     throw new Error("Unable to find corresponding Metadata instance");
   return e;
 }
-c(ne, "getMetadata");
-const P = Symbol("__appliedMetadata__");
+c(ae, "getMetadata");
+const G = Symbol("__appliedMetadata__");
 function E(o, e) {
-  if (e[P])
+  if (e[G])
     return;
-  e[P] = !0;
-  const t = ne(o);
-  t.handleMut(e), t.handleReadonly(e), t.handleVueInject(e), t.handleComputer(e), t.handleWatchers(e), t.handleBindThis(e), e instanceof M && (t.handleLink(e), t.handleHook(e), t.handlePropsWatchers(e), t.handleComponentOption(e));
+  e[G] = !0;
+  const t = ae(o);
+  t.handleMut(e), t.handleReadonly(e), t.handleVueInject(e), t.handleComputer(e), t.handleWatchers(e), t.handleBindThis(e), e instanceof N && (t.handleLink(e), t.handleHook(e), t.handlePropsWatchers(e), t.handleComponentOption(e));
 }
 c(E, "applyMetadata");
 function u(o, e) {
   if (!e || typeof e == "string") {
     typeof o == "object" && (o = o.constructor);
     let t = y.get(o);
-    return t || y.set(o, t = new N()), t;
+    return t || y.set(o, t = new w()), t;
   } else {
     let t = e.metadata.metadata;
-    return t || (t = e.metadata.metadata = new N()), e.kind === "class" && y.set(o, t), t;
+    return t || (t = e.metadata.metadata = new w()), e.kind === "class" && y.set(o, t), t;
   }
 }
 c(u, "getOrCreateMetadata");
-function ue(o) {
+function fe(o) {
   const e = m.Injectable({ moduleName: v });
   return (t, r) => {
     e(t, r);
@@ -325,8 +332,8 @@ function ue(o) {
     n.isComponent = !0, n.componentOption = o;
   };
 }
-c(ue, "Component");
-function fe(o) {
+c(fe, "Component");
+function le(o) {
   const e = m.Injectable(
     Object.assign(
       {
@@ -340,8 +347,8 @@ function fe(o) {
     e(t, r), u(t, r).isService = !0;
   };
 }
-c(fe, "Service");
-function le(o) {
+c(le, "Service");
+function he(o) {
   const e = m.Injectable(
     Object.assign(
       {
@@ -358,8 +365,8 @@ function le(o) {
     n.isRouterGuard = !0, n.routerGuardMatchTo = o == null ? void 0 : o.matchTo, n.routerGuardMatchFrom = o == null ? void 0 : o.matchFrom;
   };
 }
-c(le, "RouterGuard");
-function he(o) {
+c(he, "RouterGuard");
+function pe(o) {
   const e = m.Injectable({ moduleName: v });
   return (t, r) => {
     e(t, r);
@@ -367,20 +374,20 @@ function he(o) {
     n.isDirective = !0, o || (o = t.name.replace(/Directive$/, ""), o = o[0].toLowerCase() + o.slice(1)), n.directiveName = o;
   };
 }
-c(he, "Directive");
-function pe(o) {
+c(pe, "Directive");
+function me(o) {
   return (e, t) => {
     u(e, t).mutts.push({ propName: h(t), shallow: o });
   };
 }
-c(pe, "Mut");
-function me(o) {
+c(me, "Mut");
+function be(o) {
   return (e, t) => {
     u(e, t).readonlys.push({ propName: h(t), shallow: o });
   };
 }
-c(me, "Readonly");
-function be(o) {
+c(be, "Readonly");
+function ve(o) {
   return (e, t) => {
     u(e, t).links.push({
       propName: h(t),
@@ -390,8 +397,8 @@ function be(o) {
     });
   };
 }
-c(be, "Link");
-function ve(o) {
+c(ve, "Link");
+function ge(o) {
   return (e, t) => {
     u(e, t).vueInject.push({
       propName: h(t),
@@ -399,14 +406,14 @@ function ve(o) {
     });
   };
 }
-c(ve, "VueInject");
-function ge() {
+c(ge, "VueInject");
+function ye() {
   return (o, e) => {
     u(o, e).computers.push(h(e));
   };
 }
-c(ge, "Computed");
-function ye(o) {
+c(ye, "Computed");
+function Me(o) {
   return (e, t) => {
     u(e, t).hooks.push({
       methodName: h(t),
@@ -414,7 +421,7 @@ function ye(o) {
     });
   };
 }
-c(ye, "Hook");
+c(Me, "Hook");
 function we(o) {
   return (e, t) => {
     u(e, t).propsWatchers.push({
@@ -433,28 +440,28 @@ function Ne(o) {
   };
 }
 c(Ne, "Watcher");
-function Me() {
+function Ie() {
   return (o, e) => {
     u(o, e).bindThis.push(h(e));
   };
 }
-c(Me, "BindThis");
+c(Ie, "BindThis");
 function h(o) {
   return typeof o == "string" ? o : o.name;
 }
 c(h, "getName");
 const j = class j {
   static install(e) {
-    const t = C().filter((n) => n[1].isRouterGuard);
+    const t = T().filter((n) => n[1].isRouterGuard);
     for (let n of t) {
-      const s = I.getInstance(n[0]), a = n[1], i = s.beforeEach.bind(s), b = s.afterEach.bind(s), G = s.beforeResolve.bind(s), S = s.onError.bind(s);
+      const s = k.getInstance(n[0]), a = n[1], i = s.beforeEach.bind(s), b = s.afterEach.bind(s), B = s.beforeResolve.bind(s), W = s.onError.bind(s);
       e.onError((l, f, p) => {
         r(
           f,
           p,
           a.routerGuardMatchTo,
           a.routerGuardMatchFrom
-        ) && S(l, f, p);
+        ) && W(l, f, p);
       }), e.beforeEach(async (l, f, p) => {
         r(
           l,
@@ -475,7 +482,7 @@ const j = class j {
           f,
           a.routerGuardMatchTo,
           a.routerGuardMatchFrom
-        ) ? await G(l, f, p) : p();
+        ) ? await B(l, f, p) : p();
       });
     }
     function r(n, s, a, i) {
@@ -495,40 +502,40 @@ const j = class j {
   }
 };
 c(j, "VueRouterGuard");
-let k = j;
+let I = j;
 const U = class U {
   static getInstance(e) {
     return m.getInstance(e, v);
   }
   static async install(e, t, r) {
-    await m.importAll(() => r), m.load(v), w.install(e), k.install(t);
+    await m.importAll(() => r), m.load(v), M.install(e), I.install(t);
   }
 };
 c(U, "VueClass");
-let I = U;
+let k = U;
 export {
-  Me as BindThis,
-  ue as Component,
-  ge as Computed,
-  he as Directive,
-  ye as Hook,
-  be as Link,
-  N as Metadata,
+  Ie as BindThis,
+  fe as Component,
+  ye as Computed,
+  pe as Directive,
+  Me as Hook,
+  ve as Link,
+  w as Metadata,
   v as ModuleName,
-  pe as Mut,
+  me as Mut,
   we as PropsWatcher,
-  me as Readonly,
-  le as RouterGuard,
-  fe as Service,
-  I as VueClass,
-  M as VueComponent,
-  w as VueDirective,
-  ve as VueInject,
-  k as VueRouterGuard,
+  be as Readonly,
+  he as RouterGuard,
+  le as Service,
+  k as VueClass,
+  N as VueComponent,
+  M as VueDirective,
+  ge as VueInject,
+  I as VueRouterGuard,
   Ne as Watcher,
   E as applyMetadata,
-  C as getAllMetadata,
-  ne as getMetadata,
+  T as getAllMetadata,
+  ae as getMetadata,
   u as getOrCreateMetadata,
-  de as toNative
+  ue as toNative
 };

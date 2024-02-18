@@ -1,6 +1,7 @@
 import {
   computed,
   inject,
+  type InjectionKey,
   onActivated,
   onBeforeMount,
   onBeforeUnmount,
@@ -30,6 +31,9 @@ import { VueDirective } from "./vue-directive";
 export interface ComponentOption {
   provideThis?: string | boolean;
 }
+
+const childInstMapKey: InjectionKey<Record<string, VueComponent>> =
+  Symbol("childInstMap");
 
 export class Metadata {
   isComponent = false;
@@ -76,6 +80,11 @@ export class Metadata {
   readonly computers: string[] = [];
 
   handleComponentOption(instance: VueComponent) {
+    if (instance.props.inst) {
+      const instMap = inject(childInstMapKey);
+      if (instMap) instMap[instance.props.inst] = instance;
+    }
+    provide(childInstMapKey, instance.childInstMap);
     if (this.componentOption) {
       const { provideThis } = this.componentOption;
       if (provideThis) {
@@ -239,7 +248,9 @@ export class Metadata {
         configurable: true,
         enumerable: true,
         get(): any {
-          const el = instance.vueInstance.refs?.[refName];
+          const el =
+            instance.childInstMap[refName] ??
+            instance.vueInstance.refs?.[refName];
           if (data.isDirective) {
             if (!el) throw new Error("There is no ref named " + refName);
             return VueDirective.getInstance(el, directiveName);

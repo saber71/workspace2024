@@ -1,5 +1,5 @@
 import { IoC } from "ioc";
-import { type HTMLAttributes, type WatchOptions } from "vue";
+import { type WatchOptions } from "vue";
 import { ModuleName } from "./constants";
 import {
   applyMetadata,
@@ -7,7 +7,7 @@ import {
   getOrCreateMetadata,
 } from "./metadata";
 import type { Class, VueComponentClass } from "./types";
-import { VueComponent } from "./vue-component";
+import { VueComponent, type VueComponentBaseProps } from "./vue-component";
 import type { VueDirective } from "./vue-directive";
 import type { VueRouterGuard } from "./vue-router-guard";
 
@@ -29,7 +29,7 @@ export type HookType =
   | "onBeforeRouteLeave";
 
 /* 适用于类 */
-export function Component<Props extends Partial<HTMLAttributes>>(
+export function Component<Props extends VueComponentBaseProps>(
   option?: ComponentOption,
 ) {
   const fn = IoC.Injectable({ moduleName: ModuleName });

@@ -10,13 +10,18 @@ import { ModuleName } from "./constants";
 import { applyMetadata } from "./metadata";
 import type { ComponentProps, VueComponentClass, WithSlotTypes } from "./types";
 
+export interface VueComponentBaseProps extends Partial<HTMLAttributes> {
+  inst?: string;
+}
+
 export class VueComponent<
-  Props extends Partial<HTMLAttributes> = Partial<HTMLAttributes>,
+  Props extends VueComponentBaseProps = VueComponentBaseProps,
   Emit extends EmitsOptions = {},
 > {
   static __test__ = false;
-  static readonly defineProps: ComponentProps<Partial<HTMLAttributes> & any> =
-    [];
+  static readonly defineProps: ComponentProps<VueComponentBaseProps & any> = [
+    "inst",
+  ];
 
   constructor() {
     let curInstance = getCurrentInstance()!;
@@ -32,6 +37,7 @@ export class VueComponent<
 
   readonly vueInstance: NonNullable<ReturnType<typeof getCurrentInstance>>;
   readonly context: WithSlotTypes<Emit, Props>;
+  readonly childInstMap: Record<string, VueComponent> = {};
 
   get props(): Props {
     return this.vueInstance.props as Props;
@@ -41,7 +47,7 @@ export class VueComponent<
 }
 
 export function toNative<
-  Props extends Partial<HTMLAttributes>,
+  Props extends VueComponentBaseProps,
   Emit extends EmitsOptions = {},
 >(componentClass: VueComponentClass<Props, Emit>) {
   return defineComponent<Props, Emit>(
