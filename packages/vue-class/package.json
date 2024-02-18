@@ -9,8 +9,10 @@
     "watch": "vite build --watch"
   },
   "dependencies": {
-    "ioc": "workspace:*",
-    "vue": "3.4.15",
-    "vue-router": "4.2.5"
+    "ioc": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.15",
+    "vue-router": "^4.2.5"
   }
 }

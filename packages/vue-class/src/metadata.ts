@@ -12,6 +12,7 @@ import {
   onServerPrefetch,
   onUnmounted,
   onUpdated,
+  provide,
   readonly,
   ref,
   shallowReadonly,
@@ -26,8 +27,14 @@ import type { Class } from "./types";
 import { VueComponent } from "./vue-component";
 import { VueDirective } from "./vue-directive";
 
+export interface ComponentOption {
+  provideThis?: string | boolean;
+}
+
 export class Metadata {
   isComponent = false;
+
+  componentOption?: ComponentOption;
 
   isService = false;
 
@@ -67,6 +74,19 @@ export class Metadata {
   readonly propsWatchers: { methodName: string; option?: WatchOptions }[] = [];
 
   readonly computers: string[] = [];
+
+  handleComponentOption(instance: VueComponent) {
+    if (this.componentOption) {
+      const { provideThis } = this.componentOption;
+      if (provideThis) {
+        const key =
+          typeof provideThis === "boolean"
+            ? instance.constructor.name
+            : provideThis;
+        provide(key, instance);
+      }
+    }
+  }
 
   handleBindThis(instance: object) {
     for (let methodName of this.bindThis) {
@@ -289,6 +309,7 @@ export function applyMetadata(clazz: any, instance: VueComponent | object) {
     metadata.handleLink(instance);
     metadata.handleHook(instance);
     metadata.handlePropsWatchers(instance);
+    metadata.handleComponentOption(instance);
   }
 }
 

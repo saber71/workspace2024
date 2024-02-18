@@ -32,7 +32,11 @@ export declare type Class<T = any> = {
     new (...args: any[]): T;
 };
 
-export declare function Component<Props extends Partial<HTMLAttributes>>(): (clazz: VueComponentClass<Props>, ctx?: ClassDecoratorContext) => void;
+export declare function Component<Props extends Partial<HTMLAttributes>>(option?: ComponentOption): (clazz: VueComponentClass<Props>, ctx?: ClassDecoratorContext) => void;
+
+export declare interface ComponentOption {
+    provideThis?: string | boolean;
+}
 
 export declare type ComponentProps<T extends {}> = ComponentPropsObject<T> | Array<KeysOfUnion<DistributiveOmit<T, "slots">>>;
 
@@ -83,6 +87,7 @@ export declare function Link(option?: {
 
 export declare class Metadata {
     isComponent: boolean;
+    componentOption?: ComponentOption;
     isService: boolean;
     isDirective: boolean;
     isRouterGuard: boolean;
@@ -122,6 +127,7 @@ export declare class Metadata {
         option?: WatchOptions;
     }[];
     readonly computers: string[];
+    handleComponentOption(instance: VueComponent): void;
     handleBindThis(instance: object): void;
     handleWatchers(instance: object): void;
     handlePropsWatchers(instance: VueComponent): void;
