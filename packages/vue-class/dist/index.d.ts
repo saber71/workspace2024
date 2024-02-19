@@ -183,6 +183,7 @@ export declare class VueComponent<Props extends VueComponentBaseProps = VueCompo
     readonly childInstMap: Record<string, VueComponent>;
     get props(): Props;
     render(): VNodeChild;
+    setup(): void;
 }
 
 export declare interface VueComponentBaseProps extends Partial<HTMLAttributes> {

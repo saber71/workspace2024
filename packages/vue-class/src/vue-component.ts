@@ -44,6 +44,8 @@ export class VueComponent<
   }
 
   render(): VNodeChild {}
+
+  setup(): void {}
 }
 
 export function toNative<
@@ -55,6 +57,8 @@ export function toNative<
       const instance = IoC.getInstance(componentClass, ModuleName);
 
       applyMetadata(componentClass, instance);
+
+      instance.setup();
 
       return instance.render.bind(instance);
     },

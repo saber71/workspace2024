@@ -19,6 +19,8 @@ const v = "vue-class", g = class g {
   }
   render() {
   }
+  setup() {
+  }
 };
 c(g, "VueComponent"), g.__test__ = !1, g.defineProps = [
   "inst"
@@ -28,7 +30,7 @@ function ue(o) {
   return $(
     () => {
       const e = m.getInstance(o, v);
-      return E(o, e), e.render.bind(e);
+      return E(o, e), e.setup(), e.render.bind(e);
     },
     {
       name: o.name,
