@@ -14,6 +14,10 @@ export class CheckInitGuard extends VueRouterGuard {
     from: RouteLocationNormalized,
     next: NavigationGuardNext,
   ) {
+    if (to.name === SystemInitView.name) {
+      next();
+      return;
+    }
     const isInitialed = await this.keyValueService.getValue("SystemInit");
     if (!isInitialed) next({ name: SystemInitView.name });
     else if (to.name === SystemInitView.name) next({ path: "/" });

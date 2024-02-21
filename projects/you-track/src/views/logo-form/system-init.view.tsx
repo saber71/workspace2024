@@ -1,32 +1,32 @@
 import RegisterFormComponent, {
-  type RegisterFormInst,
+  type RegisterFormComponentInst,
 } from "@/components/register-form.component.tsx";
 import { RouterKey } from "@/constant.ts";
 import { InjectService } from "@/services";
 import type { KeyValueService } from "@/services/key-value.service.ts";
 import type { CreateUserData, UserService } from "@/services/user.service.ts";
-import { LogoFormLayoutInst } from "@/views/logo-form.layout.tsx";
 import LoginView from "@/views/logo-form/login.view.tsx";
 import { Button, Checkbox } from "ant-design-vue";
-import { IoC } from "ioc";
 import { v4 } from "uuid";
-import { type HTMLAttributes, inject, type VNodeChild } from "vue";
+import { type VNodeChild } from "vue";
 import {
   BindThis,
   Component,
   type ComponentProps,
+  Link,
   Mut,
   toNative,
   VueComponent,
+  type VueComponentBaseProps,
   VueInject,
 } from "vue-class";
 import type { Router } from "vue-router";
 
-export interface SystemInitViewProps extends Partial<HTMLAttributes> {}
+export interface SystemInitViewProps extends VueComponentBaseProps {}
 
 @Component()
 class SystemInit extends VueComponent<SystemInitViewProps> {
-  static readonly defineProps: ComponentProps<SystemInitViewProps> = [];
+  static readonly defineProps: ComponentProps<SystemInitViewProps> = ["inst"];
 
   @VueInject(RouterKey)
   readonly router: Router;
@@ -51,13 +51,8 @@ class SystemInit extends VueComponent<SystemInitViewProps> {
   @Mut()
   enableGuest: boolean = false;
 
-  registerFormInst: RegisterFormInst;
-
-  logoFormLayoutInst: LogoFormLayoutInst;
-
-  [IoC.Initializer]() {
-    this.logoFormLayoutInst = inject(LogoFormLayoutInst.key)!;
-  }
+  @Link()
+  readonly registerFormInst: RegisterFormComponentInst;
 
   @BindThis()
   initAndGotoHome() {
@@ -96,7 +91,7 @@ class SystemInit extends VueComponent<SystemInitViewProps> {
       <div>
         <RegisterFormComponent
           form={this.createAdminForm}
-          inst={(val) => (this.registerFormInst = val)}
+          inst={"registerFormInst"}
           prefix={"管理员"}
         />
         <Checkbox

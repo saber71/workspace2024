@@ -22,12 +22,19 @@ export class UserService {
     if (!store.rememberLoginStatus) store.lastLoginUserId = "";
   }
 
+  /* 重置用户的密码，找不到用户时抛出错误 */
+  async resetPassword(data: ResetPasswordData) {
+    const user = await this.fetchByLoginNameOrEmail(data.loginNameOrEmail);
+    user.password = data.password;
+    await this.indexedRepository.user.save();
+  }
+
   /* 用户登陆 */
   async login(loginData: LoginData) {
+    const user = await this.fetchByLoginData(loginData);
     const store = useGlobalStore();
     store.rememberLoginStatus = loginData.remember;
-    const user = await this.fetchByLoginData(loginData);
-    this.auth(user);
+    await this.auth(user);
   }
 
   /* 游客登陆 */
@@ -65,15 +72,19 @@ export class UserService {
     return user;
   }
 
-  /* 通过登陆数据获取用户，找不到用户时抛出错误 */
-  async fetchByLoginData(data: Omit<LoginData, "remember">) {
-    const isEmail = this.commonService.isEmail(data.loginNameOrEmail);
+  /* 通过登录名或邮箱获取用户，找不到用户时抛出错误 */
+  async fetchByLoginNameOrEmail(value: string) {
+    const isEmail = this.commonService.isEmail(value);
     const user = await this.indexedRepository.user.searchOne((user) =>
-      isEmail
-        ? user.email === data.loginNameOrEmail
-        : user.loginName === data.loginNameOrEmail,
+      isEmail ? user.email === value : user.loginName === value,
     );
     if (!user) throw new Error("找不到用户");
+    return user;
+  }
+
+  /* 通过登陆数据获取用户，找不到用户时抛出错误 */
+  async fetchByLoginData(data: Omit<LoginData, "remember">) {
+    const user = await this.fetchByLoginNameOrEmail(data.loginNameOrEmail);
     if (user.password !== data.password) throw new Error("密码不正确");
     return user;
   }
@@ -87,4 +98,9 @@ export interface LoginData {
   loginNameOrEmail: string;
   password: string;
   remember: boolean;
+}
+
+export interface ResetPasswordData {
+  loginNameOrEmail: string;
+  password: string;
 }

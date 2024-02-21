@@ -1,28 +1,22 @@
 import logo from "@/assets/logo.svg";
 import { Flex } from "ant-design-vue";
-import { IoC } from "ioc";
-import { type HTMLAttributes, provide, type VNodeChild } from "vue";
+import { type VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
   Mut,
   toNative,
   VueComponent,
+  type VueComponentBaseProps,
 } from "vue-class";
 import { RouterView } from "vue-router";
 
-@Component()
+@Component({ provideThis: true })
 export class LogoFormLayoutInst extends VueComponent {
-  static readonly defineProps: ComponentProps<Partial<HTMLAttributes>> = [];
-
-  static readonly key = Symbol("LogoFormLayoutInst");
+  static readonly defineProps: ComponentProps<VueComponentBaseProps> = ["inst"];
 
   @Mut()
   errorMsg = "";
-
-  [IoC.Initializer]() {
-    provide(LogoFormLayoutInst.key, this);
-  }
 
   render(): VNodeChild {
     return (
@@ -31,17 +25,17 @@ export class LogoFormLayoutInst extends VueComponent {
           <Flex justify={"center"}>
             <img src={logo} width={96} height={96} />
           </Flex>
-          <div class={"text-center font-bold mt-2 text-lg"}>YouTrack</div>
+          <div class={"text-center font-bold mt-1 text-lg"}>YouTrack</div>
           {this.errorMsg ? (
-            <div class={"text-red-400 text-center"}>{this.errorMsg}</div>
+            <div class={"text-red-400 text-center mt-2"}>{this.errorMsg}</div>
           ) : null}
-          <RouterView class={"mt-2"} />
+          <RouterView class={"mt-3"} />
         </div>
       </Flex>
     );
   }
 }
 
-export default toNative<Partial<HTMLAttributes>>(LogoFormLayoutInst);
+export default toNative<VueComponentBaseProps>(LogoFormLayoutInst);
 
 export const Meta = {};

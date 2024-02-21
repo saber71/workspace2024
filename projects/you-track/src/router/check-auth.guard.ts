@@ -1,7 +1,11 @@
 import { InjectService } from "@/services";
+import type { KeyValueService } from "@/services/key-value.service.ts";
 import type { UserService } from "@/services/user.service.ts";
 import { useGlobalStore } from "@/store.ts";
 import LoginView from "@/views/logo-form/login.view.tsx";
+import RegisterUserView from "@/views/logo-form/register-user.view.tsx";
+import ResetPasswordView from "@/views/logo-form/reset-password.view.tsx";
+import SystemInitView from "@/views/logo-form/system-init.view.tsx";
 import { RouterGuard, VueRouterGuard } from "vue-class";
 import type { NavigationGuardNext, RouteLocationNormalized } from "vue-router";
 
@@ -10,12 +14,22 @@ export class CheckAuthGuard extends VueRouterGuard {
   @InjectService("UserService")
   readonly userService: UserService;
 
+  @InjectService("KeyValueService")
+  readonly keyValueService: KeyValueService;
+
+  readonly whiteList = [
+    LoginView.name,
+    RegisterUserView.name,
+    ResetPasswordView.name,
+    SystemInitView.name,
+  ];
+
   async beforeEach(
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
     next: NavigationGuardNext,
   ) {
-    if (to.name === LoginView.name) {
+    if (this.whiteList.includes(to.name as any)) {
       next();
       return;
     }

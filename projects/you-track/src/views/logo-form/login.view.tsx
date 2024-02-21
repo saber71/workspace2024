@@ -1,24 +1,36 @@
-import { RouterKey } from "@/constant.ts";
-import { InjectService } from "@/services";
-import { type LoginData, UserService } from "@/services/user.service.ts";
-import { LogoFormLayoutInst } from "@/views/logo-form.layout.tsx";
-import { Button, Checkbox, Flex, Form, FormItem, Input } from "ant-design-vue";
-import type { RuleObject } from "ant-design-vue/es/form";
-import { type HTMLAttributes, type VNodeChild } from "vue";
+import {RouterKey} from "@/constant.ts";
+import {InjectService} from "@/services";
+import {type LoginData, UserService} from "@/services/user.service.ts";
+import {getErrorMessage, Required} from "@/utils";
+import type {LogoFormLayoutInst} from "@/views/logo-form.layout.tsx";
+import RegisterUserView from "@/views/logo-form/register-user.view.tsx";
+import ResetPasswordView from "@/views/logo-form/reset-password.view.tsx";
+import {
+  Button,
+  Checkbox,
+  Flex,
+  Form,
+  type FormInstance,
+  FormItem,
+  Input,
+} from "ant-design-vue";
+import {type VNodeChild} from "vue";
 import {
   BindThis,
   Component,
   type ComponentProps,
+  Link,
   Mut,
   toNative,
   VueComponent,
+  type VueComponentBaseProps,
   VueInject,
 } from "vue-class";
-import type { Router } from "vue-router";
+import {type Router, RouterLink} from "vue-router";
 
 @Component()
 export class LoginViewInst extends VueComponent {
-  static readonly defineProps: ComponentProps<Partial<HTMLAttributes>> = [];
+  static readonly defineProps: ComponentProps<VueComponentBaseProps> = ["inst"];
 
   @VueInject(RouterKey)
   readonly router: Router;
@@ -33,63 +45,46 @@ export class LoginViewInst extends VueComponent {
     password: "",
   };
 
-  readonly rule: Record<keyof Omit<LoginData, "remember">, RuleObject> = {
-    loginNameOrEmail: {
-      validator: (_, value) => {
-        if (!value) return Promise.reject("此为必填项");
-      },
-    },
-    password: {
-      validator: (_, value) => {
-        if (!value) return Promise.reject("此为必填项");
-      },
-    },
-  };
+  @Link()
+  readonly formRef: FormInstance;
 
-  @VueInject(LogoFormLayoutInst.key)
-  logoFormLayoutInst: LogoFormLayoutInst;
+  @VueInject("LogoFormLayoutInst")
+  readonly logoFormLayoutInst: LogoFormLayoutInst;
 
   @BindThis()
   async guestLogin() {
     this.logoFormLayoutInst.errorMsg = "";
     try {
       await this.userService.guestLogin();
-      this.router.push({ path: "/" });
+      this.router.push({path: "/"});
     } catch (e) {
       this.logoFormLayoutInst.errorMsg = (e as Error).message;
     }
   }
-
-  @BindThis()
-  toRegister() {
-    this.router.push({});
-  }
-
-  @BindThis()
-  toResetPassword() {}
 
   @BindThis()
   async handleLogin() {
     this.logoFormLayoutInst.errorMsg = "";
     try {
+      await this.formRef.validate();
       await this.userService.login(this.form);
-      this.router.push({ path: "/" });
+      this.router.push({path: "/"});
     } catch (e) {
-      this.logoFormLayoutInst.errorMsg = (e as Error).message;
+      this.logoFormLayoutInst.errorMsg = getErrorMessage(e);
     }
   }
 
   render(): VNodeChild {
     return (
-      <Form model={this.form} rules={this.rule}>
-        <FormItem name={"loginNameOrEmail"}>
+      <Form ref={"formRef"} model={this.form}>
+        <FormItem name={"loginNameOrEmail"} rules={Required}>
           <Input
             value={this.form.loginNameOrEmail}
             onUpdate:value={(val) => (this.form.loginNameOrEmail = val)}
             placeholder={"登录名或邮箱"}
           />
         </FormItem>
-        <FormItem name={"password"}>
+        <FormItem name={"password"} rules={Required}>
           <Input
             value={this.form.password}
             onUpdate:value={(val) => (this.form.password = val)}
@@ -103,8 +98,8 @@ export class LoginViewInst extends VueComponent {
           >
             记住我
           </Checkbox>
-          <Button type={"link"} onClick={this.toResetPassword}>
-            重置密码
+          <Button type={"link"}>
+            <RouterLink to={{name: ResetPasswordView.name}}>重置密码</RouterLink>
           </Button>
         </Flex>
         <Button
@@ -115,8 +110,8 @@ export class LoginViewInst extends VueComponent {
         >
           登陆
         </Button>
-        <Button block class={"mb-2"} onClick={this.toRegister}>
-          注册
+        <Button block class={"mb-2"}>
+          <RouterLink to={{name: RegisterUserView.name}}>注册</RouterLink>
         </Button>
         <Button block onClick={this.guestLogin}>
           以游客身份继续
@@ -126,7 +121,7 @@ export class LoginViewInst extends VueComponent {
   }
 }
 
-export default toNative<Partial<HTMLAttributes>>(LoginViewInst);
+export default toNative<VueComponentBaseProps>(LoginViewInst);
 
 export const Meta = {
   title: "登陆",
