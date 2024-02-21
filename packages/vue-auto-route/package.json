@@ -8,7 +8,7 @@
     "build": "vite build",
     "watch": "vite build --watch"
   },
-  "devDependencies": {
-    "vue-router": "4.2.5"
+  "peerDependencies": {
+    "vue-router": "^4.2.5"
   }
 }
