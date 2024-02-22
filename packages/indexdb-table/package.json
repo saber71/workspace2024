@@ -1,0 +1,14 @@
+{
+  "name": "indexdb-table",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "peerDependencies": {
+    "dexie": "^3.2.5"
+  }
+}
