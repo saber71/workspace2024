@@ -16,7 +16,7 @@ describe("KeyValueService", () => {
       await keyValueService.setValue("SystemInit", false);
       expect.unreachable("重新设置只读字段的值应该会抛出错误");
     } catch (e) {
-      expect(e instanceof KeyValueReadonlyError).toEqual(true);
+      expect(e).toBeInstanceOf(KeyValueReadonlyError);
     }
   });
 });

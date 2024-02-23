@@ -12,7 +12,7 @@ import fakeIndexDb, {
 } from "fake-indexeddb";
 
 export function setup() {
-  if (!globalThis.indexdDB) {
+  if (!globalThis.indexedDB) {
     globalThis.indexedDB = fakeIndexDb;
     globalThis.IDBRequest = IDBRequest;
     globalThis.IDBCursor = IDBCursor;

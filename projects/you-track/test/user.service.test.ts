@@ -39,7 +39,7 @@ describe("UserService", async () => {
       });
       expect.unreachable("登录名重复应该抛出错误");
     } catch (e) {
-      expect(e instanceof RepeatLoginNameError).toEqual(true);
+      expect(e).toBeInstanceOf(RepeatLoginNameError);
     }
   });
 
@@ -48,7 +48,7 @@ describe("UserService", async () => {
       await userService.fetchById("2");
       expect.unreachable("通过错误的id查找用户应该抛出错误");
     } catch (e) {
-      expect(e instanceof NotFoundUserError).toEqual(true);
+      expect(e).toBeInstanceOf(NotFoundUserError);
     }
     try {
       const user = await userService.fetchByLoginNameOrEmail("153sad@aa.com");
@@ -71,7 +71,7 @@ describe("UserService", async () => {
       });
       expect.unreachable("使用过时的密码查找用户应该抛出错误");
     } catch (e) {
-      expect(e instanceof WrongPasswordError).toEqual(true);
+      expect(e).toBeInstanceOf(WrongPasswordError);
     }
 
     const user = await userService.fetchByLoginData({
