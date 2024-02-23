@@ -26,7 +26,7 @@ export class UserService {
   async resetPassword(data: ResetPasswordData) {
     const user = await this.fetchByLoginNameOrEmail(data.loginNameOrEmail);
     user.password = data.password;
-    await this.indexedRepository.user.save();
+    await this.indexedRepository.user.put(user);
   }
 
   /* 用户登陆 */
@@ -53,7 +53,7 @@ export class UserService {
   }
 
   /* 新建用户 */
-  async create(userData: CreateUserData, save: boolean = false) {
+  async create(userData: CreateUserData) {
     const repeatLoginName = !!(await this.indexedRepository.user.searchOne(
       (item) => item.loginName === userData.loginName,
     ));
@@ -62,7 +62,7 @@ export class UserService {
       ...userData,
       createTime: new Date(),
     };
-    return this.indexedRepository.user.add(user as any, save);
+    return this.indexedRepository.user.add(user as any);
   }
 
   /* 通过id获取用户，找不到用户时抛出错误 */

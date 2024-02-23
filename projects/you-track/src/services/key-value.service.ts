@@ -14,7 +14,7 @@ export interface KeyValueMap {
 }
 
 /* 处理KeyValue表相关 */
-@Service({ singleton: true })
+@Service({ singleton: true, createOnLoad: true })
 export class KeyValueService {
   constructor(
     @InjectService("IndexDBService")
@@ -52,7 +52,9 @@ export class KeyValueService {
   ) {
     let result = await this.table.get(key);
     if (result?.readonly)
-      throw new Error(`The value corresponding to Key ${key} is read-only`);
+      throw new KeyValueReadonlyError(
+        `The value corresponding to Key ${key} is read-only`,
+      );
     if (!result) result = { key, value, readonly };
     else {
       result.value = value;
@@ -61,3 +63,5 @@ export class KeyValueService {
     await this.table.put(result, key);
   }
 }
+
+export class KeyValueReadonlyError extends Error {}
