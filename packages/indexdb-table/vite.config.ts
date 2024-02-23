@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true })],
   esbuild: { keepNames: true },
   build: {
-    rollupOptions: {},
+    rollupOptions: {
+      external: ["uuid"],
+    },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       fileName: "index",
