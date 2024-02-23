@@ -57,7 +57,7 @@ export class UserService {
     const repeatLoginName = !!(await this.indexedRepository.user.searchOne(
       (item) => item.loginName === userData.loginName,
     ));
-    if (repeatLoginName) throw new Error("登录名重复");
+    if (repeatLoginName) throw new RepeatLoginNameError("登录名重复");
     const user: Omit<Tables.User, "id"> = {
       ...userData,
       createTime: new Date(),
@@ -68,7 +68,7 @@ export class UserService {
   /* 通过id获取用户，找不到用户时抛出错误 */
   async fetchById(id: string) {
     const user = await this.indexedRepository.user.getById(id);
-    if (!user) throw new Error(`找不到id ${id} 对应的用户`);
+    if (!user) throw new NotFoundUserError(`找不到id ${id} 对应的用户`);
     return user;
   }
 
@@ -78,17 +78,24 @@ export class UserService {
     const user = await this.indexedRepository.user.searchOne((user) =>
       isEmail ? user.email === value : user.loginName === value,
     );
-    if (!user) throw new Error("找不到用户");
+    if (!user) throw new NotFoundUserError("找不到用户");
     return user;
   }
 
   /* 通过登陆数据获取用户，找不到用户时抛出错误 */
   async fetchByLoginData(data: Omit<LoginData, "remember">) {
     const user = await this.fetchByLoginNameOrEmail(data.loginNameOrEmail);
-    if (user.password !== data.password) throw new Error("密码不正确");
+    if (user.password !== data.password)
+      throw new WrongPasswordError("密码不正确");
     return user;
   }
 }
+
+export class NotFoundUserError extends Error {}
+
+export class WrongPasswordError extends Error {}
+
+export class RepeatLoginNameError extends Error {}
 
 export interface CreateUserData extends Omit<Tables.User, "createTime" | "id"> {
   id?: string;
