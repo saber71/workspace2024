@@ -16,6 +16,12 @@ export declare class IndexDBTable<T extends {
     getById(id: string): Promise<T | undefined>;
     search(predicate: (item: T) => boolean): Promise<T[]>;
     searchOne(predicate: (item: T) => boolean): Promise<T | undefined>;
+    searchPagination(predicate: (item: T) => boolean, page?: number, size?: number): Promise<{
+        data: T[];
+        curPage: number;
+        size: number;
+        totalCount: number;
+    }>;
     private _clearCache;
 }
 
@@ -28,6 +34,13 @@ declare type Item<T extends {
 declare interface KeyValue<T> {
     key: string;
     value: T;
+}
+
+export declare interface PaginationResult<T> {
+    curPage: number;
+    size: number;
+    totalCount: number;
+    data: T[];
 }
 
 export { }

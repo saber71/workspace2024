@@ -83,7 +83,30 @@ export class IndexDBTable<T extends { id: string }> {
     return undefined;
   }
 
+  async searchPagination(
+    predicate: (item: T) => boolean,
+    page: number = 1,
+    size: number = 10,
+  ) {
+    if (page < 1) page = 1;
+    if (size < 0) size = 10;
+    const arr = await this.search(predicate);
+    return {
+      data: arr.slice((page - 1) * size, page * size),
+      curPage: page,
+      size,
+      totalCount: arr.length,
+    } satisfies PaginationResult<T>;
+  }
+
   private _clearCache() {
     this._data = undefined;
   }
+}
+
+export interface PaginationResult<T> {
+  curPage: number;
+  size: number;
+  totalCount: number;
+  data: T[];
 }
