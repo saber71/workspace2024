@@ -1,62 +1,63 @@
-var s = Object.defineProperty;
-var u = (e, t, a) => t in e ? s(e, t, { enumerable: !0, configurable: !0, writable: !0, value: a }) : e[t] = a;
-var i = (e, t) => s(e, "name", { value: t, configurable: !0 });
-var c = (e, t, a) => (u(e, typeof t != "symbol" ? t + "" : t, a), a);
+var i = Object.defineProperty;
+var d = (e, a, t) => a in e ? i(e, a, { enumerable: !0, configurable: !0, writable: !0, value: t }) : e[a] = t;
+var c = (e, a) => i(e, "name", { value: a, configurable: !0 });
+var h = (e, a, t) => (d(e, typeof a != "symbol" ? a + "" : a, t), t);
+import { v4 as r } from "uuid";
 const l = class l {
-  constructor(t) {
-    c(this, "_data");
-    this.table = t;
+  constructor(a) {
+    h(this, "_data");
+    this.table = a;
   }
   async getAll() {
-    return this._data || (this._data = (await this.table.toArray()).map((t) => t.value)), this._data;
+    return this._data || (this._data = (await this.table.toArray()).map((a) => a.value)), this._data;
   }
-  async add(t) {
-    return this._clearCache(), this.table.add({
-      key: t.id,
-      value: t
+  async add(a) {
+    return this._clearCache(), a.id || (a.id = r()), this.table.add({
+      key: a.id,
+      value: a
     });
   }
-  async bulkAdd(...t) {
+  async bulkAdd(...a) {
     return this._clearCache(), this.table.bulkAdd(
-      t.map((a) => ({ key: a.id, value: a }))
+      a.map((t) => (t.id || (t.id = r()), { key: t.id, value: t }))
     );
   }
-  async delete(t) {
-    return this._clearCache(), this.table.delete(t);
+  async delete(a) {
+    return this._clearCache(), this.table.delete(a);
   }
-  async bulkDelete(...t) {
-    return this._clearCache(), this.table.bulkDelete(t);
+  async bulkDelete(...a) {
+    return this._clearCache(), this.table.bulkDelete(a);
   }
-  async put(t) {
-    return this._clearCache(), this.table.put({
-      key: t.id,
-      value: t
+  async put(a) {
+    return this._clearCache(), a.id || (a.id = r()), this.table.put({
+      key: a.id,
+      value: a
     });
   }
-  async bulkPut(...t) {
+  async bulkPut(...a) {
     return this._clearCache(), this.table.bulkPut(
-      t.map((a) => ({ key: a.id, value: a }))
+      a.map((t) => (t.id || (t.id = r()), { key: t.id, value: t }))
     );
   }
-  async getById(t) {
-    var a;
-    return (a = await this.table.get({ key: t })) == null ? void 0 : a.value;
+  async getById(a) {
+    var t;
+    return (t = await this.table.get({ key: a })) == null ? void 0 : t.value;
   }
-  async search(t) {
-    return (await this.getAll()).filter(t);
+  async search(a) {
+    return (await this.getAll()).filter(a);
   }
-  async searchOne(t) {
-    const a = await this.getAll();
-    for (let r of a)
-      if (t(r))
-        return r;
+  async searchOne(a) {
+    const t = await this.getAll();
+    for (let s of t)
+      if (a(s))
+        return s;
   }
   _clearCache() {
     this._data = void 0;
   }
 };
-i(l, "IndexDBTable");
-let h = l;
+c(l, "IndexDBTable");
+let u = l;
 export {
-  h as IndexDBTable
+  u as IndexDBTable
 };

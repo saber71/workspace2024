@@ -9,6 +9,8 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
-    "dexie": "^3.2.5"
+    "@types/uuid": "^9.0.8",
+    "dexie": "^3.2.5",
+    "uuid": "^9.0.1"
   }
 }

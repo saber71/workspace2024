@@ -1,9 +1,12 @@
 import type { Table } from "dexie";
+import { v4 } from "uuid";
 
 interface KeyValue<T> {
   key: string;
   value: T;
 }
+
+type Item<T extends { id: string }> = Omit<T, "id"> & { id?: string };
 
 export class IndexDBTable<T extends { id: string }> {
   private _data?: T[];
@@ -16,18 +19,22 @@ export class IndexDBTable<T extends { id: string }> {
     return this._data;
   }
 
-  async add(item: T) {
+  async add(item: Item<T>) {
     this._clearCache();
+    if (!item.id) item.id = v4();
     return this.table.add({
       key: item.id,
-      value: item,
+      value: item as T,
     });
   }
 
-  async bulkAdd(...items: T[]) {
+  async bulkAdd(...items: Item<T>[]) {
     this._clearCache();
     return this.table.bulkAdd(
-      items.map((item) => ({ key: item.id, value: item })),
+      items.map((item) => {
+        if (!item.id) item.id = v4();
+        return { key: item.id, value: item as T };
+      }),
     );
   }
 
@@ -41,18 +48,22 @@ export class IndexDBTable<T extends { id: string }> {
     return this.table.bulkDelete(ids);
   }
 
-  async put(item: T) {
+  async put(item: Item<T>) {
     this._clearCache();
+    if (!item.id) item.id = v4();
     return this.table.put({
       key: item.id,
-      value: item,
+      value: item as T,
     });
   }
 
-  async bulkPut(...items: T[]) {
+  async bulkPut(...items: Item<T>[]) {
     this._clearCache();
     return this.table.bulkPut(
-      items.map((item) => ({ key: item.id, value: item })),
+      items.map((item) => {
+        if (!item.id) item.id = v4();
+        return { key: item.id, value: item as T };
+      }),
     );
   }
 
