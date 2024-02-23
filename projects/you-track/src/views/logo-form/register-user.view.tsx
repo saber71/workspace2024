@@ -1,14 +1,14 @@
 import RegisterFormComponent, {
   type RegisterFormComponentInst,
 } from "@/components/register-form.component.tsx";
-import {RouterKey} from "@/constant.ts";
-import {InjectService} from "@/services";
-import {type CreateUserData, UserService} from "@/services/user.service.ts";
-import {getErrorMessage} from "@/utils";
-import type {LogoFormLayoutInst} from "@/views/logo-form.layout.tsx";
+import { RouterKey } from "@/constant.ts";
+import { InjectService } from "@/services";
+import { type CreateUserData, UserService } from "@/services/user.service.ts";
+import { getErrorMessage } from "@/utils";
+import type { LogoFormLayoutInst } from "@/views/logo-form.layout.tsx";
 import LoginView from "@/views/logo-form/login.view.tsx";
-import {Button, Checkbox} from "ant-design-vue";
-import type {VNodeChild} from "vue";
+import { Button, Checkbox } from "ant-design-vue";
+import type { VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
@@ -20,7 +20,7 @@ import {
   BindThis,
   Link,
 } from "vue-class";
-import {type Router, RouterLink} from "vue-router";
+import { type Router, RouterLink } from "vue-router";
 
 @Component()
 export class RegisterUserViewInst extends VueComponent {
@@ -54,13 +54,13 @@ export class RegisterUserViewInst extends VueComponent {
     this.logoFormLayoutInst.errorMsg = "";
     try {
       await this.registerFormInst.antdForm.validate();
-      await this.userService.create(this.form, true);
+      await this.userService.create(this.form);
       await this.userService.login({
         password: this.form.password,
         loginNameOrEmail: this.form.loginName,
         remember: this.remember,
       });
-      this.router.push({path: "/"});
+      this.router.push({ path: "/" });
     } catch (e) {
       this.logoFormLayoutInst.errorMsg = getErrorMessage(e);
     }
@@ -69,7 +69,7 @@ export class RegisterUserViewInst extends VueComponent {
   render(): VNodeChild {
     return (
       <div>
-        <RegisterFormComponent inst={"registerFormInst"} form={this.form}/>
+        <RegisterFormComponent inst={"registerFormInst"} form={this.form} />
         <Checkbox
           checked={this.remember}
           onUpdate:checked={(val) => (this.remember = val)}
@@ -85,7 +85,7 @@ export class RegisterUserViewInst extends VueComponent {
           注册并登录
         </Button>
         <Button type={"link"} block>
-          <RouterLink to={{name: LoginView.name}}>已有账号</RouterLink>
+          <RouterLink to={{ name: LoginView.name }}>已有账号</RouterLink>
         </Button>
       </div>
     );

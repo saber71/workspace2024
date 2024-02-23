@@ -75,7 +75,6 @@ class SystemInit extends VueComponent<SystemInitViewProps> {
           id: adminID,
         }),
       ]);
-      await this.userService.indexedRepository.user.save();
       await Promise.all([
         this.keyValueService.setValue("EnableGuest", this.enableGuest),
         this.keyValueService.setValue("AdminID", adminID),

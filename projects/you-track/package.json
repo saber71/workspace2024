@@ -14,6 +14,7 @@
     "check-password-strength": "2.0.7",
     "dayjs": "1.11.10",
     "dexie": "3.2.5",
+    "indexdb-table": "workspace:*",
     "ioc": "workspace:*",
     "pinia": "2.1.7",
     "vue": "3.4.19",

@@ -1,5 +1,5 @@
-import { Table } from "@/services/index.ts";
 import Dexie from "dexie";
+import { IndexDBTable } from "indexdb-table";
 import { Service } from "vue-class";
 
 /* 使用Dexie处理IndexDB相关 */
@@ -10,20 +10,13 @@ export class IndexDBService extends Dexie {
 
     this.version(1).stores({
       keyValue: "&key,value,readonly",
-      dataset: "&key,value",
+      user: "&key,value",
     });
 
-    this.user = new Table<Tables.User>(this, "user", () => ({
-      id: "",
-      password: "",
-      name: "",
-      loginName: "",
-      email: "",
-      createTime: new Date(),
-    }));
+    this.user = new IndexDBTable<Tables.User>(this._allTables.user as any);
   }
 
-  readonly user: Table<Tables.User>;
+  readonly user: IndexDBTable<Tables.User>;
 }
 
 export namespace Tables {
