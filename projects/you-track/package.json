@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "test": "vitest"
   },
   "dependencies": {
     "@ant-design/icons-vue": "7.0.1",
@@ -15,13 +16,9 @@
     "dexie": "3.2.5",
     "ioc": "workspace:*",
     "pinia": "2.1.7",
-    "uuid": "9.0.1",
     "vue": "3.4.19",
     "vue-auto-route": "workspace:*",
     "vue-class": "workspace:*",
     "vue-router": "4.2.5"
-  },
-  "devDependencies": {
-    "@types/uuid": "9.0.8"
   }
 }
