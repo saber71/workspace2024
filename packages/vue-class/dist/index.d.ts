@@ -172,6 +172,7 @@ export declare type TransformModelValue<T extends {}> = "v-model:modelValue" ext
 export declare class VueClass {
     static getInstance<T>(clazz: Class<T>): T;
     static install(app: App, router: Router, imports: Record<string, () => Promise<any>> | any): Promise<void>;
+    static bindConstantValue(label: string, value: any): typeof VueClass;
 }
 
 export declare class VueComponent<Props extends VueComponentBaseProps = VueComponentBaseProps, Emit extends EmitsOptions = {}> {
