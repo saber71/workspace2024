@@ -67,6 +67,15 @@ export class IndexDBTable<T extends { id: string }> {
     );
   }
 
+  async fetchById(id: string) {
+    const result = await this.getById(id);
+    if (!result)
+      throw new IndexdbNotFoundError(
+        `"Unable to find the value corresponding to the id ` + id,
+      );
+    return result;
+  }
+
   async getById(id: string) {
     return (await this.table.get({ key: id }))?.value;
   }
@@ -110,3 +119,5 @@ export interface PaginationResult<T> {
   totalCount: number;
   data: T[];
 }
+
+export class IndexdbNotFoundError extends Error {}

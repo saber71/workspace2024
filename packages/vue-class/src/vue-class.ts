@@ -21,4 +21,9 @@ export class VueClass {
     VueDirective.install(app);
     VueRouterGuard.install(router);
   }
+
+  static bindConstantValue(label: string, value: any) {
+    IoC.getContainer(ModuleName).bind(label).toConstantValue(value);
+    return this;
+  }
 }

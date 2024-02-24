@@ -1,9 +1,9 @@
 var A = Object.defineProperty;
 var c = (o, e) => A(o, "name", { value: e, configurable: !0 });
-import { IoC as m } from "ioc";
-import { getCurrentInstance as L, defineComponent as $, inject as R, provide as O, watchEffect as H, watch as P, onServerPrefetch as K, onRenderTriggered as V, onRenderTracked as q, onErrorCaptured as J, onDeactivated as Q, onActivated as X, onUpdated as Y, onBeforeUnmount as Z, onBeforeMount as _, onUnmounted as F, onMounted as x, shallowRef as z, ref as ee, shallowReadonly as te, readonly as re, computed as C } from "vue";
+import { IoC as h } from "ioc";
+import { getCurrentInstance as L, defineComponent as $, inject as R, provide as O, watchEffect as H, watch as C, onServerPrefetch as K, onRenderTriggered as V, onRenderTracked as q, onErrorCaptured as J, onDeactivated as Q, onActivated as X, onUpdated as Y, onBeforeUnmount as Z, onBeforeMount as _, onUnmounted as F, onMounted as x, shallowRef as z, ref as ee, shallowReadonly as te, readonly as re, computed as P } from "vue";
 import { onBeforeRouteUpdate as oe, onBeforeRouteLeave as ne } from "vue-router";
-const v = "vue-class", g = class g {
+const b = "vue-class", g = class g {
   constructor() {
     this.childInstMap = {};
     let e = L();
@@ -29,7 +29,7 @@ let N = g;
 function ue(o) {
   return $(
     () => {
-      const e = m.getInstance(o, v);
+      const e = h.getInstance(o, b);
       return E(o, e), e.setup(), e.render.bind(e);
     },
     {
@@ -54,12 +54,12 @@ const d = class d {
           d.getInstance(a, n, s).created(i);
         },
         mounted(a, i) {
-          const b = d.getInstance(a, n, s);
-          b.mounted(i), b.mountedAndUpdated(i);
+          const v = d.getInstance(a, n, s);
+          v.mounted(i), v.mountedAndUpdated(i);
         },
         updated(a, i) {
-          const b = d.getInstance(a, n, s);
-          b.updated(i), b.mountedAndUpdated(i);
+          const v = d.getInstance(a, n, s);
+          v.updated(i), v.mountedAndUpdated(i);
         },
         beforeUnmount(a, i) {
           d.getInstance(a, n, s).beforeUnmount(
@@ -146,7 +146,7 @@ const S = Symbol("childInstMap"), D = class D {
       else {
         t.source instanceof Array || (t.source = [t.source]);
         const n = t.source.map((s) => typeof s == "string" ? e[Symbol.for(s)] ?? (() => e[s]) : () => s(e));
-        P(n, r, t.option);
+        C(n, r, t.option);
       }
     }
   }
@@ -155,7 +155,7 @@ const S = Symbol("childInstMap"), D = class D {
       let r = e[t.methodName];
       if (typeof r != "function")
         throw new Error("Decorator PropsWatcher can only be used on methods");
-      r = r.bind(e), P(e.props, r, t.option);
+      r = r.bind(e), C(e.props, r, t.option);
     }
   }
   handleHook(e) {
@@ -272,7 +272,7 @@ const S = Symbol("childInstMap"), D = class D {
     for (let n of this.computers) {
       const s = e[n];
       if (typeof s == "function") {
-        const a = s.bind(e), i = C(a);
+        const a = s.bind(e), i = P(a);
         e[Symbol.for(n)] = i, e[n] = () => i.value;
       } else {
         const a = (r = Object.getOwnPropertyDescriptor(
@@ -283,7 +283,7 @@ const S = Symbol("childInstMap"), D = class D {
           throw new Error(
             "Computer can only be used on getters or no parameter methods"
           );
-        const i = C(() => a.call(e));
+        const i = P(() => a.call(e));
         e[Symbol.for(n)] = i, Object.defineProperty(e, n, {
           configurable: !0,
           get: () => i.value
@@ -327,7 +327,7 @@ function u(o, e) {
 }
 c(u, "getOrCreateMetadata");
 function fe(o) {
-  const e = m.Injectable({ moduleName: v });
+  const e = h.Injectable({ moduleName: b });
   return (t, r) => {
     e(t, r);
     const n = u(t, r);
@@ -336,10 +336,10 @@ function fe(o) {
 }
 c(fe, "Component");
 function le(o) {
-  const e = m.Injectable(
+  const e = h.Injectable(
     Object.assign(
       {
-        moduleName: v,
+        moduleName: b,
         onCreate: (t) => E(t.constructor, t)
       },
       o
@@ -351,10 +351,10 @@ function le(o) {
 }
 c(le, "Service");
 function he(o) {
-  const e = m.Injectable(
+  const e = h.Injectable(
     Object.assign(
       {
-        moduleName: v,
+        moduleName: b,
         singleton: !0,
         onCreate: (t) => E(t.constructor, t)
       },
@@ -369,7 +369,7 @@ function he(o) {
 }
 c(he, "RouterGuard");
 function pe(o) {
-  const e = m.Injectable({ moduleName: v });
+  const e = h.Injectable({ moduleName: b });
   return (t, r) => {
     e(t, r);
     const n = u(t, r);
@@ -379,20 +379,20 @@ function pe(o) {
 c(pe, "Directive");
 function me(o) {
   return (e, t) => {
-    u(e, t).mutts.push({ propName: h(t), shallow: o });
+    u(e, t).mutts.push({ propName: p(t), shallow: o });
   };
 }
 c(me, "Mut");
 function be(o) {
   return (e, t) => {
-    u(e, t).readonlys.push({ propName: h(t), shallow: o });
+    u(e, t).readonlys.push({ propName: p(t), shallow: o });
   };
 }
 c(be, "Readonly");
 function ve(o) {
   return (e, t) => {
     u(e, t).links.push({
-      propName: h(t),
+      propName: p(t),
       refName: o == null ? void 0 : o.refName,
       isDirective: !!(o != null && o.isDirective || o != null && o.directiveName),
       directiveName: o == null ? void 0 : o.directiveName
@@ -403,7 +403,7 @@ c(ve, "Link");
 function ge(o) {
   return (e, t) => {
     u(e, t).vueInject.push({
-      propName: h(t),
+      propName: p(t),
       provideKey: o
     });
   };
@@ -411,14 +411,14 @@ function ge(o) {
 c(ge, "VueInject");
 function ye() {
   return (o, e) => {
-    u(o, e).computers.push(h(e));
+    u(o, e).computers.push(p(e));
   };
 }
 c(ye, "Computed");
 function Me(o) {
   return (e, t) => {
     u(e, t).hooks.push({
-      methodName: h(t),
+      methodName: p(t),
       type: o
     });
   };
@@ -427,7 +427,7 @@ c(Me, "Hook");
 function we(o) {
   return (e, t) => {
     u(e, t).propsWatchers.push({
-      methodName: h(t),
+      methodName: p(t),
       option: o
     });
   };
@@ -436,7 +436,7 @@ c(we, "PropsWatcher");
 function Ne(o) {
   return (e, t) => {
     u(e, t).watchers.push({
-      methodName: h(t),
+      methodName: p(t),
       ...o
     });
   };
@@ -444,47 +444,47 @@ function Ne(o) {
 c(Ne, "Watcher");
 function Ie() {
   return (o, e) => {
-    u(o, e).bindThis.push(h(e));
+    u(o, e).bindThis.push(p(e));
   };
 }
 c(Ie, "BindThis");
-function h(o) {
+function p(o) {
   return typeof o == "string" ? o : o.name;
 }
-c(h, "getName");
+c(p, "getName");
 const j = class j {
   static install(e) {
     const t = T().filter((n) => n[1].isRouterGuard);
     for (let n of t) {
-      const s = k.getInstance(n[0]), a = n[1], i = s.beforeEach.bind(s), b = s.afterEach.bind(s), B = s.beforeResolve.bind(s), W = s.onError.bind(s);
-      e.onError((l, f, p) => {
+      const s = k.getInstance(n[0]), a = n[1], i = s.beforeEach.bind(s), v = s.afterEach.bind(s), B = s.beforeResolve.bind(s), W = s.onError.bind(s);
+      e.onError((l, f, m) => {
         r(
           f,
-          p,
+          m,
           a.routerGuardMatchTo,
           a.routerGuardMatchFrom
-        ) && W(l, f, p);
-      }), e.beforeEach(async (l, f, p) => {
+        ) && W(l, f, m);
+      }), e.beforeEach(async (l, f, m) => {
         r(
           l,
           f,
           a.routerGuardMatchTo,
           a.routerGuardMatchFrom
-        ) ? await i(l, f, p) : p();
+        ) ? await i(l, f, m) : m();
       }), e.afterEach(async (l, f) => {
         r(
           l,
           f,
           a.routerGuardMatchTo,
           a.routerGuardMatchFrom
-        ) && await b(l, f);
-      }), e.beforeResolve(async (l, f, p) => {
+        ) && await v(l, f);
+      }), e.beforeResolve(async (l, f, m) => {
         r(
           l,
           f,
           a.routerGuardMatchTo,
           a.routerGuardMatchFrom
-        ) ? await B(l, f, p) : p();
+        ) ? await B(l, f, m) : m();
       });
     }
     function r(n, s, a, i) {
@@ -507,10 +507,13 @@ c(j, "VueRouterGuard");
 let I = j;
 const U = class U {
   static getInstance(e) {
-    return m.getInstance(e, v);
+    return h.getInstance(e, b);
   }
   static async install(e, t, r) {
-    await m.importAll(() => r), m.load(v), M.install(e), I.install(t);
+    await h.importAll(() => r), h.load(b), M.install(e), I.install(t);
+  }
+  static bindConstantValue(e, t) {
+    return h.getContainer(b).bind(e).toConstantValue(t), this;
   }
 };
 c(U, "VueClass");
@@ -523,7 +526,7 @@ export {
   Me as Hook,
   ve as Link,
   w as Metadata,
-  v as ModuleName,
+  b as ModuleName,
   me as Mut,
   we as PropsWatcher,
   be as Readonly,
