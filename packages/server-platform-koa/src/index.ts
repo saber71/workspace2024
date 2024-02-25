@@ -3,6 +3,7 @@ import koaBody from "koa-body";
 import mount from "koa-mount";
 import Router from "koa-router";
 import send from "koa-send";
+import session from "koa-session";
 import staticServe from "koa-static";
 import path from "node:path";
 
@@ -19,8 +20,18 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
       app.use(mount(routePathPrefix, staticServe(assetsPath)));
     },
     bootstrap(option) {
+      if (option.session?.secretKey) app.keys = [option.session.secretKey];
       app
         .use(koaBody({ multipart: true, formidable: { keepExtensions: true } }))
+        .use(
+          session(
+            {
+              key: option.session?.cookieKey,
+              maxAge: option.session?.maxAge,
+            },
+            app,
+          ),
+        )
         .use(router.routes())
         .use(router.allowedMethods())
         .listen(option.port, option.hostname);
@@ -61,15 +72,23 @@ export function createServerRequest(
     URL: ctx.URL,
     body: ctx.request.body,
     files: ctx.request.files,
+    session: ctx.session,
   };
 }
 
 export function createServerResponse(
   ctx: ParameterizedContext,
-): ServerResponse {
+): ServerResponse<Koa.Response> {
   return {
-    original: ctx,
+    original: ctx.response,
     headers: ctx.response.headers,
+
+    get session() {
+      return ctx.session;
+    },
+    set session(value) {
+      ctx.session = value;
+    },
 
     set statusCode(value: number) {
       ctx.response.status = value;

@@ -1,42 +1,52 @@
 var f = Object.defineProperty;
-var t = (e, r) => f(e, "name", { value: r, configurable: !0 });
+var i = (e, s) => f(e, "name", { value: s, configurable: !0 });
 import h from "koa";
 import p from "koa-body";
-import d from "koa-mount";
-import y from "koa-router";
-import l from "koa-send";
-import g from "koa-static";
-import b from "node:path";
-function L() {
-  const e = new h(), r = new y();
+import y from "koa-mount";
+import d from "koa-router";
+import g from "koa-send";
+import l from "koa-session";
+import b from "koa-static";
+import q from "node:path";
+function N() {
+  const e = new h(), s = new d();
   return {
     name: "koa",
     create() {
       return Promise.resolve(e);
     },
-    staticAssets(s, o) {
-      e.use(d(o, g(s)));
+    staticAssets(r, o) {
+      e.use(y(o, b(r)));
     },
-    bootstrap(s) {
-      e.use(p({ multipart: !0, formidable: { keepExtensions: !0 } })).use(r.routes()).use(r.allowedMethods()).listen(s.port, s.hostname);
+    bootstrap(r) {
+      var o, t, n;
+      (o = r.session) != null && o.secretKey && (e.keys = [r.session.secretKey]), e.use(p({ multipart: !0, formidable: { keepExtensions: !0 } })).use(
+        l(
+          {
+            key: (t = r.session) == null ? void 0 : t.cookieKey,
+            maxAge: (n = r.session) == null ? void 0 : n.maxAge
+          },
+          e
+        )
+      ).use(s.routes()).use(s.allowedMethods()).listen(r.port, r.hostname);
     },
-    useRoutes(s) {
-      for (let o in s) {
-        const n = s[o];
-        r.use(o, async (a) => {
-          const i = q(a), u = R(a);
+    useRoutes(r) {
+      for (let o in r) {
+        const t = r[o];
+        s.use(o, async (n) => {
+          const a = k(n), m = R(n);
           try {
-            await n.handle(i, u);
-          } catch (m) {
-            n.catchError(m, i, u);
+            await t.handle(a, m);
+          } catch (u) {
+            t.catchError(u, a, m);
           }
         });
       }
     }
   };
 }
-t(L, "createServerPlatformKoa");
-function q(e) {
+i(N, "createServerPlatformKoa");
+function k(e) {
   return {
     original: e.request,
     origin: e.origin,
@@ -52,32 +62,39 @@ function q(e) {
     method: e.method,
     URL: e.URL,
     body: e.request.body,
-    files: e.request.files
+    files: e.request.files,
+    session: e.session
   };
 }
-t(q, "createServerRequest");
+i(k, "createServerRequest");
 function R(e) {
   return {
-    original: e,
+    original: e.response,
     headers: e.response.headers,
-    set statusCode(r) {
-      e.response.status = r;
+    get session() {
+      return e.session;
+    },
+    set session(s) {
+      e.session = s;
+    },
+    set statusCode(s) {
+      e.response.status = s;
     },
     get statusCode() {
       return e.response.status;
     },
-    body(r) {
-      typeof r == "object" ? r = JSON.stringify(r) : typeof r != "string" && (r = String(r)), e.response.body = r;
+    body(s) {
+      typeof s == "object" ? s = JSON.stringify(s) : typeof s != "string" && (s = String(s)), e.response.body = s;
     },
-    async sendFile(r) {
-      const s = b.basename(r);
-      e.attachment(s), await l(e, s);
+    async sendFile(s) {
+      const r = q.basename(s);
+      e.attachment(r), await g(e, r);
     }
   };
 }
-t(R, "createServerResponse");
+i(R, "createServerResponse");
 export {
-  L as createServerPlatformKoa,
-  q as createServerRequest,
+  N as createServerPlatformKoa,
+  k as createServerRequest,
   R as createServerResponse
 };

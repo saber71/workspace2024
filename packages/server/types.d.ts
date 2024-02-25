@@ -30,6 +30,9 @@ declare interface ServerRequest<Original extends object = object> {
   /* Web框架的原请求对象 */
   readonly original: Original;
 
+  /* 读取session内容 */
+  readonly session: Readonly<Record<string, any>> | null;
+
   /* 请求头 */
   readonly headers: import("node:http").IncomingHttpHeaders;
 
@@ -108,6 +111,9 @@ declare interface ServerResponse<Original extends object = object> {
   /* 响应头 */
   readonly headers: import("node:http").OutgoingHttpHeaders;
 
+  /* 更新session内容 */
+  session: Record<string, any> | null;
+
   /* 状态码 */
   statusCode: number;
 
@@ -161,4 +167,16 @@ declare interface ServerBootstrapOption {
 
   /* 服务器主机名 */
   hostname?: string;
+
+  /* 配置session */
+  session?: {
+    /* 用来加密session的key */
+    secretKey?: string;
+
+    /* session保存在cookie的key名 */
+    cookieKey?: string;
+
+    /* session的有效时间 */
+    maxAge?: number;
+  };
 }

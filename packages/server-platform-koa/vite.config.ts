@@ -15,6 +15,7 @@ export default defineConfig({
         "koa-router",
         "koa-send",
         "koa-static",
+        "koa-session",
         "node:path",
       ],
     },
