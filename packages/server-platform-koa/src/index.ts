@@ -22,7 +22,12 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
     bootstrap(option) {
       if (option.session?.secretKey) app.keys = [option.session.secretKey];
       app
-        .use(koaBody({ multipart: true, formidable: { keepExtensions: true } }))
+        .use(
+          koaBody({
+            multipart: true,
+            formidable: { keepExtensions: true, multiples: true },
+          }),
+        )
         .use(
           session(
             {
@@ -47,6 +52,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
           } catch (e) {
             object.catchError(e as Error, req, res);
           }
+          ctx.res.end();
         });
       }
     },
@@ -68,7 +74,7 @@ export function createServerRequest(
     href: ctx.href,
     path: ctx.path,
     search: ctx.search,
-    method: ctx.method,
+    method: ctx.method.toUpperCase(),
     URL: ctx.URL,
     body: ctx.request.body,
     files: ctx.request.files,
@@ -97,9 +103,11 @@ export function createServerResponse(
       return ctx.response.status;
     },
 
-    body(value: string | object | number | boolean) {
-      if (typeof value === "object") value = JSON.stringify(value);
-      else if (typeof value !== "string") value = String(value);
+    body(value: any) {
+      if (!(value instanceof Buffer)) {
+        if (typeof value === "object") value = JSON.stringify(value);
+        else if (typeof value !== "string") value = String(value);
+      }
       ctx.response.body = value;
     },
 
@@ -107,6 +115,10 @@ export function createServerResponse(
       const fileName = path.basename(filePath);
       ctx.attachment(fileName);
       await send(ctx, fileName);
+    },
+
+    redirect(url) {
+      ctx.response.redirect(url);
     },
   };
 }

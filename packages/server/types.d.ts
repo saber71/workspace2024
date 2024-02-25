@@ -40,7 +40,7 @@ declare interface ServerRequest<Original extends object = object> {
   readonly body: any;
 
   /* 上传的文件 */
-  readonly files?: Record<string, ServerFile | ServerFile[]>;
+  readonly files: Record<string, ServerFile | ServerFile[]> | undefined;
 
   /* Get request URL. */
   readonly url: string;
@@ -117,11 +117,14 @@ declare interface ServerResponse<Original extends object = object> {
   /* 状态码 */
   statusCode: number;
 
-  /* 定义响应体 */
+  /* 发送响应体 */
   body(value?: any): void;
 
   /* 发送文件 */
   sendFile(filePath: string): Promise<void>;
+
+  /* 重定向 */
+  redirect(url: string): void;
 }
 
 /* Web框架适配器，比如适配express、koa等 */

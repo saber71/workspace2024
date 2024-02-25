@@ -1,30 +1,35 @@
 var f = Object.defineProperty;
 var i = (e, s) => f(e, "name", { value: s, configurable: !0 });
-import h from "koa";
-import p from "koa-body";
-import y from "koa-mount";
-import d from "koa-router";
+import p from "koa";
+import h from "koa-body";
+import d from "koa-mount";
+import y from "koa-router";
 import g from "koa-send";
 import l from "koa-session";
 import b from "koa-static";
 import q from "node:path";
-function N() {
-  const e = new h(), s = new d();
+function E() {
+  const e = new p(), s = new y();
   return {
     name: "koa",
     create() {
       return Promise.resolve(e);
     },
     staticAssets(r, o) {
-      e.use(y(o, b(r)));
+      e.use(d(o, b(r)));
     },
     bootstrap(r) {
-      var o, t, n;
-      (o = r.session) != null && o.secretKey && (e.keys = [r.session.secretKey]), e.use(p({ multipart: !0, formidable: { keepExtensions: !0 } })).use(
+      var o, n, t;
+      (o = r.session) != null && o.secretKey && (e.keys = [r.session.secretKey]), e.use(
+        h({
+          multipart: !0,
+          formidable: { keepExtensions: !0, multiples: !0 }
+        })
+      ).use(
         l(
           {
-            key: (t = r.session) == null ? void 0 : t.cookieKey,
-            maxAge: (n = r.session) == null ? void 0 : n.maxAge
+            key: (n = r.session) == null ? void 0 : n.cookieKey,
+            maxAge: (t = r.session) == null ? void 0 : t.maxAge
           },
           e
         )
@@ -32,21 +37,22 @@ function N() {
     },
     useRoutes(r) {
       for (let o in r) {
-        const t = r[o];
-        s.use(o, async (n) => {
-          const a = k(n), m = R(n);
+        const n = r[o];
+        s.use(o, async (t) => {
+          const a = c(t), u = k(t);
           try {
-            await t.handle(a, m);
-          } catch (u) {
-            t.catchError(u, a, m);
+            await n.handle(a, u);
+          } catch (m) {
+            n.catchError(m, a, u);
           }
+          t.res.end();
         });
       }
     }
   };
 }
-i(N, "createServerPlatformKoa");
-function k(e) {
+i(E, "createServerPlatformKoa");
+function c(e) {
   return {
     original: e.request,
     origin: e.origin,
@@ -59,15 +65,15 @@ function k(e) {
     href: e.href,
     path: e.path,
     search: e.search,
-    method: e.method,
+    method: e.method.toUpperCase(),
     URL: e.URL,
     body: e.request.body,
     files: e.request.files,
     session: e.session
   };
 }
-i(k, "createServerRequest");
-function R(e) {
+i(c, "createServerRequest");
+function k(e) {
   return {
     original: e.response,
     headers: e.response.headers,
@@ -84,17 +90,20 @@ function R(e) {
       return e.response.status;
     },
     body(s) {
-      typeof s == "object" ? s = JSON.stringify(s) : typeof s != "string" && (s = String(s)), e.response.body = s;
+      s instanceof Buffer || (typeof s == "object" ? s = JSON.stringify(s) : typeof s != "string" && (s = String(s))), e.response.body = s;
     },
     async sendFile(s) {
       const r = q.basename(s);
       e.attachment(r), await g(e, r);
+    },
+    redirect(s) {
+      e.response.redirect(s);
     }
   };
 }
-i(R, "createServerResponse");
+i(k, "createServerResponse");
 export {
-  N as createServerPlatformKoa,
-  k as createServerRequest,
-  R as createServerResponse
+  E as createServerPlatformKoa,
+  c as createServerRequest,
+  k as createServerResponse
 };

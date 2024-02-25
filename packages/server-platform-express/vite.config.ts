@@ -7,7 +7,15 @@ export default defineConfig({
   esbuild: { keepNames: true },
   build: {
     rollupOptions: {
-      external: ["server"],
+      external: [
+        "server",
+        "express",
+        "express-formidable",
+        "express-session",
+        "node:querystring",
+        "node:url",
+        "node:path",
+      ],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

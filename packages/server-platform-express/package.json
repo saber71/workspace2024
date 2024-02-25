@@ -9,6 +9,9 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
+    "express": "^4.18.2",
+    "express-formidable": "^1.2.0",
+    "express-session": "^1.18.0",
     "server": "workspace:^"
   }
 }
