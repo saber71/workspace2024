@@ -1,7 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 import { Inject, Injectable, Metadata } from "../src";
 
-describe("decorator", () => {
+describe("decorator.test", () => {
   test("检查Metadata中的类型信息", () => {
     class Parent {
       @Inject()
@@ -12,7 +12,12 @@ describe("decorator", () => {
 
     type great = "123" | "sa" | number;
 
-    @Injectable({ 0: "不生效", 1: "String" })
+    @Injectable({
+      paramtypes: { 0: "不生效", 1: "String" },
+      moduleName: "test",
+      singleton: true,
+      createImmediately: true,
+    })
     class A extends Parent {
       @Inject()
       b: great = "123";
@@ -37,6 +42,9 @@ describe("decorator", () => {
     metadata.fieldTypes["cc"] = "String";
     metadata.parentClassNames.push("Parent");
     metadata.injectable = true;
+    metadata.moduleName = "test";
+    metadata.singleton = true;
+    metadata.createImmediately = true;
 
     expect(Metadata.getOrCreateMetadata(A)).toEqual(metadata);
   });

@@ -3,9 +3,14 @@ export class Metadata {
   /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
   private static readonly _classNameMapMetadata = new Map<string, Metadata>();
 
-  /*
+  /* 获取所有的Metadata对象 */
+  static getAllMetadata() {
+    return this._classNameMapMetadata.values();
+  }
+
+  /**
    * 获取类对应的Metadata对象，如果对象不存在就新建一个。在新建Metadata对象的时候，子类的Metadata对象会合并父类的Metadata对象
-   * 入参可以是类或是类的原型
+   * @param clazzOrPrototype 可以是类或是类的原型
    */
   static getOrCreateMetadata(clazzOrPrototype: Class | object) {
     let clazz: Class;
@@ -34,6 +39,15 @@ export class Metadata {
 
   /* 标识类是否已被装饰器Injectable装饰 */
   injectable = false;
+
+  /* 类所属的模块 */
+  moduleName?: string;
+
+  /* 类是否是单例的 */
+  singleton?: boolean;
+
+  /* 类是否立即实例化 */
+  createImmediately?: boolean;
 
   /* 构造函数所有参数的类型 */
   readonly constructorParameterTypes: string[] = [];

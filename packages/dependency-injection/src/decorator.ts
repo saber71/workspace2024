@@ -8,12 +8,24 @@ export function getDecoratedName(ctx?: string | ClassMemberDecoratorContext) {
 
 /**
  * 类装饰器
- * @param paramtypes 指定部分或全部构造函数入参的类型，就好像是使用装饰器Inject去装饰参数。装饰器Inject优先级更高。key为入参的序号，value为入参类型
+ * @param option.paramtypes 可选。指定部分或全部构造函数入参的类型，就好像是使用装饰器Inject去装饰参数。装饰器Inject优先级更高。key为入参的序号，value为入参类型
+ * @param option.moduleName 可选。指定类所属的模块名
+ * @param option.singleton 可选。指定类是否是单例的
+ * @param option.createImmediately 可选。类是否立即实例化
  */
-export function Injectable(paramtypes?: Record<number, string>) {
+export function Injectable(option?: {
+  paramtypes?: Record<number, string>;
+  moduleName?: string;
+  singleton?: boolean;
+  createImmediately?: boolean;
+}) {
   return (clazz: Class, ctx?: any) => {
+    const paramtypes = option?.paramtypes;
     const metadata = Metadata.getOrCreateMetadata(clazz);
     metadata.injectable = true;
+    metadata.moduleName = option?.moduleName;
+    metadata.singleton = option?.singleton;
+    metadata.createImmediately = option?.createImmediately;
     if (paramtypes) {
       for (let index in paramtypes) {
         const i = Number(index);
