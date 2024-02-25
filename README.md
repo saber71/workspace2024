@@ -2,6 +2,17 @@
 
 2024年的代码仓库
 
+## ts-node运行命令
+
+`node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts --tsconfig tsconfig.json` Node.js v20.10.0
+
+## `reflect-metadata`
+
+如果代码中未给字段/参数指定类型或者类型是一个复合类型，最后通过reflect-metadata得到的类型会是Object
+
+- `Reflect.getMetadata("design:paramtypes", clazz)`，获取类的构造函数所有入参的类型（如[String,Number,SomeClass]）。
+- `Reflect.getMetadata("design:type", clazz, memberName)`，获取字段的类型(如String|Number|SomeClass)，如果被装饰者是方法，得到的结果就会是Function
+
 ## 提交格式: `<type>(scope?): <subject>`
 
 - type: 用于表明我们这次提交的改动类型，是新增了功能？还是修改了测试代码？又或者是更新了文档？
