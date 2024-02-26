@@ -2,6 +2,8 @@
 
 import Koa from 'koa';
 import { ParameterizedContext } from 'koa';
+import type { ServerRequest } from 'server';
+import type { ServerResponse } from 'server';
 
 export declare function createServerPlatformKoa(): ServerPlatformAdapter<Koa>;
 

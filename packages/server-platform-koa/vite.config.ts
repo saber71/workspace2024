@@ -17,6 +17,7 @@ export default defineConfig({
         "koa-static",
         "koa-session",
         "node:path",
+        "koa-proxies",
       ],
     },
     lib: {

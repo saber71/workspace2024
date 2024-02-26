@@ -7,7 +7,7 @@ export default defineConfig({
   esbuild: { keepNames: true },
   build: {
     rollupOptions: {
-      external: ["dependency-injection"],
+      external: ["dependency-injection", "reflect-metadata"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

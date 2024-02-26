@@ -6,10 +6,13 @@ import send from "koa-send";
 import session from "koa-session";
 import staticServe from "koa-static";
 import path from "node:path";
+import type { ServerRequest, ServerResponse } from "server";
+import proxy from "koa-proxies";
 
 export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
   const app = new Koa();
   const router = new Router();
+  const proxies: any[] = [];
 
   return {
     name: "koa",
@@ -21,6 +24,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
     },
     bootstrap(option) {
       if (option.session?.secretKey) app.keys = [option.session.secretKey];
+      proxies.forEach((proxy) => app.use(proxy));
       app
         .use(
           koaBody({
@@ -55,6 +59,23 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
           ctx.res.end();
         });
       }
+    },
+    proxy(option) {
+      proxies.push(
+        proxy(option.src, {
+          changeOrigin: option.changeOrigin,
+          target: option.target,
+          rewrite: option.rewrites
+            ? (path: string) => {
+                for (let rewritesKey in option.rewrites) {
+                  const reg = new RegExp(rewritesKey);
+                  path = path.replace(reg, option.rewrites[rewritesKey]);
+                }
+                return path;
+              }
+            : undefined,
+        }),
+      );
     },
   } satisfies ServerPlatformAdapter<Koa>;
 }
@@ -104,10 +125,18 @@ export function createServerResponse(
     },
 
     body(value: any) {
+      let contentType = "text/plain;charset=utf-8";
       if (!(value instanceof Buffer)) {
-        if (typeof value === "object") value = JSON.stringify(value);
-        else if (typeof value !== "string") value = String(value);
+        if (typeof value === "object") {
+          value = JSON.stringify(value);
+          contentType = "application/json;charset=utf-8";
+        } else if (typeof value !== "string") {
+          value = String(value);
+        }
+      } else {
+        contentType = "application/octet-stream";
       }
+      ctx.response.headers["content-type"] = contentType;
       ctx.response.body = value;
     },
 

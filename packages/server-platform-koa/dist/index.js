@@ -1,58 +1,74 @@
-var f = Object.defineProperty;
-var i = (e, s) => f(e, "name", { value: s, configurable: !0 });
-import p from "koa";
-import h from "koa-body";
+var p = Object.defineProperty;
+var u = (e, s) => p(e, "name", { value: s, configurable: !0 });
+import h from "koa";
+import y from "koa-body";
 import d from "koa-mount";
-import y from "koa-router";
-import g from "koa-send";
-import l from "koa-session";
-import b from "koa-static";
-import q from "node:path";
-function E() {
-  const e = new p(), s = new y();
+import g from "koa-router";
+import l from "koa-send";
+import c from "koa-session";
+import w from "koa-static";
+import b from "node:path";
+import q from "koa-proxies";
+function N() {
+  const e = new h(), s = new g(), o = [];
   return {
     name: "koa",
     create() {
       return Promise.resolve(e);
     },
-    staticAssets(r, o) {
-      e.use(d(o, b(r)));
+    staticAssets(r, t) {
+      e.use(d(t, w(r)));
     },
     bootstrap(r) {
-      var o, n, t;
-      (o = r.session) != null && o.secretKey && (e.keys = [r.session.secretKey]), e.use(
-        h({
+      var t, n, i;
+      (t = r.session) != null && t.secretKey && (e.keys = [r.session.secretKey]), o.forEach((a) => e.use(a)), e.use(
+        y({
           multipart: !0,
           formidable: { keepExtensions: !0, multiples: !0 }
         })
       ).use(
-        l(
+        c(
           {
             key: (n = r.session) == null ? void 0 : n.cookieKey,
-            maxAge: (t = r.session) == null ? void 0 : t.maxAge
+            maxAge: (i = r.session) == null ? void 0 : i.maxAge
           },
           e
         )
       ).use(s.routes()).use(s.allowedMethods()).listen(r.port, r.hostname);
     },
     useRoutes(r) {
-      for (let o in r) {
-        const n = r[o];
-        s.use(o, async (t) => {
-          const a = c(t), u = k(t);
+      for (let t in r) {
+        const n = r[t];
+        s.use(t, async (i) => {
+          const a = R(i), m = k(i);
           try {
-            await n.handle(a, u);
-          } catch (m) {
-            n.catchError(m, a, u);
+            await n.handle(a, m);
+          } catch (f) {
+            n.catchError(f, a, m);
           }
-          t.res.end();
+          i.res.end();
         });
       }
+    },
+    proxy(r) {
+      o.push(
+        q(r.src, {
+          changeOrigin: r.changeOrigin,
+          target: r.target,
+          rewrite: r.rewrites ? (t) => {
+            for (let n in r.rewrites) {
+              const i = new RegExp(n);
+              t = t.replace(i, r.rewrites[n]);
+            }
+            return t;
+          } : void 0
+        })
+      );
     }
   };
 }
-i(E, "createServerPlatformKoa");
-function c(e) {
+u(N, "createServerPlatformKoa");
+function R(e) {
   return {
     original: e.request,
     origin: e.origin,
@@ -72,7 +88,7 @@ function c(e) {
     session: e.session
   };
 }
-i(c, "createServerRequest");
+u(R, "createServerRequest");
 function k(e) {
   return {
     original: e.response,
@@ -90,20 +106,21 @@ function k(e) {
       return e.response.status;
     },
     body(s) {
-      s instanceof Buffer || (typeof s == "object" ? s = JSON.stringify(s) : typeof s != "string" && (s = String(s))), e.response.body = s;
+      let o = "text/plain;charset=utf-8";
+      s instanceof Buffer ? o = "application/octet-stream" : typeof s == "object" ? (s = JSON.stringify(s), o = "application/json;charset=utf-8") : typeof s != "string" && (s = String(s)), e.response.headers["content-type"] = o, e.response.body = s;
     },
     async sendFile(s) {
-      const r = q.basename(s);
-      e.attachment(r), await g(e, r);
+      const o = b.basename(s);
+      e.attachment(o), await l(e, o);
     },
     redirect(s) {
       e.response.redirect(s);
     }
   };
 }
-i(k, "createServerResponse");
+u(k, "createServerResponse");
 export {
-  E as createServerPlatformKoa,
-  c as createServerRequest,
+  N as createServerPlatformKoa,
+  R as createServerRequest,
   k as createServerResponse
 };

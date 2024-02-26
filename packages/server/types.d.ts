@@ -25,108 +25,6 @@ declare interface ServerFile {
   newFilename: string;
 }
 
-/* 本库封装的请求对象，抹除不同框架的请求对象的不同 */
-declare interface ServerRequest<Original extends object = object> {
-  /* Web框架的原请求对象 */
-  readonly original: Original;
-
-  /* 读取session内容 */
-  readonly session: Readonly<Record<string, any>> | null;
-
-  /* 请求头 */
-  readonly headers: import("node:http").IncomingHttpHeaders;
-
-  /* 请求体内容 */
-  readonly body: any;
-
-  /* 上传的文件 */
-  readonly files: Record<string, ServerFile | ServerFile[]> | undefined;
-
-  /* Get request URL. */
-  readonly url: string;
-
-  /**
-   * Get origin of URL.
-   */
-  readonly origin: string;
-
-  /**
-   * Get full request URL.
-   */
-  readonly href: string;
-
-  /**
-   * Get request method.
-   */
-  readonly method: string;
-
-  /**
-   * Get request pathname.
-   * Set pathname, retaining the query-string when present.
-   */
-  readonly path: string;
-
-  /**
-   * Get parsed query-string.
-   * Set query-string as an object.
-   */
-  readonly query: import("node:querystring").ParsedUrlQuery;
-
-  /**
-   * Get query string.
-   */
-  readonly querystring: string;
-
-  /**
-   * Get the search string. Same as the querystring
-   * except it includes the leading ?.
-   */
-  readonly search: string;
-
-  /**
-   * Parse the "Host" header field host
-   * and support X-Forwarded-Host when a
-   * proxy is enabled.
-   */
-  readonly host: string;
-
-  /**
-   * Parse the "Host" header field hostname
-   * and support X-Forwarded-Host when a
-   * proxy is enabled.
-   */
-  readonly hostname: string;
-
-  /**
-   * Get WHATWG parsed URL object.
-   */
-  readonly URL: import("node:url").URL;
-}
-
-/* 本库封装的响应对象，抹除不同框架的响应对象的不同 */
-declare interface ServerResponse<Original extends object = object> {
-  /* Web框架的原响应对象 */
-  readonly original: Original;
-
-  /* 响应头 */
-  readonly headers: import("node:http").OutgoingHttpHeaders;
-
-  /* 更新session内容 */
-  session: Record<string, any> | null;
-
-  /* 状态码 */
-  statusCode: number;
-
-  /* 发送响应体 */
-  body(value?: any): void;
-
-  /* 发送文件 */
-  sendFile(filePath: string): Promise<void>;
-
-  /* 重定向 */
-  redirect(url: string): void;
-}
-
 /* Web框架适配器，比如适配express、koa等 */
 declare interface ServerPlatformAdapter<
   PlatformInstance extends object = object,
@@ -142,11 +40,14 @@ declare interface ServerPlatformAdapter<
     routes: Record<
       string,
       {
-        handle: (req: ServerRequest, res: ServerResponse) => any;
+        handle: (
+          req: import("src").ServerRequest,
+          res: import("src").ServerResponse,
+        ) => any;
         catchError: (
           err: Error,
-          req: ServerRequest,
-          res: ServerResponse,
+          req: import("src").ServerRequest,
+          res: import("src").ServerResponse,
         ) => void;
       }
     >,
@@ -161,6 +62,15 @@ declare interface ServerPlatformAdapter<
 
   /* 启动Web框架 */
   bootstrap(option: ServerBootstrapOption): void;
+
+  /* 配置代理转发 */
+  proxy(option: {
+    src: string;
+    target: string;
+    changeOrigin?: boolean;
+    // key is regex
+    rewrites?: Record<string, string>;
+  }): void;
 }
 
 /* 服务器的启动参数 */

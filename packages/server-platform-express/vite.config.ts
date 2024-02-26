@@ -15,6 +15,7 @@ export default defineConfig({
         "node:querystring",
         "node:url",
         "node:path",
+        "http-proxy-middleware",
       ],
     },
     lib: {

@@ -9,6 +9,7 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
-    "dependency-injection": "workspace:^"
+    "dependency-injection": "workspace:^",
+    "reflect-metadata": "^0.2.1"
   }
 }

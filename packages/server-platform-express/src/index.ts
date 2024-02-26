@@ -1,15 +1,18 @@
 import express, { type Express, Request, Response } from "express";
 import session from "express-session";
 import formidableMiddleware from "express-formidable";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import { URL } from "node:url";
 import * as qs from "node:querystring";
 import * as path from "node:path";
+import type { ServerRequest, ServerResponse } from "server";
 
 export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
   const app = express();
   const router = express.Router();
   const staticAssets: Array<[string, any]> = [];
   const routes: Parameters<ServerPlatformAdapter["useRoutes"]>[0][] = [];
+  const proxies: any[] = [];
 
   return {
     name: "express",
@@ -23,6 +26,9 @@ export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
       routes.push(data);
     },
     bootstrap(option: ServerBootstrapOption) {
+      for (let proxy of proxies) {
+        app.use(proxy);
+      }
       for (let item of staticAssets) {
         router.use(item[0], item[1]);
       }
@@ -60,6 +66,15 @@ export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
         }),
       );
       app.use(router).listen(option.port ?? 4000, option.hostname || "");
+    },
+    proxy(option) {
+      proxies.push(
+        createProxyMiddleware(option.src, {
+          target: option.target,
+          changeOrigin: option.changeOrigin,
+          pathRewrite: option.rewrites,
+        }),
+      );
     },
   } satisfies ServerPlatformAdapter<Express>;
 }
@@ -132,10 +147,17 @@ export function createServerResponse(
 
     body(value?: any) {
       if (!(value instanceof Buffer)) {
-        if (typeof value === "object") value = JSON.stringify(value);
-        else if (typeof value !== "string") value = String(value);
+        if (typeof value === "object") {
+          res.json(value);
+        } else if (typeof value !== "string") {
+          value = String(value);
+          res.send(value);
+        } else {
+          res.send(value);
+        }
+      } else {
+        res.send(value);
       }
-      res.send(value);
     },
 
     async sendFile(filePath: string) {

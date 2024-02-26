@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { getDecoratedName, Injectable } from "dependency-injection";
 import {
   getOrCreateControllerMethod,
@@ -41,6 +42,17 @@ export function Method(option?: {
       for (let index in option.paramtypes) {
         if (ctrMethod.paramtypes[index]) continue;
         ctrMethod.paramtypes[index] = option.paramtypes[index];
+      }
+    }
+    const paramtypes = Reflect.getMetadata(
+      "design:paramtypes",
+      target,
+      methodName,
+    );
+    if (paramtypes) {
+      for (let i = 0; i < paramtypes.length; i++) {
+        if (ctrMethod.paramtypes[i]) continue;
+        ctrMethod.paramtypes[i] = paramtypes[i].name;
       }
     }
   };
