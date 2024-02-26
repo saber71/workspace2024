@@ -1,4 +1,4 @@
-import { DeveloperError } from "./common";
+import { ServerError } from "./common";
 import { ServerRequest } from "./request";
 import { ServerResponse } from "./response";
 
@@ -33,4 +33,4 @@ export class Session<T extends object> {
   }
 }
 
-export class SessionKeyNotExistError extends DeveloperError {}
+export class SessionKeyNotExistError extends ServerError {}

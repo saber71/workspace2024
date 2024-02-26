@@ -37,13 +37,11 @@ export class ServerRequest<Original extends object = object> {
 
   /**
    * Get request pathname.
-   * Set pathname, retaining the query-string when present.
    */
   readonly path: string;
 
   /**
    * Get parsed query-string.
-   * Set query-string as an object.
    */
   readonly query: import("node:querystring").ParsedUrlQuery;
 

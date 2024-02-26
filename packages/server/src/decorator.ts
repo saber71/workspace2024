@@ -20,6 +20,16 @@ import {
 } from "./constant";
 import { ServerRequest } from "./request";
 
+export function ErrorHandler<T extends Error>(errorClass: Class<T>) {
+  const injectable = Injectable({ singleton: true, moduleName: MODULE_NAME });
+  return (clazz: Class, _?: any) => {
+    injectable(clazz, _);
+    const userData = getOrCreateMetadataUserData(clazz);
+    userData.__server__isErrorHandler = true;
+    userData.__server__handle_error_type = errorClass;
+  };
+}
+
 export function Controller(option?: { routePrefix?: string }) {
   const injectable = Injectable({
     createImmediately: true,
@@ -94,7 +104,7 @@ export function ReqQuery() {
   return ParamType({ label: PARAMTYPES_REQUEST_QUERY });
 }
 
-export function Session() {
+export function ReqSession() {
   return ParamType({ label: PARAMTYPES_SESSION });
 }
 
