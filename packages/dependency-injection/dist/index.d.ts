@@ -1,22 +1,7 @@
-/**
- * 用来管理需要进行依赖注入的实例的容器
- * @throws DependencyCycleError 当依赖循环时抛出
- */
 export declare class Container {
-    private _loaded;
-    private readonly _memberMap;
+    protected readonly _memberMap: Map<string, ContainerMember>;
     private _extend?;
     extend(parent?: Container): this;
-    /**
-     * 加载所有已被装饰器Injectable装饰的类且所属于指定的模块
-     * @param option.moduleName 可选。指定要被加载的模块，与装饰器Injectable入参中的moduleName相同
-     * @param option.overrideParent 默认true。是否让子类覆盖父类的实例。如果为true，则通过父类名字拿到的，并非是其自身的实例，而是子类的实例
-     * @throws ContainerRepeatLoadError 当重复调用Container.load方法时抛出
-     */
-    load(option?: {
-        moduleName?: string;
-        overrideParent?: boolean;
-    }): void;
     /**
      * 给指定的标识符绑定值
      * @param label 标识符
@@ -24,17 +9,20 @@ export declare class Container {
      * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
      */
     bindValue(label: string, value: any): this;
-    bindFactory(label: string, value: () => any): this;
+    bindFactory(label: string, value: (...args: any[]) => any): this;
     bindGetter(label: string, value: () => any): this;
     unbind(label: string): this;
+    unbindAll(): void;
+    dispose(): void;
     /**
      * 获取指定标识符的值
      * @param label 要获取值的标识符
+     * @param args 生成值所需的参数
      * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
      * @throws NotExistLabelError 当从容器访问一个不存在的标识符时抛出
      */
-    getValue<T>(label: string | Class<T>): T;
-    private _newMember;
+    getValue<T>(label: string | Class<T>, ...args: any[]): T;
+    protected _newMember(name: string, metadata?: Metadata): ContainerMember;
 }
 
 export declare class ContainerRepeatLoadError extends Error {
@@ -70,6 +58,21 @@ export declare class InjectNotFoundTypeError extends Error {
 }
 
 export declare class InvalidValueError extends Error {
+}
+
+/**
+ * 负责实现依赖注入的核心功能，包括得到依赖关系、生成实例、向实例注入依赖
+ * @throws DependencyCycleError 当依赖循环时抛出
+ */
+export declare class LoadableContainer extends Container {
+    private _loaded;
+    /**
+     * 加载所有已被装饰器Injectable装饰的类且所属于指定的模块
+     * @throws ContainerRepeatLoadError 当重复调用Container.load方法时抛出
+     */
+    load(option?: LoadOption): void;
+    loadFromMetadata(metadataArray: Metadata[], option?: LoadOption): void;
+    loadFromClass(clazz: Class[], option?: LoadOption): void;
 }
 
 export declare class Metadata {
