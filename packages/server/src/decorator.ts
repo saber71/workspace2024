@@ -1,16 +1,24 @@
 import "reflect-metadata";
-import { getDecoratedName, Injectable } from "dependency-injection";
+import {
+  type Container,
+  getDecoratedName,
+  Injectable,
+} from "dependency-injection";
 import {
   getOrCreateControllerMethod,
   getOrCreateMetadataUserData,
 } from "./common";
 import {
   MODULE_NAME,
+  PARAMTYPES_FILE,
+  PARAMTYPES_FILES,
   PARAMTYPES_REQUEST,
   PARAMTYPES_REQUEST_BODY,
   PARAMTYPES_REQUEST_QUERY,
   PARAMTYPES_RESPONSE,
+  PARAMTYPES_SESSION,
 } from "./constant";
+import { ServerRequest } from "./request";
 
 export function Controller(option?: { routePrefix?: string }) {
   const injectable = Injectable({
@@ -22,7 +30,7 @@ export function Controller(option?: { routePrefix?: string }) {
     injectable(clazz, _);
     const userData = getOrCreateMetadataUserData(clazz);
     userData.__server__isController = true;
-    userData.__server__routePrefix = option?.routePrefix ?? "";
+    userData.__server__controllerRoutePrefix = option?.routePrefix ?? "";
   };
 }
 
@@ -58,11 +66,15 @@ export function Method(option?: {
   };
 }
 
-export function ParamType(option: { label: string }) {
+export function ParamType(option: {
+  label: string;
+  getter?: (container: Container) => any;
+}) {
   return (target: any, methodName: any, index: number) => {
     methodName = getDecoratedName(methodName);
     const ctrMethod = getOrCreateControllerMethod(target, methodName);
     ctrMethod.paramtypes[index] = option.label;
+    if (option.getter) ctrMethod.paramGetters[index] = option.getter;
   };
 }
 
@@ -80,4 +92,49 @@ export function ReqBody() {
 
 export function ReqQuery() {
   return ParamType({ label: PARAMTYPES_REQUEST_QUERY });
+}
+
+export function Session() {
+  return ParamType({ label: PARAMTYPES_SESSION });
+}
+
+export function ReqFile(fieldName: string) {
+  return ParamType({
+    label: PARAMTYPES_FILE,
+    getter: (container: Container) => {
+      const request = container.getValue(ServerRequest);
+      if (!request.files) throw new NotFoundFileError();
+      const files = request.files[fieldName];
+      if (!files) throw new NotFoundFileError();
+      if (files instanceof Array) throw new ImproperDecoratorError();
+      return files;
+    },
+  });
+}
+
+export function ReqFiles(fieldName: string) {
+  return ParamType({
+    label: PARAMTYPES_FILES,
+    getter: (container: Container) => {
+      const request = container.getValue(ServerRequest);
+      if (!request.files) throw new NotFoundFileError();
+      const files = request.files[fieldName];
+      if (!files) throw new NotFoundFileError();
+      if (files instanceof Array) return files;
+      throw new ImproperDecoratorError();
+    },
+  });
+}
+
+export class NotFoundFileError extends Error {}
+
+export class ImproperDecoratorError extends Error {}
+
+export function Pipeline() {
+  const injectable = Injectable({ moduleName: MODULE_NAME });
+  return (clazz: Class, _?: any) => {
+    injectable(clazz, _);
+    const userData = getOrCreateMetadataUserData(clazz);
+    userData.__server__isPipeline = true;
+  };
 }

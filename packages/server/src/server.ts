@@ -25,6 +25,11 @@ export class Server<PlatformInstance extends object = object> {
     return this._platformInstance;
   }
 
+  /* 创建一个依赖注入容器，并且继承自Server内部保有的根容器 */
+  createDIContainer(): Container {
+    return new Container().extend(this._dependencyInjection);
+  }
+
   /* 启动服务器 */
   async bootstrap(option: ServerBootstrapOption = {}) {
     if (!option.port) option.port = DEFAULT_PORT;
@@ -33,6 +38,9 @@ export class Server<PlatformInstance extends object = object> {
 
   /* 初始化Web服务器 */
   private async _init() {
+    this._dependencyInjection
+      .bindValue(Server.name, this)
+      .bindFactory(Container.name, this.createDIContainer.bind(this));
     this._platformInstance = await this._serverPlatform.create();
     this._dependencyInjection.load({ moduleName: MODULE_NAME });
   }

@@ -1,13 +1,16 @@
 import { Metadata } from "dependency-injection";
 
+export class DeveloperError extends Error {}
+
 export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   const metadata = Metadata.getOrCreateMetadata(obj);
   const userData = metadata.userData as MetadataServerUserData;
   if (!userData.__server__) {
     userData.__server__ = true;
     userData.__server__isController = false;
+    userData.__server__isPipeline = false;
     userData.__server__metadata = metadata;
-    userData.__server__routePrefix = "";
+    userData.__server__controllerRoutePrefix = "";
     userData.__server__controllerMethods = {};
   }
   return userData;
@@ -23,7 +26,8 @@ export function getOrCreateControllerMethod(
     res = {
       methodName,
       methodType: "GET",
-      paramtypes: {},
+      paramtypes: [],
+      paramGetters: {},
       route: "",
       routePrefix: "",
     };

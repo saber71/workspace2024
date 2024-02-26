@@ -8,3 +8,6 @@ export const PARAMTYPES_REQUEST = "__server__request";
 export const PARAMTYPES_RESPONSE = "__server__response";
 export const PARAMTYPES_REQUEST_QUERY = "__server__request_query";
 export const PARAMTYPES_REQUEST_BODY = "__server__request_body";
+export const PARAMTYPES_SESSION = "__server__request_session";
+export const PARAMTYPES_FILE = "__server__request_file";
+export const PARAMTYPES_FILES = "__server__request_files";

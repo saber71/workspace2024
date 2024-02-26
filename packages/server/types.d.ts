@@ -99,14 +99,19 @@ declare interface ControllerMethod {
   methodName: string;
   routePrefix: string;
   route: string;
-  paramtypes: Record<number, string>;
+  paramtypes: string[];
+  paramGetters: Record<
+    number,
+    (container: import("dependency-injection").Container) => any
+  >;
 }
 
 declare interface MetadataServerUserData {
   __server__: boolean;
-  __server__isController: boolean;
   __server__metadata: import("dependency-injection").Metadata;
-  __server__routePrefix: string;
+  __server__isController: boolean;
+  __server__isPipeline: boolean;
+  __server__controllerRoutePrefix: string;
   __server__controllerMethods: Record<string, ControllerMethod>;
 }
 
