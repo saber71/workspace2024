@@ -183,3 +183,21 @@ declare interface ServerBootstrapOption {
     maxAge?: number;
   };
 }
+
+declare interface ControllerMethod {
+  methodType: MethodType;
+  methodName: string;
+  routePrefix: string;
+  route: string;
+  paramtypes: Record<number, string>;
+}
+
+declare interface MetadataServerUserData {
+  __server__: boolean;
+  __server__isController: boolean;
+  __server__metadata: import("dependency-injection").Metadata;
+  __server__routePrefix: string;
+  __server__controllerMethods: Record<string, ControllerMethod>;
+}
+
+declare type MethodType = "GET" | "POST" | "PUT" | "DELETE";
