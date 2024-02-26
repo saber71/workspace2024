@@ -58,9 +58,16 @@ export class Metadata {
   /* 父类的名字 */
   readonly parentClassNames: string[] = [];
 
+  /* 保存用户自定义数据 */
+  private _userData: Record<string, any> = {};
+  get userData() {
+    return this._userData;
+  }
+
   /* 合并父类的Metadata内容 */
   merge(parent: Metadata) {
     this.fieldTypes = Object.assign({}, parent.fieldTypes, this.fieldTypes);
+    this._userData = Object.assign({}, parent._userData, this._userData);
     return this;
   }
 }
