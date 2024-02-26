@@ -1,24 +1,26 @@
 var A = Object.defineProperty;
-var C = (s, e, t) => e in s ? A(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
-var c = (s, e) => A(s, "name", { value: e, configurable: !0 });
-var f = (s, e, t) => (C(s, typeof e != "symbol" ? e + "" : e, t), t);
+var x = (s, e, t) => e in s ? A(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
+var f = (s, e) => A(s, "name", { value: e, configurable: !0 });
+var c = (s, e, t) => (x(s, typeof e != "symbol" ? e + "" : e, t), t);
 import "reflect-metadata";
 const u = class u {
   constructor(e) {
     /* 标识类是否已被装饰器Injectable装饰 */
-    f(this, "injectable", !1);
+    c(this, "injectable", !1);
     /* 类所属的模块 */
-    f(this, "moduleName");
+    c(this, "moduleName");
     /* 类是否是单例的 */
-    f(this, "singleton");
+    c(this, "singleton");
     /* 类是否立即实例化 */
-    f(this, "createImmediately");
+    c(this, "createImmediately");
     /* 构造函数所有参数的类型 */
-    f(this, "constructorParameterTypes", []);
+    c(this, "constructorParameterTypes", []);
     /* 字段名映射其类型名 */
-    f(this, "fieldTypes", {});
+    c(this, "fieldTypes", {});
     /* 父类的名字 */
-    f(this, "parentClassNames", []);
+    c(this, "parentClassNames", []);
+    /* 保存用户自定义数据 */
+    c(this, "_userData", {});
     this.clazz = e;
   }
   /* 获取所有的Metadata对象 */
@@ -47,19 +49,22 @@ const u = class u {
     }
     return a;
   }
+  get userData() {
+    return this._userData;
+  }
   /* 合并父类的Metadata内容 */
   merge(e) {
-    return this.fieldTypes = Object.assign({}, e.fieldTypes, this.fieldTypes), this;
+    return this.fieldTypes = Object.assign({}, e.fieldTypes, this.fieldTypes), this._userData = Object.assign({}, e._userData, this._userData), this;
   }
 };
-c(u, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
-f(u, "_classNameMapMetadata", /* @__PURE__ */ new Map());
+f(u, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
+c(u, "_classNameMapMetadata", /* @__PURE__ */ new Map());
 let d = u;
-function I(s) {
+function C(s) {
   return typeof s == "string" ? s : (s == null ? void 0 : s.name) ?? "";
 }
-c(I, "getDecoratedName");
-function S(s) {
+f(C, "getDecoratedName");
+function G(s) {
   return (e, t) => {
     const a = s == null ? void 0 : s.paramtypes, m = d.getOrCreateMetadata(e);
     if (m.injectable = !0, m.moduleName = s == null ? void 0 : s.moduleName, m.singleton = s == null ? void 0 : s.singleton, m.createImmediately = s == null ? void 0 : s.createImmediately, a)
@@ -72,11 +77,11 @@ function S(s) {
       m.constructorParameterTypes[n] || (m.constructorParameterTypes[n] = i[n].name);
   };
 }
-c(S, "Injectable");
-function $(s) {
+f(G, "Injectable");
+function S(s) {
   return (e, t, a) => {
     var m;
-    if (t = I(t), typeof a == "number") {
+    if (t = C(t), typeof a == "number") {
       const i = d.getOrCreateMetadata(e);
       s && (i.constructorParameterTypes[a] = s);
     } else {
@@ -90,19 +95,19 @@ function $(s) {
     }
   };
 }
-c($, "Inject");
-const p = class p extends Error {
+f(S, "Inject");
+const _ = class _ extends Error {
 };
-c(p, "InjectNotFoundTypeError");
-let M = p;
-const _ = class _ {
+f(_, "InjectNotFoundTypeError");
+let M = _;
+const p = class p {
   constructor() {
     /* 标识是否调用过load方法 */
-    f(this, "_loaded", !1);
+    c(this, "_loaded", !1);
     /* 缓存容器中的内容，名字映射Member对象 */
-    f(this, "_memberMap", /* @__PURE__ */ new Map());
+    c(this, "_memberMap", /* @__PURE__ */ new Map());
     /* 父容器。在当前容器中找不到值时，会尝试在父容器中寻找 */
-    f(this, "_extend");
+    c(this, "_extend");
   }
   /* 设置要继承的父容器。当从容器中找不到值时，会尝试在父容器中寻找 */
   extend(e) {
@@ -136,7 +141,7 @@ const _ = class _ {
     for (let r of this._memberMap.values()) {
       const { metadata: l } = r;
       if (l) {
-        const { clazz: o, fieldTypes: j } = l, O = /* @__PURE__ */ c(() => {
+        const { clazz: o, fieldTypes: O } = l, P = /* @__PURE__ */ f(() => {
           if (n.has(r.name))
             throw new b(
               "依赖循环：" + Array.from(n).join("->") + r.name
@@ -144,14 +149,14 @@ const _ = class _ {
           n.add(r.name);
           const V = new o(
             ...l.constructorParameterTypes.map(
-              (g) => this.getValue(g)
+              (h) => this.getValue(h)
             )
           );
-          for (let g in j)
-            V[g] = this.getValue(j[g]);
+          for (let h in O)
+            V[h] = this.getValue(O[h]);
           return n.delete(r.name), V;
         }, "generator");
-        l.createImmediately && i.push(r), l.singleton ? r.getter = O : r.factory = O;
+        l.createImmediately && i.push(r), l.singleton ? r.getter = P : r.factory = P;
       }
     }
     for (let r of i)
@@ -165,7 +170,7 @@ const _ = class _ {
    */
   bindValue(e, t) {
     if (t === void 0)
-      throw new h("绑定的值不能是undefined");
+      throw new g("绑定的值不能是undefined");
     let a = this._memberMap.get(e);
     return a || (a = this._newMember(e)), a.value = t, this;
   }
@@ -199,7 +204,7 @@ const _ = class _ {
     }
     let a = t.value ?? t.getterValue;
     if (a === void 0 && (t.factory ? a = t.factory() : t.getter && (a = t.getterValue = t.getter(), t.getter = void 0)), a === void 0)
-      throw new h("从容器获取的值不能是undefined");
+      throw new g("从容器获取的值不能是undefined");
     return a;
   }
   /* 生成并缓存一个新Member对象 */
@@ -211,33 +216,33 @@ const _ = class _ {
     return this._memberMap.set(e, a), a;
   }
 };
-c(_, "Container");
-let x = _;
+f(p, "Container");
+let D = p;
 const N = class N extends Error {
 };
-c(N, "ContainerRepeatLoadError");
+f(N, "ContainerRepeatLoadError");
 let y = N;
 const T = class T extends Error {
 };
-c(T, "DependencyCycleError");
+f(T, "DependencyCycleError");
 let b = T;
+const j = class j extends Error {
+};
+f(j, "InvalidValueError");
+let g = j;
 const v = class v extends Error {
 };
-c(v, "InvalidValueError");
-let h = v;
-const P = class P extends Error {
-};
-c(P, "NotExistLabelError");
-let w = P;
+f(v, "NotExistLabelError");
+let w = v;
 export {
-  x as Container,
+  D as Container,
   y as ContainerRepeatLoadError,
   b as DependencyCycleError,
-  $ as Inject,
+  S as Inject,
   M as InjectNotFoundTypeError,
-  S as Injectable,
-  h as InvalidValueError,
+  G as Injectable,
+  g as InvalidValueError,
   d as Metadata,
   w as NotExistLabelError,
-  I as getDecoratedName
+  C as getDecoratedName
 };

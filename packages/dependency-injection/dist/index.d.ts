@@ -89,6 +89,8 @@ export declare class Metadata {
     readonly constructorParameterTypes: string[];
     fieldTypes: Record<string, string>;
     readonly parentClassNames: string[];
+    private _userData;
+    get userData(): Record<string, any>;
     merge(parent: Metadata): this;
 }
 
