@@ -1,26 +1,26 @@
-var A = Object.defineProperty;
-var x = (s, e, t) => e in s ? A(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
-var f = (s, e) => A(s, "name", { value: e, configurable: !0 });
-var c = (s, e, t) => (x(s, typeof e != "symbol" ? e + "" : e, t), t);
+var C = Object.defineProperty;
+var I = (r, e, a) => e in r ? C(r, e, { enumerable: !0, configurable: !0, writable: !0, value: a }) : r[e] = a;
+var l = (r, e) => C(r, "name", { value: e, configurable: !0 });
+var d = (r, e, a) => (I(r, typeof e != "symbol" ? e + "" : e, a), a);
 import "reflect-metadata";
-const u = class u {
+const h = class h {
   constructor(e) {
     /* 标识类是否已被装饰器Injectable装饰 */
-    c(this, "injectable", !1);
+    d(this, "injectable", !1);
     /* 类所属的模块 */
-    c(this, "moduleName");
+    d(this, "moduleName");
     /* 类是否是单例的 */
-    c(this, "singleton");
+    d(this, "singleton");
     /* 类是否立即实例化 */
-    c(this, "createImmediately");
+    d(this, "createImmediately");
     /* 构造函数所有参数的类型 */
-    c(this, "constructorParameterTypes", []);
+    d(this, "constructorParameterTypes", []);
     /* 字段名映射其类型名 */
-    c(this, "fieldTypes", {});
+    d(this, "fieldTypes", {});
     /* 父类的名字 */
-    c(this, "parentClassNames", []);
+    d(this, "parentClassNames", []);
     /* 保存用户自定义数据 */
-    c(this, "_userData", {});
+    d(this, "_userData", {});
     this.clazz = e;
   }
   /* 获取所有的Metadata对象 */
@@ -32,22 +32,22 @@ const u = class u {
    * @param clazzOrPrototype 可以是类或是类的原型
    */
   static getOrCreateMetadata(e) {
-    let t;
-    typeof e == "object" ? t = e.constructor : t = e;
-    let a = this._classNameMapMetadata.get(t.name);
-    if (!a) {
+    let a;
+    typeof e == "object" ? a = e.constructor : a = e;
+    let t = this._classNameMapMetadata.get(a.name);
+    if (!t) {
       this._classNameMapMetadata.set(
-        t.name,
-        a = new u(t)
+        a.name,
+        t = new h(a)
       );
-      let m = Object.getPrototypeOf(t);
-      for (; m != null && m.name; ) {
-        a.parentClassNames.push(m.name);
-        let i = this._classNameMapMetadata.get(m.name);
-        i && i !== a && a.merge(i), m = Object.getPrototypeOf(m);
+      let s = Object.getPrototypeOf(a);
+      for (; s != null && s.name; ) {
+        t.parentClassNames.push(s.name);
+        let n = this._classNameMapMetadata.get(s.name);
+        n && n !== t && t.merge(n), s = Object.getPrototypeOf(s);
       }
     }
-    return a;
+    return t;
   }
   get userData() {
     return this._userData;
@@ -57,110 +57,59 @@ const u = class u {
     return this.fieldTypes = Object.assign({}, e.fieldTypes, this.fieldTypes), this._userData = Object.assign({}, e._userData, this._userData), this;
   }
 };
-f(u, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
-c(u, "_classNameMapMetadata", /* @__PURE__ */ new Map());
-let d = u;
-function C(s) {
-  return typeof s == "string" ? s : (s == null ? void 0 : s.name) ?? "";
+l(h, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
+d(h, "_classNameMapMetadata", /* @__PURE__ */ new Map());
+let u = h;
+function z(r) {
+  return typeof r == "string" ? r : (r == null ? void 0 : r.name) ?? "";
 }
-f(C, "getDecoratedName");
-function G(s) {
-  return (e, t) => {
-    const a = s == null ? void 0 : s.paramtypes, m = d.getOrCreateMetadata(e);
-    if (m.injectable = !0, m.moduleName = s == null ? void 0 : s.moduleName, m.singleton = s == null ? void 0 : s.singleton, m.createImmediately = s == null ? void 0 : s.createImmediately, a)
-      for (let n in a) {
-        const r = Number(n);
-        m.constructorParameterTypes[r] || (m.constructorParameterTypes[r] = a[n]);
+l(z, "getDecoratedName");
+function $(r) {
+  return (e, a) => {
+    const t = r == null ? void 0 : r.paramtypes, s = u.getOrCreateMetadata(e);
+    if (s.injectable = !0, s.moduleName = r == null ? void 0 : r.moduleName, s.singleton = r == null ? void 0 : r.singleton, s.createImmediately = r == null ? void 0 : r.createImmediately, t)
+      for (let i in t) {
+        const f = Number(i);
+        s.constructorParameterTypes[f] || (s.constructorParameterTypes[f] = t[i]);
       }
-    const i = Reflect.getMetadata("design:paramtypes", e) ?? [];
-    for (let n = 0; n < i.length; n++)
-      m.constructorParameterTypes[n] || (m.constructorParameterTypes[n] = i[n].name);
+    const n = Reflect.getMetadata("design:paramtypes", e) ?? [];
+    for (let i = 0; i < n.length; i++)
+      s.constructorParameterTypes[i] || (s.constructorParameterTypes[i] = n[i].name);
   };
 }
-f(G, "Injectable");
-function S(s) {
-  return (e, t, a) => {
-    var m;
-    if (t = C(t), typeof a == "number") {
-      const i = d.getOrCreateMetadata(e);
-      s && (i.constructorParameterTypes[a] = s);
+l($, "Injectable");
+function k(r) {
+  return (e, a, t) => {
+    var s;
+    if (a = z(a), typeof t == "number") {
+      const n = u.getOrCreateMetadata(e);
+      r && (n.constructorParameterTypes[t] = r);
     } else {
-      const i = s || ((m = Reflect.getMetadata("design:type", e, t)) == null ? void 0 : m.name);
-      if (!i)
-        throw new M(
+      const n = r || ((s = Reflect.getMetadata("design:type", e, a)) == null ? void 0 : s.name);
+      if (!n)
+        throw new b(
           "无法通过元数据获取字段类型，必须指定类型"
         );
-      const n = d.getOrCreateMetadata(e);
-      n.fieldTypes[t] = i;
+      const i = u.getOrCreateMetadata(e);
+      i.fieldTypes[a] = n;
     }
   };
 }
-f(S, "Inject");
-const _ = class _ extends Error {
+l(k, "Inject");
+const N = class N extends Error {
 };
-f(_, "InjectNotFoundTypeError");
-let M = _;
-const p = class p {
+l(N, "InjectNotFoundTypeError");
+let b = N;
+const T = class T {
   constructor() {
-    /* 标识是否调用过load方法 */
-    c(this, "_loaded", !1);
     /* 缓存容器中的内容，名字映射Member对象 */
-    c(this, "_memberMap", /* @__PURE__ */ new Map());
+    d(this, "_memberMap", /* @__PURE__ */ new Map());
     /* 父容器。在当前容器中找不到值时，会尝试在父容器中寻找 */
-    c(this, "_extend");
+    d(this, "_extend");
   }
   /* 设置要继承的父容器。当从容器中找不到值时，会尝试在父容器中寻找 */
   extend(e) {
     return this._extend = e, this;
-  }
-  /**
-   * 加载所有已被装饰器Injectable装饰的类且所属于指定的模块
-   * @param option.moduleName 可选。指定要被加载的模块，与装饰器Injectable入参中的moduleName相同
-   * @param option.overrideParent 默认true。是否让子类覆盖父类的实例。如果为true，则通过父类名字拿到的，并非是其自身的实例，而是子类的实例
-   * @throws ContainerRepeatLoadError 当重复调用Container.load方法时抛出
-   */
-  load(e = {}) {
-    if (this._loaded)
-      throw new y(
-        "Container.load方法已被调用过，不能重复调用"
-      );
-    this._loaded = !0;
-    const { overrideParent: t = !0, moduleName: a } = e, m = Array.from(d.getAllMetadata()).filter(
-      (r) => !a || !r.moduleName || r.moduleName === a
-    );
-    for (let r of m)
-      this._newMember(r.clazz.name, r);
-    if (t)
-      for (let r of m) {
-        const l = this._memberMap.get(r.clazz.name);
-        if (l.name === r.clazz.name)
-          for (let o of r.parentClassNames)
-            this._memberMap.set(o, l);
-      }
-    const i = [], n = /* @__PURE__ */ new Set();
-    for (let r of this._memberMap.values()) {
-      const { metadata: l } = r;
-      if (l) {
-        const { clazz: o, fieldTypes: O } = l, P = /* @__PURE__ */ f(() => {
-          if (n.has(r.name))
-            throw new b(
-              "依赖循环：" + Array.from(n).join("->") + r.name
-            );
-          n.add(r.name);
-          const V = new o(
-            ...l.constructorParameterTypes.map(
-              (h) => this.getValue(h)
-            )
-          );
-          for (let h in O)
-            V[h] = this.getValue(O[h]);
-          return n.delete(r.name), V;
-        }, "generator");
-        l.createImmediately && i.push(r), l.singleton ? r.getter = P : r.factory = P;
-      }
-    }
-    for (let r of i)
-      this.getValue(r.name);
   }
   /**
    * 给指定的标识符绑定值
@@ -168,81 +117,160 @@ const p = class p {
    * @param value 指定的值
    * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
    */
-  bindValue(e, t) {
-    if (t === void 0)
+  bindValue(e, a) {
+    if (a === void 0)
       throw new g("绑定的值不能是undefined");
-    let a = this._memberMap.get(e);
-    return a || (a = this._newMember(e)), a.value = t, this;
+    let t = this._memberMap.get(e);
+    return t || (t = this._newMember(e)), t.value = a, this;
   }
   /* 给指定的标识符绑定一个工厂函数，在每次访问时生成一个新值 */
-  bindFactory(e, t) {
-    let a = this._memberMap.get(e);
-    return a || (a = this._newMember(e)), a.factory = t, this;
+  bindFactory(e, a) {
+    let t = this._memberMap.get(e);
+    return t || (t = this._newMember(e)), t.factory = a, this;
   }
   /* 给指定的标识符绑定一个getter，只在第一次访问时执行 */
-  bindGetter(e, t) {
-    let a = this._memberMap.get(e);
-    return a || (a = this._newMember(e)), a.getter = t, a.getterValue = void 0, this;
+  bindGetter(e, a) {
+    let t = this._memberMap.get(e);
+    return t || (t = this._newMember(e)), t.getter = a, t.getterValue = void 0, this;
   }
   /* 解绑指定的标识符 */
   unbind(e) {
     return this._memberMap.delete(e), this;
   }
+  /* 解绑所有标识符 */
+  unbindAll() {
+    this._memberMap.clear();
+  }
+  /* 释放资源 */
+  dispose() {
+    this.unbindAll(), this.extend(void 0);
+  }
   /**
    * 获取指定标识符的值
    * @param label 要获取值的标识符
+   * @param args 生成值所需的参数
    * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
    * @throws NotExistLabelError 当从容器访问一个不存在的标识符时抛出
    */
-  getValue(e) {
+  getValue(e, ...a) {
     typeof e != "string" && (e = e.name);
     const t = this._memberMap.get(e);
     if (!t) {
       if (this._extend)
-        return this._extend.getValue(e);
-      throw new w(`容器内不存在名为${e}的标识符`);
+        return this._extend.getValue(e, ...a);
+      throw new _(`容器内不存在名为${e}的标识符`);
     }
-    let a = t.value ?? t.getterValue;
-    if (a === void 0 && (t.factory ? a = t.factory() : t.getter && (a = t.getterValue = t.getter(), t.getter = void 0)), a === void 0)
+    let s = t.value;
+    if (s === void 0 && (t.factory ? s = t.factory(...a) : (s = t.getterValue, s === void 0 && t.getter && (s = t.getterValue = t.getter(), t.getter = void 0))), s === void 0)
       throw new g("从容器获取的值不能是undefined");
-    return a;
+    return s;
   }
   /* 生成并缓存一个新Member对象 */
-  _newMember(e, t) {
-    const a = {
+  _newMember(e, a) {
+    const t = {
       name: e,
-      metadata: t
+      metadata: a
     };
-    return this._memberMap.set(e, a), a;
+    return this._memberMap.set(e, t), t;
   }
 };
-f(p, "Container");
-let D = p;
-const N = class N extends Error {
+l(T, "Container");
+let y = T;
+const v = class v extends y {
+  constructor() {
+    super(...arguments);
+    /* 标识是否调用过load方法 */
+    d(this, "_loaded", !1);
+  }
+  /**
+   * 加载所有已被装饰器Injectable装饰的类且所属于指定的模块
+   * @throws ContainerRepeatLoadError 当重复调用Container.load方法时抛出
+   */
+  load(a = {}) {
+    if (this._loaded)
+      throw new p(
+        "Container.load方法已被调用过，不能重复调用"
+      );
+    this._loaded = !0;
+    const t = Array.from(u.getAllMetadata());
+    this.loadFromMetadata(t, a);
+  }
+  /* 从元数据中加载内容进容器中 */
+  loadFromMetadata(a, t = {}) {
+    const { overrideParent: s = !0, moduleName: n } = t;
+    a = a.filter(
+      (m) => !n || !m.moduleName || m.moduleName === n
+    );
+    for (let m of a)
+      this._newMember(m.clazz.name, m);
+    if (s)
+      for (let m of a) {
+        const c = this._memberMap.get(m.clazz.name);
+        if (c.name === m.clazz.name)
+          for (let M of m.parentClassNames)
+            this._memberMap.set(M, c);
+      }
+    const i = [], f = /* @__PURE__ */ new Set();
+    for (let m of this._memberMap.values()) {
+      const { metadata: c } = m;
+      if (c) {
+        const { clazz: M, fieldTypes: x } = c, D = /* @__PURE__ */ l(() => {
+          if (f.has(m.name))
+            throw new w(
+              "依赖循环：" + Array.from(f).join("->") + m.name
+            );
+          f.add(m.name);
+          const A = new M(
+            ...c.constructorParameterTypes.map(
+              (o) => this.getValue(o)
+            )
+          );
+          for (let o in x)
+            A[o] = this.getValue(x[o]);
+          return f.delete(m.name), A;
+        }, "generator");
+        c.createImmediately && i.push(m), c.singleton ? m.getter = D : m.factory = D;
+      }
+    }
+    for (let m of i)
+      this.getValue(m.name);
+  }
+  /* 将提供的类绑定进容器内 */
+  loadFromClass(a, t = {}) {
+    this.loadFromMetadata(
+      a.map((s) => u.getOrCreateMetadata(s)),
+      t
+    );
+  }
 };
-f(N, "ContainerRepeatLoadError");
-let y = N;
-const T = class T extends Error {
+l(v, "LoadableContainer");
+let F = v;
+const O = class O extends Error {
 };
-f(T, "DependencyCycleError");
-let b = T;
+l(O, "ContainerRepeatLoadError");
+let p = O;
 const j = class j extends Error {
 };
-f(j, "InvalidValueError");
-let g = j;
-const v = class v extends Error {
+l(j, "DependencyCycleError");
+let w = j;
+const P = class P extends Error {
 };
-f(v, "NotExistLabelError");
-let w = v;
+l(P, "InvalidValueError");
+let g = P;
+const V = class V extends Error {
+};
+l(V, "NotExistLabelError");
+let _ = V;
 export {
-  D as Container,
-  y as ContainerRepeatLoadError,
-  b as DependencyCycleError,
-  S as Inject,
-  M as InjectNotFoundTypeError,
-  G as Injectable,
+  y as Container,
+  p as ContainerRepeatLoadError,
+  w as DependencyCycleError,
+  k as Inject,
+  b as InjectNotFoundTypeError,
+  $ as Injectable,
   g as InvalidValueError,
-  d as Metadata,
-  w as NotExistLabelError,
-  C as getDecoratedName
+  F as LoadableContainer,
+  u as Metadata,
+  _ as NotExistLabelError,
+  z as getDecoratedName
 };
