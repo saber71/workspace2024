@@ -23,3 +23,33 @@ declare interface LoadOption {
   /* 默认true。是否让子类覆盖父类的实例。如果为true，则通过父类名字拿到的，并非是其自身的实例，而是子类的实例 */
   overrideParent?: boolean;
 }
+
+/* 自定义获取值的getter函数 */
+declare type TypeValueGetter = (container: import("src").Container) => any;
+
+/* 保存方法入参类型信息 */
+declare interface MethodParameterTypes {
+  /* 入参类型 */
+  types: string[];
+
+  /* 对应序号入参的自定义getter函数 */
+  getters: Record<number, TypeValueGetter>;
+}
+
+/* 定义一个可以指定入参类型和自定义入参获取方式的getter函数 */
+declare interface MethodParameterOption {
+  /* 指定对应序号的入参类型 */
+  paramtypes?: Record<number, string> | Array<string>;
+
+  /* 指定对应序号的入参获取getter函数 */
+  paramGetters?: Record<number, TypeValueGetter> | Array<TypeValueGetter>;
+}
+
+/* 保存字段的类型信息 */
+declare interface FieldType {
+  /* 字段类型 */
+  type?: string;
+
+  /* 字段值的获取getter函数 */
+  getter?: TypeValueGetter;
+}

@@ -161,12 +161,10 @@ export class LoadableContainer extends Container {
             );
           creating.add(member.name);
           const instance = new clazz(
-            ...metadata.constructorParameterTypes.map((label: string) =>
-              this.getValue(label),
-            ),
+            ...metadata.methodNameMapParameterTypes.constructor,
           );
           for (let propName in fieldTypes) {
-            instance[propName] = this.getValue(fieldTypes[propName]);
+            instance[propName] = this._getFieldValue(fieldTypes[propName]);
           }
           creating.delete(member.name);
           return instance;
@@ -187,6 +185,21 @@ export class LoadableContainer extends Container {
       clazz.map((c) => Metadata.getOrCreateMetadata(c)),
       option,
     );
+  }
+
+  /* 获取方法的入参 */
+  private _getMethodParameters(parameters?: MethodParameterTypes) {
+    if (!parameters) return [];
+    return parameters.types.map(
+      (type, index) => parameters.getters[index]?.(this) ?? this.getValue(type),
+    );
+  }
+
+  /* 获取字段的值 */
+  private _getFieldValue(fieldType: FieldType) {
+    if (!fieldType.getter && !fieldType.type)
+      throw new Error("无法通过元数据获取字段类型，必须指定类型");
+    return fieldType.getter?.(this) ?? this.getValue(fieldType.type!);
   }
 }
 

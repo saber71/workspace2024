@@ -49,11 +49,17 @@ export class Metadata {
   /* 类是否立即实例化 */
   createImmediately?: boolean;
 
-  /* 构造函数所有参数的类型 */
-  readonly constructorParameterTypes: string[] = [];
+  /* 保存方法的入参类型。方法名为key */
+  readonly methodNameMapParameterTypes: Record<
+    string | "constructor",
+    MethodParameterTypes
+  > = {};
 
   /* 字段名映射其类型名 */
-  fieldTypes: Record<string, string> = {};
+  private _fieldTypes: Record<string, FieldType> = {};
+  get fieldTypes(): Record<string, FieldType> {
+    return this._fieldTypes;
+  }
 
   /* 父类的名字 */
   readonly parentClassNames: string[] = [];
@@ -66,8 +72,21 @@ export class Metadata {
 
   /* 合并父类的Metadata内容 */
   merge(parent: Metadata) {
-    this.fieldTypes = Object.assign({}, parent.fieldTypes, this.fieldTypes);
+    this._fieldTypes = Object.assign({}, parent._fieldTypes, this._fieldTypes);
     this._userData = Object.assign({}, parent._userData, this._userData);
     return this;
+  }
+
+  /* 根据方法名获取保存了入参类型的数据结构 */
+  getMethodParameterTypes(
+    methodName: string = "constructor",
+  ): MethodParameterTypes {
+    if (methodName === "constructor") methodName = "_" + methodName;
+    if (!this.methodNameMapParameterTypes[methodName])
+      this.methodNameMapParameterTypes[methodName] = {
+        types: [],
+        getters: {},
+      };
+    return this.methodNameMapParameterTypes[methodName];
   }
 }
