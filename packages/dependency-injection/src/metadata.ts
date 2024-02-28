@@ -28,7 +28,7 @@ export class Metadata {
         metadata.parentClassNames.push(p.name);
         let parentMetadata = this._classNameMapMetadata.get(p.name);
         if (parentMetadata && parentMetadata !== metadata)
-          metadata.merge(parentMetadata);
+          metadata._merge(parentMetadata);
         p = Object.getPrototypeOf(p);
       }
     }
@@ -49,6 +49,9 @@ export class Metadata {
   /* 类是否立即实例化 */
   createImmediately?: boolean;
 
+  /* 标记该类的构造函数入参类型是否是从父类复制的 */
+  copiedConstructorParams = false;
+
   /* 保存方法的入参类型。方法名为key */
   readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes> =
     {};
@@ -68,13 +71,6 @@ export class Metadata {
     return this._userData;
   }
 
-  /* 合并父类的Metadata内容 */
-  merge(parent: Metadata) {
-    this._fieldTypes = Object.assign({}, parent._fieldTypes, this._fieldTypes);
-    this._userData = Object.assign({}, parent._userData, this._userData);
-    return this;
-  }
-
   /* 根据方法名获取保存了入参类型的数据结构 */
   getMethodParameterTypes(
     methodName: string = "_constructor",
@@ -86,5 +82,27 @@ export class Metadata {
         getters: {},
       };
     return this.methodNameMapParameterTypes[methodName];
+  }
+
+  /* 合并父类的Metadata内容 */
+  private _merge(parent: Metadata) {
+    /* 复制父类的段类型 */
+    this._fieldTypes = Object.assign({}, parent._fieldTypes, this._fieldTypes);
+
+    /* 复制父类的用户数据 */
+    this._userData = Object.assign({}, parent._userData, this._userData);
+
+    /* 复制父类的构造函数入参类型。因为如果子类没有声明构造函数，通过元数据就拿不到正确的入参类型 */
+    const parentConstructorParamTypes =
+      parent.methodNameMapParameterTypes._constructor;
+    if (parentConstructorParamTypes) {
+      this.copiedConstructorParams = true;
+      this.methodNameMapParameterTypes._constructor = {
+        types: parentConstructorParamTypes.types.slice(),
+        getters: Object.assign({}, parentConstructorParamTypes.getters),
+      };
+      console.log("merge", this.clazz.name, parentConstructorParamTypes);
+    }
+    return this;
   }
 }

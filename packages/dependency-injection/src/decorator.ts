@@ -40,16 +40,19 @@ export function fillInMethodParameterTypes(
 }
 
 /**
- * 类装饰器
+ * 类装饰器。获取类的构造函数的入参类型，标记该类可以被依赖注入
+ * 如果父类没有用Injectable装饰，那么子类就必须要声明构造函数，否则的话无法通过元数据得到子类正确的构造函数入参类型
  * @param option.moduleName 可选。指定类所属的模块名
  * @param option.singleton 可选。指定类是否是单例的
  * @param option.createImmediately 可选。类是否立即实例化
+ * @param option.overrideConstructor 默认true。是否可以用子类的元数据中的入参类型覆盖从父类继承来的类型信息。当子类没有改变父类的构造函数入参类型时，就应该将该字段设为false
  */
 export function Injectable(
   option?: {
     moduleName?: string;
     singleton?: boolean;
     createImmediately?: boolean;
+    overrideConstructor?: boolean;
   } & MethodParameterOption,
 ) {
   return (clazz: Class, ctx?: any) => {
@@ -59,16 +62,29 @@ export function Injectable(
     metadata.singleton = option?.singleton;
     metadata.createImmediately = option?.createImmediately;
     const parameterTypes = metadata.getMethodParameterTypes();
+    const designParameterTypes = Reflect.getMetadata(
+      "design:paramtypes",
+      clazz,
+    );
+    const overrideConstructor = option?.overrideConstructor ?? true;
+    if (!overrideConstructor && metadata.copiedConstructorParams) return;
+    /* 如果构造函数有定义，就清空从父类处继承来的构造函数入参类型信息 */
+    if (designParameterTypes && metadata.copiedConstructorParams) {
+      metadata.copiedConstructorParams = false;
+      parameterTypes.types.length = 0;
+      parameterTypes.getters = {};
+    }
     fillInMethodParameterTypes(
       parameterTypes,
       option,
-      Reflect.getMetadata("design:paramtypes", clazz) ?? [],
+      designParameterTypes ?? [],
     );
   };
 }
 
 /**
- * 参数装饰器、属性装饰器，方法装饰器
+ * 参数装饰器、属性装饰器，方法装饰器。
+ * 当装饰方法时，获取方法的入参类型。当装饰属性时，获取数的入参类型。当装饰方法的入参时，用来指定该入参的类型，会覆盖方法装饰器中所指定的类型
  * @param option.typeLabel 指定被装饰的字段或入参的类型。当被装饰的是类的字段或入参时才生效
  * @param option.typeValueGetter 指定被装饰的字段或入参的自定义getter。当被装饰的是类的字段或入参时才生效
  * @throws InjectNotFoundTypeError 在无法确定被装饰者的类型时抛出
@@ -91,6 +107,14 @@ export function Inject(
       /* 构造函数或方法的参数装饰器 */
       const metadata = Metadata.getOrCreateMetadata(clazz);
       const methodParameterTypes = metadata.getMethodParameterTypes(propName);
+
+      /* 如果已有的构造函数入参是从父类继承的，就清空这些类型信息 */
+      if (propName === "constructor" && metadata.copiedConstructorParams) {
+        metadata.copiedConstructorParams = false;
+        methodParameterTypes.types.length = 0;
+        methodParameterTypes.getters = {};
+      }
+
       if (typeLabel) methodParameterTypes.types[index] = typeLabel;
       if (typeValueGetter)
         methodParameterTypes.getters[index] = typeValueGetter;
