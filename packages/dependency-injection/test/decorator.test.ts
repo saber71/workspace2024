@@ -43,12 +43,15 @@ describe("decorator.test", () => {
       ) {}
     }
 
+    @Injectable({ overrideConstructor: false })
+    class C extends A {}
+
     const metadata = new Metadata(A);
     metadata.getMethodParameterTypes().types.push("aaa", "String", "B");
     metadata.getMethodParameterTypes("func").types.push("Boolean", "AAA", "B");
-    metadata.fieldTypes["b"] = { type: "Object" };
-    metadata.fieldTypes["aaa"] = { type: "Number" };
-    metadata.fieldTypes["cc"] = { type: "String" };
+    metadata.fieldTypes["b"] = { type: "Object", getter: undefined };
+    metadata.fieldTypes["aaa"] = { type: "Number", getter: undefined };
+    metadata.fieldTypes["cc"] = { type: "String", getter: undefined };
     metadata.parentClassNames.push("Parent");
     metadata.injectable = true;
     metadata.moduleName = "test";
@@ -56,5 +59,10 @@ describe("decorator.test", () => {
     metadata.createImmediately = true;
 
     expect(Metadata.getOrCreateMetadata(A)).toEqual(metadata);
+
+    const metadataForC = Metadata.getOrCreateMetadata(C);
+    expect(metadataForC.getMethodParameterTypes().types).toEqual(
+      Metadata.getOrCreateMetadata(A).getMethodParameterTypes().types,
+    );
   });
 });
