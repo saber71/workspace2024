@@ -148,10 +148,12 @@ declare interface ErrorHandler<Err extends Error> {
   ): void | Promise<void>;
 }
 
+/* 一条路由下，请求类型映射一个控制器方法 */
 declare type RouteHandlerSet = Partial<
   Record<MethodType, RouteHandler | undefined>
 >;
 
+/* 保存处理一条路由对应的控制器方法 */
 declare interface RouteHandler {
   controllerClass: Class;
   methodName: string;
