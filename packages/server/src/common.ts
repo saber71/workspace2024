@@ -45,12 +45,10 @@ export function getOrCreateControllerMethod(
     res = {
       methodName,
       methodType: "GET",
-      paramtypes: [],
-      paramGetters: {},
       route: "",
       routePrefix: "",
     };
-    /* parse findBuId to find-by-id */
+    /* parse findById to find-by-id */
     for (let i = 0; i < methodName.length; i++) {
       let char = methodName[i];
       if (/[A-Z]/.test(char)) {

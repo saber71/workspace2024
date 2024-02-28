@@ -94,7 +94,7 @@ declare interface ServerBootstrapOption {
   };
 }
 
-/* 保存控制器的方法中的路由和入参类型 */
+/* 保存控制器的方法中的路由 */
 declare interface ControllerMethod {
   /* 方法类型 */
   methodType: MethodType;
@@ -107,15 +107,6 @@ declare interface ControllerMethod {
 
   /* 该方法所对应的路由。完整的路由要再加上路由前缀 */
   route: string;
-
-  /* 所有入参的类型 */
-  paramtypes: string[];
-
-  /* 自定义入参的获取方式 */
-  paramGetters: Record<
-    number,
-    (container: import("dependency-injection").Container) => any
-  >;
 }
 
 /* 保存类的自定义数据。挂在类的元数据上 */

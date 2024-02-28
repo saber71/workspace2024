@@ -2,6 +2,7 @@ import "reflect-metadata";
 import {
   type Container,
   getDecoratedName,
+  Inject,
   Injectable,
 } from "dependency-injection";
 import {
@@ -9,18 +10,10 @@ import {
   getOrCreateControllerMethod,
   getOrCreateMetadataUserData,
 } from "./common";
-import {
-  MODULE_NAME,
-  PARAMTYPES_FILE,
-  PARAMTYPES_FILES,
-  PARAMTYPES_REQUEST,
-  PARAMTYPES_REQUEST_BODY,
-  PARAMTYPES_REQUEST_QUERY,
-  PARAMTYPES_RESPONSE,
-  PARAMTYPES_SESSION,
-} from "./constant";
+import { MODULE_NAME } from "./constant";
 import { ControllerManager } from "./controller-manager";
 import { ServerRequest } from "./request";
+import { ServerResponse } from "./response";
 
 export function ErrorHandler<T extends Error>(errorClass: Class<T>) {
   const injectable = Injectable({ singleton: true, moduleName: MODULE_NAME });
@@ -32,11 +25,15 @@ export function ErrorHandler<T extends Error>(errorClass: Class<T>) {
   };
 }
 
-export function Controller(option?: { routePrefix?: string }) {
+export function Controller(
+  option?: { routePrefix?: string } & MethodParameterOption,
+) {
   const injectable = Injectable({
     createImmediately: true,
     singleton: true,
     moduleName: MODULE_NAME,
+    paramtypes: option?.paramtypes,
+    paramGetters: option?.paramGetters,
   });
   return (clazz: Class, _?: any) => {
     injectable(clazz, _);
@@ -59,74 +56,60 @@ export function Controller(option?: { routePrefix?: string }) {
   };
 }
 
-export function Method(option?: {
-  type: MethodType;
-  routePrefix?: string;
-  route?: string;
-  paramtypes?: Record<number, string>;
-}) {
+export function Method(
+  option?: {
+    type: MethodType;
+    routePrefix?: string;
+    route?: string;
+  } & MethodParameterOption,
+) {
+  const inject = Inject({
+    paramtypes: option?.paramtypes,
+    paramGetters: option?.paramGetters,
+  });
   return (target: any, methodName?: any) => {
     methodName = getDecoratedName(methodName);
+    inject(target, methodName);
     const ctrMethod = getOrCreateControllerMethod(target, methodName);
     if (option?.type) ctrMethod.methodType = option.type;
     if (option?.route) ctrMethod.route = option.route;
     if (option?.routePrefix) ctrMethod.routePrefix = option.routePrefix;
-    if (option?.paramtypes) {
-      for (let index in option.paramtypes) {
-        if (ctrMethod.paramtypes[index]) continue;
-        ctrMethod.paramtypes[index] = option.paramtypes[index];
-      }
-    }
-    const paramtypes = Reflect.getMetadata(
-      "design:paramtypes",
-      target,
-      methodName,
-    );
-    if (paramtypes) {
-      for (let i = 0; i < paramtypes.length; i++) {
-        if (ctrMethod.paramtypes[i]) continue;
-        ctrMethod.paramtypes[i] = paramtypes[i].name;
-      }
-    }
-  };
-}
-
-export function ParamType(option: {
-  label: string;
-  getter?: (container: Container) => any;
-}) {
-  return (target: any, methodName: any, index: number) => {
-    methodName = getDecoratedName(methodName);
-    const ctrMethod = getOrCreateControllerMethod(target, methodName);
-    ctrMethod.paramtypes[index] = option.label;
-    if (option.getter) ctrMethod.paramGetters[index] = option.getter;
   };
 }
 
 export function Req() {
-  return ParamType({ label: PARAMTYPES_REQUEST });
+  return Inject({
+    typeValueGetter: (container) => container.getValue(ServerRequest),
+  });
 }
 
 export function Res() {
-  return ParamType({ label: PARAMTYPES_RESPONSE });
+  return Inject({
+    typeValueGetter: (container) => container.getValue(ServerResponse),
+  });
 }
 
 export function ReqBody() {
-  return ParamType({ label: PARAMTYPES_REQUEST_BODY });
+  return Inject({
+    typeValueGetter: (container) => container.getValue(ServerRequest).body,
+  });
 }
 
 export function ReqQuery() {
-  return ParamType({ label: PARAMTYPES_REQUEST_QUERY });
+  return Inject({
+    typeValueGetter: (container) => container.getValue(ServerRequest).query,
+  });
 }
 
 export function ReqSession() {
-  return ParamType({ label: PARAMTYPES_SESSION });
+  return Inject({
+    typeValueGetter: (container) => container.getValue(ServerRequest).session,
+  });
 }
 
 export function ReqFile(fieldName: string) {
-  return ParamType({
-    label: PARAMTYPES_FILE,
-    getter: (container: Container) => {
+  return Inject({
+    typeValueGetter: (container: Container) => {
       const request = container.getValue(ServerRequest);
       if (!request.files) throw new NotFoundFileError();
       const files = request.files[fieldName];
@@ -138,9 +121,8 @@ export function ReqFile(fieldName: string) {
 }
 
 export function ReqFiles(fieldName: string) {
-  return ParamType({
-    label: PARAMTYPES_FILES,
-    getter: (container: Container) => {
+  return Inject({
+    typeValueGetter: (container: Container) => {
       const request = container.getValue(ServerRequest);
       if (!request.files) throw new NotFoundFileError();
       const files = request.files[fieldName];
@@ -151,10 +133,6 @@ export function ReqFiles(fieldName: string) {
   });
 }
 
-export class NotFoundFileError extends Error {}
-
-export class ImproperDecoratorError extends Error {}
-
 export function Pipeline() {
   const injectable = Injectable({ moduleName: MODULE_NAME });
   return (clazz: Class, _?: any) => {
@@ -163,3 +141,7 @@ export function Pipeline() {
     userData.__server__isPipeline = true;
   };
 }
+
+export class NotFoundFileError extends Error {}
+
+export class ImproperDecoratorError extends Error {}

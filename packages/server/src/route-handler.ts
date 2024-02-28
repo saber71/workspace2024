@@ -7,22 +7,4 @@ export class RouteHandler<Controller extends object = object> {
     readonly controller: Controller,
     readonly methodName: string,
   ) {}
-
-  /**
-   * 执行方法
-   * @param container 依赖注入容器
-   */
-  call(container: Container) {
-    const controllerMethod = getOrCreateControllerMethod(
-      this.controller.constructor,
-      this.methodName,
-    );
-    return (container as any)[this.methodName](
-      ...controllerMethod.paramtypes.map(
-        (type, index) =>
-          controllerMethod.paramGetters[index]?.(container) ??
-          container.getValue(type),
-      ),
-    );
-  }
 }
