@@ -21,25 +21,34 @@ describe("decorator.test", () => {
     class A extends Parent {
       @Inject()
       b: great = "123";
-      @Inject("Number")
+      @Inject({ typeLabel: "Number" })
       aaa: string = "";
 
       constructor(
         //@ts-ignore
-        @Inject("aaa")
+        @Inject({ typeLabel: "aaa" })
         readonly a: string,
         bb: great,
         bbb: B,
       ) {
         super();
       }
+
+      @Inject({ paramtypes: { 0: "Boolean" } })
+      func(
+        arg1: string,
+        //@ts-ignore
+        @Inject({ typeLabel: "AAA" }) arg2: number,
+        arg3: B,
+      ) {}
     }
 
     const metadata = new Metadata(A);
-    metadata.constructorParameterTypes.push("aaa", "String", "B");
-    metadata.fieldTypes["b"] = "Object";
-    metadata.fieldTypes["aaa"] = "Number";
-    metadata.fieldTypes["cc"] = "String";
+    metadata.getMethodParameterTypes().types.push("aaa", "String", "B");
+    metadata.getMethodParameterTypes("func").types.push("Boolean", "AAA", "B");
+    metadata.fieldTypes["b"] = { type: "Object" };
+    metadata.fieldTypes["aaa"] = { type: "Number" };
+    metadata.fieldTypes["cc"] = { type: "String" };
     metadata.parentClassNames.push("Parent");
     metadata.injectable = true;
     metadata.moduleName = "test";
