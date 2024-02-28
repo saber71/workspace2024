@@ -2,6 +2,23 @@ import { Metadata } from "dependency-injection";
 
 export class ServerError extends Error {}
 
+export function composeUrl(...items: string[]) {
+  return (
+    "/" +
+    items
+      .map(removeHeadTailSlash)
+      .filter((str) => str.length > 0)
+      .join("/")
+  );
+}
+
+/* 删除头尾的斜线 */
+export function removeHeadTailSlash(str: string) {
+  while (str[0] === "/") str = str.slice(1);
+  while (str[str.length - 1] === "/") str = str.slice(0, str.length - 1);
+  return str;
+}
+
 export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   const metadata = Metadata.getOrCreateMetadata(obj);
   const userData = metadata.userData as MetadataServerUserData;

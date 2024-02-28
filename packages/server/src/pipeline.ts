@@ -1,4 +1,4 @@
-import type { Container } from "dependency-injection";
+import { Container } from "dependency-injection";
 import {
   PARAMTYPES_REQUEST,
   PARAMTYPES_REQUEST_BODY,

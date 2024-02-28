@@ -5,6 +5,7 @@ import {
   Injectable,
 } from "dependency-injection";
 import {
+  composeUrl,
   getOrCreateControllerMethod,
   getOrCreateMetadataUserData,
 } from "./common";
@@ -18,6 +19,7 @@ import {
   PARAMTYPES_RESPONSE,
   PARAMTYPES_SESSION,
 } from "./constant";
+import { ControllerManager } from "./controller-manager";
 import { ServerRequest } from "./request";
 
 export function ErrorHandler<T extends Error>(errorClass: Class<T>) {
@@ -41,6 +43,19 @@ export function Controller(option?: { routePrefix?: string }) {
     const userData = getOrCreateMetadataUserData(clazz);
     userData.__server__isController = true;
     userData.__server__controllerRoutePrefix = option?.routePrefix ?? "";
+    for (let methodName in userData.__server__controllerMethods) {
+      const method = userData.__server__controllerMethods[methodName];
+      ControllerManager.register(
+        method.methodType,
+        composeUrl(
+          userData.__server__controllerRoutePrefix,
+          method.routePrefix,
+          method.route,
+        ),
+        clazz,
+        methodName,
+      );
+    }
   };
 }
 

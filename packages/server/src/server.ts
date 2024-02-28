@@ -1,5 +1,9 @@
 import { Container, LoadableContainer, Metadata } from "dependency-injection";
-import { ServerError, getOrCreateMetadataUserData } from "./common";
+import {
+  ServerError,
+  getOrCreateMetadataUserData,
+  removeHeadTailSlash,
+} from "./common";
 import { DEFAULT_PORT, MODULE_NAME, SERVER_LABEL } from "./constant";
 import { RouteHandler } from "./route-handler";
 
@@ -90,13 +94,6 @@ export class Server<PlatformInstance extends object = object> {
       }
     }
   }
-}
-
-/* 删除头尾的斜线 */
-function removeHeadTailSlash(str: string) {
-  while (str[0] === "/") str = str.slice(1);
-  while (str[str.length - 1] === "/") str = str.slice(0, str.length - 1);
-  return str;
 }
 
 /* 当根据请求的path找不到RouteHandler对象时抛出 */

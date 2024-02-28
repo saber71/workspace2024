@@ -156,3 +156,12 @@ declare interface ErrorHandler<Err extends Error> {
     req: import("src").ServerRequest,
   ): void | Promise<void>;
 }
+
+declare type RouteHandlerSet = Partial<
+  Record<MethodType, RouteHandler | undefined>
+>;
+
+declare interface RouteHandler {
+  controllerClass: Class;
+  methodName: string;
+}
