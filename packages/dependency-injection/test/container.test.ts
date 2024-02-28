@@ -2,10 +2,10 @@ import { describe, test, expect } from "@jest/globals";
 import {
   Inject,
   Injectable,
-  Container,
   ContainerRepeatLoadError,
   NotExistLabelError,
   InvalidValueError,
+  LoadableContainer,
 } from "../src";
 
 describe("container.test", () => {
@@ -40,19 +40,31 @@ describe("container.test", () => {
       createImmediately: true,
     })
     class A extends Parent {
-      @Inject("greet")
+      @Inject({ typeLabel: "greet" })
       b: great;
-      @Inject("aaa")
+      @Inject({ typeLabel: "aaa" })
       aaa: string = "";
 
       constructor(
         //@ts-ignore
-        @Inject("aaa")
+        @Inject({ typeLabel: "aaa" })
         readonly a: string,
         readonly bb: great,
         readonly bbb: B,
       ) {
         super();
+      }
+
+      @Inject()
+      func(
+        //@ts-ignore
+        @Inject({ typeLabel: "aaa" }) arg1: string,
+        //@ts-ignore
+        @Inject({ typeLabel: "greet" }) arg2: great,
+      ) {
+        expect(arg1).toEqual("aaa");
+        expect(arg2).toEqual(0);
+        return "123";
       }
     }
 
@@ -60,7 +72,7 @@ describe("container.test", () => {
     class CC {}
 
     let factoryCount = 0;
-    const container = new Container();
+    const container = new LoadableContainer();
     container
       .bindValue("String", "String")
       .bindGetter("aaa", () => {
@@ -125,5 +137,6 @@ describe("container.test", () => {
     expect(a.bbb).toBeInstanceOf(B);
     expect(factoryCount > 0).toEqual(true);
     expect(container.getValue(CC) !== container.getValue(CC)).toEqual(true);
+    expect(container.call(a, "func")).toEqual("123");
   });
 });

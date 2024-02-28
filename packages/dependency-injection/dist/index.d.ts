@@ -22,6 +22,12 @@ export declare class Container {
      * @throws NotExistLabelError 当从容器访问一个不存在的标识符时抛出
      */
     getValue<T>(label: string | Class<T>, ...args: any[]): T;
+    /**
+     * 调用方法，其入参必须支持依赖注入
+     * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+     */
+    call<T extends object>(instance: T, methodName: keyof T): any;
+    protected _getMethodParameters(parameters?: MethodParameterTypes): any[];
     protected _newMember(name: string, metadata?: Metadata): ContainerMember;
 }
 
@@ -44,7 +50,7 @@ export declare function getDecoratedName(ctx?: string | ClassMemberDecoratorCont
 export declare function Inject(option?: {
     typeLabel?: string;
     typeValueGetter?: TypeValueGetter;
-} & MethodParameterOption): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: number) => void;
+} & MethodParameterOption): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: any) => void;
 
 /**
  * 类装饰器
@@ -77,7 +83,6 @@ export declare class LoadableContainer extends Container {
     load(option?: LoadOption): void;
     loadFromMetadata(metadataArray: Metadata[], option?: LoadOption): void;
     loadFromClass(clazz: Class[], option?: LoadOption): void;
-    private _getMethodParameters;
     private _getFieldValue;
 }
 
@@ -95,7 +100,7 @@ export declare class Metadata {
     moduleName?: string;
     singleton?: boolean;
     createImmediately?: boolean;
-    readonly methodNameMapParameterTypes: Record<string | "constructor", MethodParameterTypes>;
+    readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes>;
     private _fieldTypes;
     get fieldTypes(): Record<string, FieldType>;
     readonly parentClassNames: string[];
@@ -103,6 +108,9 @@ export declare class Metadata {
     get userData(): Record<string, any>;
     merge(parent: Metadata): this;
     getMethodParameterTypes(methodName?: string): MethodParameterTypes;
+}
+
+export declare class MethodNotDecoratedInjectError extends Error {
 }
 
 export declare class NotExistLabelError extends Error {

@@ -93,6 +93,31 @@ export class Container {
     return value;
   }
 
+  /**
+   * 调用方法，其入参必须支持依赖注入
+   * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+   */
+  call<T extends object>(instance: T, methodName: keyof T) {
+    const metadata = Metadata.getOrCreateMetadata(instance.constructor);
+    if (!(methodName in metadata.methodNameMapParameterTypes))
+      throw new MethodNotDecoratedInjectError(
+        (methodName as any) + "方法未装饰Inject",
+      );
+    return (instance as any)[methodName](
+      ...this._getMethodParameters(
+        (metadata.methodNameMapParameterTypes as any)[methodName],
+      ),
+    );
+  }
+
+  /* 获取方法的入参 */
+  protected _getMethodParameters(parameters?: MethodParameterTypes) {
+    if (!parameters) return [];
+    return parameters.types.map(
+      (type, index) => parameters.getters[index]?.(this) ?? this.getValue(type),
+    );
+  }
+
   /* 生成并缓存一个新Member对象 */
   protected _newMember(name: string, metadata?: Metadata): ContainerMember {
     const member: ContainerMember = {
@@ -161,7 +186,7 @@ export class LoadableContainer extends Container {
             );
           creating.add(member.name);
           const instance = new clazz(
-            ...metadata.methodNameMapParameterTypes.constructor,
+            ...this._getMethodParameters(metadata.getMethodParameterTypes()),
           );
           for (let propName in fieldTypes) {
             instance[propName] = this._getFieldValue(fieldTypes[propName]);
@@ -187,14 +212,6 @@ export class LoadableContainer extends Container {
     );
   }
 
-  /* 获取方法的入参 */
-  private _getMethodParameters(parameters?: MethodParameterTypes) {
-    if (!parameters) return [];
-    return parameters.types.map(
-      (type, index) => parameters.getters[index]?.(this) ?? this.getValue(type),
-    );
-  }
-
   /* 获取字段的值 */
   private _getFieldValue(fieldType: FieldType) {
     if (!fieldType.getter && !fieldType.type)
@@ -214,3 +231,6 @@ export class InvalidValueError extends Error {}
 
 /* 当从容器访问一个不存在的标识符时抛出 */
 export class NotExistLabelError extends Error {}
+
+/* 试图调用一个未装饰Inject的方法时抛出 */
+export class MethodNotDecoratedInjectError extends Error {}

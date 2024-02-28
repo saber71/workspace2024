@@ -50,10 +50,8 @@ export class Metadata {
   createImmediately?: boolean;
 
   /* 保存方法的入参类型。方法名为key */
-  readonly methodNameMapParameterTypes: Record<
-    string | "constructor",
-    MethodParameterTypes
-  > = {};
+  readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes> =
+    {};
 
   /* 字段名映射其类型名 */
   private _fieldTypes: Record<string, FieldType> = {};
@@ -79,7 +77,7 @@ export class Metadata {
 
   /* 根据方法名获取保存了入参类型的数据结构 */
   getMethodParameterTypes(
-    methodName: string = "constructor",
+    methodName: string = "_constructor",
   ): MethodParameterTypes {
     if (methodName === "constructor") methodName = "_" + methodName;
     if (!this.methodNameMapParameterTypes[methodName])

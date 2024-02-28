@@ -62,7 +62,7 @@ export function Injectable(
     fillInMethodParameterTypes(
       parameterTypes,
       option,
-      Reflect.getMetadata("design:paramtypes", clazz),
+      Reflect.getMetadata("design:paramtypes", clazz) ?? [],
     );
   };
 }
@@ -82,7 +82,7 @@ export function Inject(
   return (
     clazz: any,
     propName: ClassFieldDecoratorContext | any,
-    index?: number,
+    index?: any,
   ) => {
     propName = getDecoratedName(propName) || "constructor";
     const typeLabel = option?.typeLabel;

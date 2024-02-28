@@ -33,10 +33,19 @@ describe("decorator.test", () => {
       ) {
         super();
       }
+
+      @Inject({ paramtypes: { 0: "Boolean" } })
+      func(
+        arg1: string,
+        //@ts-ignore
+        @Inject({ typeLabel: "AAA" }) arg2: number,
+        arg3: B,
+      ) {}
     }
 
     const metadata = new Metadata(A);
     metadata.getMethodParameterTypes().types.push("aaa", "String", "B");
+    metadata.getMethodParameterTypes("func").types.push("Boolean", "AAA", "B");
     metadata.fieldTypes["b"] = { type: "Object" };
     metadata.fieldTypes["aaa"] = { type: "Number" };
     metadata.fieldTypes["cc"] = { type: "String" };

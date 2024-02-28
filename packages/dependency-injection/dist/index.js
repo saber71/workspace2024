@@ -1,7 +1,7 @@
-var F = Object.defineProperty;
-var C = (s, e, a) => e in s ? F(s, e, { enumerable: !0, configurable: !0, writable: !0, value: a }) : s[e] = a;
-var n = (s, e) => F(s, "name", { value: e, configurable: !0 });
-var d = (s, e, a) => (C(s, typeof e != "symbol" ? e + "" : e, a), a);
+var D = Object.defineProperty;
+var S = (s, e, a) => e in s ? D(s, e, { enumerable: !0, configurable: !0, writable: !0, value: a }) : s[e] = a;
+var i = (s, e) => D(s, "name", { value: e, configurable: !0 });
+var d = (s, e, a) => (S(s, typeof e != "symbol" ? e + "" : e, a), a);
 import "reflect-metadata";
 const h = class h {
   constructor(e) {
@@ -43,8 +43,8 @@ const h = class h {
       let r = Object.getPrototypeOf(a);
       for (; r != null && r.name; ) {
         t.parentClassNames.push(r.name);
-        let i = this._classNameMapMetadata.get(r.name);
-        i && i !== t && t.merge(i), r = Object.getPrototypeOf(r);
+        let n = this._classNameMapMetadata.get(r.name);
+        n && n !== t && t.merge(n), r = Object.getPrototypeOf(r);
       }
     }
     return t;
@@ -60,21 +60,21 @@ const h = class h {
     return this._fieldTypes = Object.assign({}, e._fieldTypes, this._fieldTypes), this._userData = Object.assign({}, e._userData, this._userData), this;
   }
   /* 根据方法名获取保存了入参类型的数据结构 */
-  getMethodParameterTypes(e = "constructor") {
+  getMethodParameterTypes(e = "_constructor") {
     return e === "constructor" && (e = "_" + e), this.methodNameMapParameterTypes[e] || (this.methodNameMapParameterTypes[e] = {
       types: [],
       getters: {}
     }), this.methodNameMapParameterTypes[e];
   }
 };
-n(h, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
+i(h, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
 d(h, "_classNameMapMetadata", /* @__PURE__ */ new Map());
 let u = h;
-function R(s) {
+function $(s) {
   return typeof s == "string" ? s : (s == null ? void 0 : s.name) ?? "";
 }
-n(R, "getDecoratedName");
-function I(s, e, a) {
+i($, "getDecoratedName");
+function R(s, e, a) {
   if (!(e != null && e.paramtypes) && !(e != null && e.paramGetters) && !a)
     throw new g(
       "无法通过元数据获取方法入参类型，必须指定类型"
@@ -93,50 +93,50 @@ function I(s, e, a) {
     for (let t = 0; t < a.length; t++)
       s.types[t] || (s.types[t] = a[t].name);
 }
-n(I, "fillInMethodParameterTypes");
-function k(s) {
+i(R, "fillInMethodParameterTypes");
+function z(s) {
   return (e, a) => {
     const t = u.getOrCreateMetadata(e);
     t.injectable = !0, t.moduleName = s == null ? void 0 : s.moduleName, t.singleton = s == null ? void 0 : s.singleton, t.createImmediately = s == null ? void 0 : s.createImmediately;
     const r = t.getMethodParameterTypes();
-    I(
+    R(
       r,
       s,
-      Reflect.getMetadata("design:paramtypes", e)
+      Reflect.getMetadata("design:paramtypes", e) ?? []
     );
   };
 }
-n(k, "Injectable");
-function q(s) {
+i(z, "Injectable");
+function B(s) {
   return (e, a, t) => {
-    var f;
-    a = R(a) || "constructor";
-    const r = s == null ? void 0 : s.typeLabel, i = s == null ? void 0 : s.typeValueGetter;
+    var c;
+    a = $(a) || "constructor";
+    const r = s == null ? void 0 : s.typeLabel, n = s == null ? void 0 : s.typeValueGetter;
     if (typeof t == "number") {
       const m = u.getOrCreateMetadata(e).getMethodParameterTypes(a);
-      r && (m.types[t] = r), i && (m.getters[t] = i);
+      r && (m.types[t] = r), n && (m.getters[t] = n);
     } else {
-      const c = u.getOrCreateMetadata(e), m = Reflect.getMetadata("design:paramtypes", e, a);
+      const f = u.getOrCreateMetadata(e), m = Reflect.getMetadata("design:paramtypes", e, a);
       if (m) {
-        const l = c.getMethodParameterTypes(a);
-        I(l, s, m);
+        const l = f.getMethodParameterTypes(a);
+        R(l, s, m);
       } else {
-        const l = r || ((f = Reflect.getMetadata("design:type", e, a)) == null ? void 0 : f.name);
-        if (!l && !i)
+        const l = r || ((c = Reflect.getMetadata("design:type", e, a)) == null ? void 0 : c.name);
+        if (!l && !n)
           throw new g(
             "无法通过元数据获取字段类型，必须指定类型"
           );
-        c.fieldTypes[a] = { type: l, getter: i };
+        f.fieldTypes[a] = { type: l, getter: n };
       }
     }
   };
 }
-n(q, "Inject");
-const P = class P extends Error {
+i(B, "Inject");
+const V = class V extends Error {
 };
-n(P, "InjectNotFoundTypeError");
-let g = P;
-const o = class o {
+i(V, "InjectNotFoundTypeError");
+let g = V;
+const v = class v {
   constructor() {
     /* 缓存容器中的内容，名字映射Member对象 */
     d(this, "_memberMap", /* @__PURE__ */ new Map());
@@ -194,12 +194,37 @@ const o = class o {
     if (!t) {
       if (this._extend)
         return this._extend.getValue(e, ...a);
-      throw new p(`容器内不存在名为${e}的标识符`);
+      throw new P(`容器内不存在名为${e}的标识符`);
     }
     let r = t.value;
     if (r === void 0 && (t.factory ? r = t.factory(...a) : (r = t.getterValue, r === void 0 && t.getter && (r = t.getterValue = t.getter(), t.getter = void 0))), r === void 0)
       throw new M("从容器获取的值不能是undefined");
     return r;
+  }
+  /**
+   * 调用方法，其入参必须支持依赖注入
+   * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+   */
+  call(e, a) {
+    const t = u.getOrCreateMetadata(e.constructor);
+    if (!(a in t.methodNameMapParameterTypes))
+      throw new p(
+        a + "方法未装饰Inject"
+      );
+    return e[a](
+      ...this._getMethodParameters(
+        t.methodNameMapParameterTypes[a]
+      )
+    );
+  }
+  /* 获取方法的入参 */
+  _getMethodParameters(e) {
+    return e ? e.types.map(
+      (a, t) => {
+        var r, n;
+        return ((n = (r = e.getters)[t]) == null ? void 0 : n.call(r, this)) ?? this.getValue(a);
+      }
+    ) : [];
   }
   /* 生成并缓存一个新Member对象 */
   _newMember(e, a) {
@@ -210,9 +235,9 @@ const o = class o {
     return this._memberMap.set(e, t), t;
   }
 };
-n(o, "Container");
-let _ = o;
-const V = class V extends _ {
+i(v, "Container");
+let _ = v;
+const O = class O extends _ {
   constructor() {
     super(...arguments);
     /* 标识是否调用过load方法 */
@@ -233,9 +258,9 @@ const V = class V extends _ {
   }
   /* 从元数据中加载内容进容器中 */
   loadFromMetadata(a, t = {}) {
-    const { overrideParent: r = !0, moduleName: i } = t;
+    const { overrideParent: r = !0, moduleName: n } = t;
     a = a.filter(
-      (m) => !i || !m.moduleName || m.moduleName === i
+      (m) => !n || !m.moduleName || m.moduleName === n
     );
     for (let m of a)
       this._newMember(m.clazz.name, m);
@@ -246,27 +271,27 @@ const V = class V extends _ {
           for (let y of m.parentClassNames)
             this._memberMap.set(y, l);
       }
-    const f = [], c = /* @__PURE__ */ new Set();
+    const c = [], f = /* @__PURE__ */ new Set();
     for (let m of this._memberMap.values()) {
       const { metadata: l } = m;
       if (l) {
-        const { clazz: y, fieldTypes: N } = l, T = /* @__PURE__ */ n(() => {
-          if (c.has(m.name))
+        const { clazz: y, fieldTypes: F } = l, A = /* @__PURE__ */ i(() => {
+          if (f.has(m.name))
             throw new w(
-              "依赖循环：" + Array.from(c).join("->") + m.name
+              "依赖循环：" + Array.from(f).join("->") + m.name
             );
-          c.add(m.name);
-          const x = new y(
-            ...l.methodNameMapParameterTypes.constructor
+          f.add(m.name);
+          const C = new y(
+            ...this._getMethodParameters(l.getMethodParameterTypes())
           );
-          for (let D in N)
-            x[D] = this._getFieldValue(N[D]);
-          return c.delete(m.name), x;
+          for (let N in F)
+            C[N] = this._getFieldValue(F[N]);
+          return f.delete(m.name), C;
         }, "generator");
-        l.createImmediately && f.push(m), l.singleton ? m.getter = T : m.factory = T;
+        l.createImmediately && c.push(m), l.singleton ? m.getter = A : m.factory = A;
       }
     }
-    for (let m of f)
+    for (let m of c)
       this.getValue(m.name);
   }
   /* 将提供的类绑定进容器内 */
@@ -276,15 +301,6 @@ const V = class V extends _ {
       t
     );
   }
-  /* 获取方法的入参 */
-  _getMethodParameters(a) {
-    return a ? a.types.map(
-      (t, r) => {
-        var i, f;
-        return ((f = (i = a.getters)[r]) == null ? void 0 : f.call(i, this)) ?? this.getValue(t);
-      }
-    ) : [];
-  }
   /* 获取字段的值 */
   _getFieldValue(a) {
     var t;
@@ -293,35 +309,40 @@ const V = class V extends _ {
     return ((t = a.getter) == null ? void 0 : t.call(a, this)) ?? this.getValue(a.type);
   }
 };
-n(V, "LoadableContainer");
-let A = V;
-const v = class v extends Error {
+i(O, "LoadableContainer");
+let I = O;
+const T = class T extends Error {
 };
-n(v, "ContainerRepeatLoadError");
-let b = v;
-const O = class O extends Error {
+i(T, "ContainerRepeatLoadError");
+let b = T;
+const o = class o extends Error {
 };
-n(O, "DependencyCycleError");
-let w = O;
-const j = class j extends Error {
-};
-n(j, "InvalidValueError");
-let M = j;
+i(o, "DependencyCycleError");
+let w = o;
 const G = class G extends Error {
 };
-n(G, "NotExistLabelError");
-let p = G;
+i(G, "InvalidValueError");
+let M = G;
+const j = class j extends Error {
+};
+i(j, "NotExistLabelError");
+let P = j;
+const x = class x extends Error {
+};
+i(x, "MethodNotDecoratedInjectError");
+let p = x;
 export {
   _ as Container,
   b as ContainerRepeatLoadError,
   w as DependencyCycleError,
-  q as Inject,
+  B as Inject,
   g as InjectNotFoundTypeError,
-  k as Injectable,
+  z as Injectable,
   M as InvalidValueError,
-  A as LoadableContainer,
+  I as LoadableContainer,
   u as Metadata,
-  p as NotExistLabelError,
-  I as fillInMethodParameterTypes,
-  R as getDecoratedName
+  p as MethodNotDecoratedInjectError,
+  P as NotExistLabelError,
+  R as fillInMethodParameterTypes,
+  $ as getDecoratedName
 };
