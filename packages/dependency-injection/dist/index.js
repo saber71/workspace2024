@@ -1,7 +1,7 @@
-var C = Object.defineProperty;
-var I = (r, e, a) => e in r ? C(r, e, { enumerable: !0, configurable: !0, writable: !0, value: a }) : r[e] = a;
-var l = (r, e) => C(r, "name", { value: e, configurable: !0 });
-var d = (r, e, a) => (I(r, typeof e != "symbol" ? e + "" : e, a), a);
+var D = Object.defineProperty;
+var S = (s, e, a) => e in s ? D(s, e, { enumerable: !0, configurable: !0, writable: !0, value: a }) : s[e] = a;
+var i = (s, e) => D(s, "name", { value: e, configurable: !0 });
+var d = (s, e, a) => (S(s, typeof e != "symbol" ? e + "" : e, a), a);
 import "reflect-metadata";
 const h = class h {
   constructor(e) {
@@ -13,10 +13,10 @@ const h = class h {
     d(this, "singleton");
     /* 类是否立即实例化 */
     d(this, "createImmediately");
-    /* 构造函数所有参数的类型 */
-    d(this, "constructorParameterTypes", []);
+    /* 保存方法的入参类型。方法名为key */
+    d(this, "methodNameMapParameterTypes", {});
     /* 字段名映射其类型名 */
-    d(this, "fieldTypes", {});
+    d(this, "_fieldTypes", {});
     /* 父类的名字 */
     d(this, "parentClassNames", []);
     /* 保存用户自定义数据 */
@@ -40,67 +40,103 @@ const h = class h {
         a.name,
         t = new h(a)
       );
-      let s = Object.getPrototypeOf(a);
-      for (; s != null && s.name; ) {
-        t.parentClassNames.push(s.name);
-        let n = this._classNameMapMetadata.get(s.name);
-        n && n !== t && t.merge(n), s = Object.getPrototypeOf(s);
+      let r = Object.getPrototypeOf(a);
+      for (; r != null && r.name; ) {
+        t.parentClassNames.push(r.name);
+        let n = this._classNameMapMetadata.get(r.name);
+        n && n !== t && t.merge(n), r = Object.getPrototypeOf(r);
       }
     }
     return t;
+  }
+  get fieldTypes() {
+    return this._fieldTypes;
   }
   get userData() {
     return this._userData;
   }
   /* 合并父类的Metadata内容 */
   merge(e) {
-    return this.fieldTypes = Object.assign({}, e.fieldTypes, this.fieldTypes), this._userData = Object.assign({}, e._userData, this._userData), this;
+    return this._fieldTypes = Object.assign({}, e._fieldTypes, this._fieldTypes), this._userData = Object.assign({}, e._userData, this._userData), this;
+  }
+  /* 根据方法名获取保存了入参类型的数据结构 */
+  getMethodParameterTypes(e = "_constructor") {
+    return e === "constructor" && (e = "_" + e), this.methodNameMapParameterTypes[e] || (this.methodNameMapParameterTypes[e] = {
+      types: [],
+      getters: {}
+    }), this.methodNameMapParameterTypes[e];
   }
 };
-l(h, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
+i(h, "Metadata"), /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
 d(h, "_classNameMapMetadata", /* @__PURE__ */ new Map());
 let u = h;
-function z(r) {
-  return typeof r == "string" ? r : (r == null ? void 0 : r.name) ?? "";
+function $(s) {
+  return typeof s == "string" ? s : (s == null ? void 0 : s.name) ?? "";
 }
-l(z, "getDecoratedName");
-function $(r) {
-  return (e, a) => {
-    const t = r == null ? void 0 : r.paramtypes, s = u.getOrCreateMetadata(e);
-    if (s.injectable = !0, s.moduleName = r == null ? void 0 : r.moduleName, s.singleton = r == null ? void 0 : r.singleton, s.createImmediately = r == null ? void 0 : r.createImmediately, t)
-      for (let i in t) {
-        const f = Number(i);
-        s.constructorParameterTypes[f] || (s.constructorParameterTypes[f] = t[i]);
+i($, "getDecoratedName");
+function R(s, e, a) {
+  if (!(e != null && e.paramtypes) && !(e != null && e.paramGetters) && !a)
+    throw new g(
+      "无法通过元数据获取方法入参类型，必须指定类型"
+    );
+  if (e) {
+    if (e.paramtypes)
+      for (let t in e.paramtypes) {
+        const r = Number(t);
+        s.types[r] || (s.types[r] = e.paramtypes[t]);
       }
-    const n = Reflect.getMetadata("design:paramtypes", e) ?? [];
-    for (let i = 0; i < n.length; i++)
-      s.constructorParameterTypes[i] || (s.constructorParameterTypes[i] = n[i].name);
+    if (e.paramGetters)
+      for (let t in e.paramGetters)
+        e.paramGetters[t] || (s.getters[t] = e.paramGetters[t]);
+  }
+  if (a)
+    for (let t = 0; t < a.length; t++)
+      s.types[t] || (s.types[t] = a[t].name);
+}
+i(R, "fillInMethodParameterTypes");
+function z(s) {
+  return (e, a) => {
+    const t = u.getOrCreateMetadata(e);
+    t.injectable = !0, t.moduleName = s == null ? void 0 : s.moduleName, t.singleton = s == null ? void 0 : s.singleton, t.createImmediately = s == null ? void 0 : s.createImmediately;
+    const r = t.getMethodParameterTypes();
+    R(
+      r,
+      s,
+      Reflect.getMetadata("design:paramtypes", e) ?? []
+    );
   };
 }
-l($, "Injectable");
-function k(r) {
+i(z, "Injectable");
+function B(s) {
   return (e, a, t) => {
-    var s;
-    if (a = z(a), typeof t == "number") {
-      const n = u.getOrCreateMetadata(e);
-      r && (n.constructorParameterTypes[t] = r);
+    var c;
+    a = $(a) || "constructor";
+    const r = s == null ? void 0 : s.typeLabel, n = s == null ? void 0 : s.typeValueGetter;
+    if (typeof t == "number") {
+      const m = u.getOrCreateMetadata(e).getMethodParameterTypes(a);
+      r && (m.types[t] = r), n && (m.getters[t] = n);
     } else {
-      const n = r || ((s = Reflect.getMetadata("design:type", e, a)) == null ? void 0 : s.name);
-      if (!n)
-        throw new b(
-          "无法通过元数据获取字段类型，必须指定类型"
-        );
-      const i = u.getOrCreateMetadata(e);
-      i.fieldTypes[a] = n;
+      const f = u.getOrCreateMetadata(e), m = Reflect.getMetadata("design:paramtypes", e, a);
+      if (m) {
+        const l = f.getMethodParameterTypes(a);
+        R(l, s, m);
+      } else {
+        const l = r || ((c = Reflect.getMetadata("design:type", e, a)) == null ? void 0 : c.name);
+        if (!l && !n)
+          throw new g(
+            "无法通过元数据获取字段类型，必须指定类型"
+          );
+        f.fieldTypes[a] = { type: l, getter: n };
+      }
     }
   };
 }
-l(k, "Inject");
-const N = class N extends Error {
+i(B, "Inject");
+const V = class V extends Error {
 };
-l(N, "InjectNotFoundTypeError");
-let b = N;
-const T = class T {
+i(V, "InjectNotFoundTypeError");
+let g = V;
+const v = class v {
   constructor() {
     /* 缓存容器中的内容，名字映射Member对象 */
     d(this, "_memberMap", /* @__PURE__ */ new Map());
@@ -119,7 +155,7 @@ const T = class T {
    */
   bindValue(e, a) {
     if (a === void 0)
-      throw new g("绑定的值不能是undefined");
+      throw new M("绑定的值不能是undefined");
     let t = this._memberMap.get(e);
     return t || (t = this._newMember(e)), t.value = a, this;
   }
@@ -158,12 +194,37 @@ const T = class T {
     if (!t) {
       if (this._extend)
         return this._extend.getValue(e, ...a);
-      throw new _(`容器内不存在名为${e}的标识符`);
+      throw new P(`容器内不存在名为${e}的标识符`);
     }
-    let s = t.value;
-    if (s === void 0 && (t.factory ? s = t.factory(...a) : (s = t.getterValue, s === void 0 && t.getter && (s = t.getterValue = t.getter(), t.getter = void 0))), s === void 0)
-      throw new g("从容器获取的值不能是undefined");
-    return s;
+    let r = t.value;
+    if (r === void 0 && (t.factory ? r = t.factory(...a) : (r = t.getterValue, r === void 0 && t.getter && (r = t.getterValue = t.getter(), t.getter = void 0))), r === void 0)
+      throw new M("从容器获取的值不能是undefined");
+    return r;
+  }
+  /**
+   * 调用方法，其入参必须支持依赖注入
+   * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+   */
+  call(e, a) {
+    const t = u.getOrCreateMetadata(e.constructor);
+    if (!(a in t.methodNameMapParameterTypes))
+      throw new p(
+        a + "方法未装饰Inject"
+      );
+    return e[a](
+      ...this._getMethodParameters(
+        t.methodNameMapParameterTypes[a]
+      )
+    );
+  }
+  /* 获取方法的入参 */
+  _getMethodParameters(e) {
+    return e ? e.types.map(
+      (a, t) => {
+        var r, n;
+        return ((n = (r = e.getters)[t]) == null ? void 0 : n.call(r, this)) ?? this.getValue(a);
+      }
+    ) : [];
   }
   /* 生成并缓存一个新Member对象 */
   _newMember(e, a) {
@@ -174,9 +235,9 @@ const T = class T {
     return this._memberMap.set(e, t), t;
   }
 };
-l(T, "Container");
-let y = T;
-const v = class v extends y {
+i(v, "Container");
+let _ = v;
+const O = class O extends _ {
   constructor() {
     super(...arguments);
     /* 标识是否调用过load方法 */
@@ -188,7 +249,7 @@ const v = class v extends y {
    */
   load(a = {}) {
     if (this._loaded)
-      throw new p(
+      throw new b(
         "Container.load方法已被调用过，不能重复调用"
       );
     this._loaded = !0;
@@ -197,80 +258,91 @@ const v = class v extends y {
   }
   /* 从元数据中加载内容进容器中 */
   loadFromMetadata(a, t = {}) {
-    const { overrideParent: s = !0, moduleName: n } = t;
+    const { overrideParent: r = !0, moduleName: n } = t;
     a = a.filter(
       (m) => !n || !m.moduleName || m.moduleName === n
     );
     for (let m of a)
       this._newMember(m.clazz.name, m);
-    if (s)
+    if (r)
       for (let m of a) {
-        const c = this._memberMap.get(m.clazz.name);
-        if (c.name === m.clazz.name)
-          for (let M of m.parentClassNames)
-            this._memberMap.set(M, c);
+        const l = this._memberMap.get(m.clazz.name);
+        if (l.name === m.clazz.name)
+          for (let y of m.parentClassNames)
+            this._memberMap.set(y, l);
       }
-    const i = [], f = /* @__PURE__ */ new Set();
+    const c = [], f = /* @__PURE__ */ new Set();
     for (let m of this._memberMap.values()) {
-      const { metadata: c } = m;
-      if (c) {
-        const { clazz: M, fieldTypes: x } = c, D = /* @__PURE__ */ l(() => {
+      const { metadata: l } = m;
+      if (l) {
+        const { clazz: y, fieldTypes: F } = l, A = /* @__PURE__ */ i(() => {
           if (f.has(m.name))
             throw new w(
               "依赖循环：" + Array.from(f).join("->") + m.name
             );
           f.add(m.name);
-          const A = new M(
-            ...c.constructorParameterTypes.map(
-              (o) => this.getValue(o)
-            )
+          const C = new y(
+            ...this._getMethodParameters(l.getMethodParameterTypes())
           );
-          for (let o in x)
-            A[o] = this.getValue(x[o]);
-          return f.delete(m.name), A;
+          for (let N in F)
+            C[N] = this._getFieldValue(F[N]);
+          return f.delete(m.name), C;
         }, "generator");
-        c.createImmediately && i.push(m), c.singleton ? m.getter = D : m.factory = D;
+        l.createImmediately && c.push(m), l.singleton ? m.getter = A : m.factory = A;
       }
     }
-    for (let m of i)
+    for (let m of c)
       this.getValue(m.name);
   }
   /* 将提供的类绑定进容器内 */
   loadFromClass(a, t = {}) {
     this.loadFromMetadata(
-      a.map((s) => u.getOrCreateMetadata(s)),
+      a.map((r) => u.getOrCreateMetadata(r)),
       t
     );
   }
+  /* 获取字段的值 */
+  _getFieldValue(a) {
+    var t;
+    if (!a.getter && !a.type)
+      throw new Error("无法通过元数据获取字段类型，必须指定类型");
+    return ((t = a.getter) == null ? void 0 : t.call(a, this)) ?? this.getValue(a.type);
+  }
 };
-l(v, "LoadableContainer");
-let F = v;
-const O = class O extends Error {
+i(O, "LoadableContainer");
+let I = O;
+const T = class T extends Error {
 };
-l(O, "ContainerRepeatLoadError");
-let p = O;
+i(T, "ContainerRepeatLoadError");
+let b = T;
+const o = class o extends Error {
+};
+i(o, "DependencyCycleError");
+let w = o;
+const G = class G extends Error {
+};
+i(G, "InvalidValueError");
+let M = G;
 const j = class j extends Error {
 };
-l(j, "DependencyCycleError");
-let w = j;
-const P = class P extends Error {
+i(j, "NotExistLabelError");
+let P = j;
+const x = class x extends Error {
 };
-l(P, "InvalidValueError");
-let g = P;
-const V = class V extends Error {
-};
-l(V, "NotExistLabelError");
-let _ = V;
+i(x, "MethodNotDecoratedInjectError");
+let p = x;
 export {
-  y as Container,
-  p as ContainerRepeatLoadError,
+  _ as Container,
+  b as ContainerRepeatLoadError,
   w as DependencyCycleError,
-  k as Inject,
-  b as InjectNotFoundTypeError,
-  $ as Injectable,
-  g as InvalidValueError,
-  F as LoadableContainer,
+  B as Inject,
+  g as InjectNotFoundTypeError,
+  z as Injectable,
+  M as InvalidValueError,
+  I as LoadableContainer,
   u as Metadata,
-  _ as NotExistLabelError,
-  z as getDecoratedName
+  p as MethodNotDecoratedInjectError,
+  P as NotExistLabelError,
+  R as fillInMethodParameterTypes,
+  $ as getDecoratedName
 };

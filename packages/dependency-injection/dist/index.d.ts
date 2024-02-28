@@ -22,6 +22,12 @@ export declare class Container {
      * @throws NotExistLabelError 当从容器访问一个不存在的标识符时抛出
      */
     getValue<T>(label: string | Class<T>, ...args: any[]): T;
+    /**
+     * 调用方法，其入参必须支持依赖注入
+     * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+     */
+    call<T extends object>(instance: T, methodName: keyof T): any;
+    protected _getMethodParameters(parameters?: MethodParameterTypes): any[];
     protected _newMember(name: string, metadata?: Metadata): ContainerMember;
 }
 
@@ -31,28 +37,32 @@ export declare class ContainerRepeatLoadError extends Error {
 export declare class DependencyCycleError extends Error {
 }
 
+export declare function fillInMethodParameterTypes(parameterTypes: MethodParameterTypes, option?: MethodParameterOption, types?: Function[]): void;
+
 export declare function getDecoratedName(ctx?: string | ClassMemberDecoratorContext): string | symbol;
 
 /**
- * 构造函数参数装饰器、字段装饰器
- * @param typeLabel 指定这个字段/参数的类型
+ * 参数装饰器、属性装饰器，方法装饰器
+ * @param option.typeLabel 指定被装饰的字段或入参的类型。当被装饰的是类的字段或入参时才生效
+ * @param option.typeValueGetter 指定被装饰的字段或入参的自定义getter。当被装饰的是类的字段或入参时才生效
  * @throws InjectNotFoundTypeError 在无法确定被装饰者的类型时抛出
  */
-export declare function Inject(typeLabel?: string): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: number) => void;
+export declare function Inject(option?: {
+    typeLabel?: string;
+    typeValueGetter?: TypeValueGetter;
+} & MethodParameterOption): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: any) => void;
 
 /**
  * 类装饰器
- * @param option.paramtypes 可选。指定部分或全部构造函数入参的类型，就好像是使用装饰器Inject去装饰参数。装饰器Inject优先级更高。key为入参的序号，value为入参类型
  * @param option.moduleName 可选。指定类所属的模块名
  * @param option.singleton 可选。指定类是否是单例的
  * @param option.createImmediately 可选。类是否立即实例化
  */
 export declare function Injectable(option?: {
-    paramtypes?: Record<number, string>;
     moduleName?: string;
     singleton?: boolean;
     createImmediately?: boolean;
-}): (clazz: Class, ctx?: any) => void;
+} & MethodParameterOption): (clazz: Class, ctx?: any) => void;
 
 export declare class InjectNotFoundTypeError extends Error {
 }
@@ -73,6 +83,7 @@ export declare class LoadableContainer extends Container {
     load(option?: LoadOption): void;
     loadFromMetadata(metadataArray: Metadata[], option?: LoadOption): void;
     loadFromClass(clazz: Class[], option?: LoadOption): void;
+    private _getFieldValue;
 }
 
 export declare class Metadata {
@@ -89,12 +100,17 @@ export declare class Metadata {
     moduleName?: string;
     singleton?: boolean;
     createImmediately?: boolean;
-    readonly constructorParameterTypes: string[];
-    fieldTypes: Record<string, string>;
+    readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes>;
+    private _fieldTypes;
+    get fieldTypes(): Record<string, FieldType>;
     readonly parentClassNames: string[];
     private _userData;
     get userData(): Record<string, any>;
     merge(parent: Metadata): this;
+    getMethodParameterTypes(methodName?: string): MethodParameterTypes;
+}
+
+export declare class MethodNotDecoratedInjectError extends Error {
 }
 
 export declare class NotExistLabelError extends Error {
