@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["uuid"],
+      external: ["dependency-injection", "reflect-metadata"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

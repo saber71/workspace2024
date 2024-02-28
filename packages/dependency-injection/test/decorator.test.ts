@@ -1,4 +1,4 @@
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
 import { Inject, Injectable, Metadata } from "../src";
 
 describe("decorator.test", () => {

@@ -1,5 +1,5 @@
 {
-  "name": "dependency-injection",
+  "name": "server",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,6 +10,7 @@
     "test": "vitest"
   },
   "peerDependencies": {
+    "dependency-injection": "workspace:^",
     "reflect-metadata": "^0.2.1"
   }
 }

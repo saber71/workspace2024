@@ -7,7 +7,16 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["uuid"],
+      external: [
+        "server",
+        "express",
+        "express-formidable",
+        "express-session",
+        "node:querystring",
+        "node:url",
+        "node:path",
+        "http-proxy-middleware",
+      ],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

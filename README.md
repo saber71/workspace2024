@@ -11,7 +11,8 @@
 如果代码中未给字段/参数指定类型或者类型是一个复合类型，最后通过reflect-metadata得到的类型会是Object
 
 - `Reflect.getMetadata("design:paramtypes", clazz)`，获取类的构造函数所有入参的类型（如[String,Number,SomeClass]）。
-- `Reflect.getMetadata("design:type", clazz, memberName)`，获取字段的类型(如String|Number|SomeClass)，如果被装饰者是方法，得到的结果就会是Function
+- `Reflect.getMetadata("design:paramtypes", target, methodName)`，获取类的方法所有入参的类型（如[String,Number,SomeClass]）。
+- `Reflect.getMetadata("design:type", target, memberName)`，获取字段的类型(如String|Number|SomeClass)，如果被装饰者是方法，得到的结果就会是Function
 
 ## 提交格式: `<type>(scope?): <subject>`
 
