@@ -10,7 +10,6 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "dependency-injection": "workspace:^",
-    "reflect-metadata": "^0.2.1"
+    "dependency-injection": "workspace:^"
   }
 }

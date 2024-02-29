@@ -1,6 +1,5 @@
 import { Metadata } from "dependency-injection";
-
-export class ServerError extends Error {}
+import { ServerError } from "./errors";
 
 export function composeUrl(...items: string[]) {
   return (
@@ -24,10 +23,7 @@ export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   const userData = metadata.userData as MetadataServerUserData;
   if (!userData.__server__) {
     userData.__server__ = true;
-    userData.__server__isErrorHandler = false;
-    userData.__server__isController = false;
-    userData.__server__isPipeline = false;
-    userData.__server__metadata = metadata;
+    userData.__server__classType = "no-special";
     userData.__server__controllerRoutePrefix = "";
     userData.__server__controllerMethods = {};
     userData.__server__handle_error_type = ServerError;
@@ -44,7 +40,7 @@ export function getOrCreateControllerMethod(
   if (!res) {
     res = {
       methodName,
-      methodType: "GET",
+      type: "GET",
       route: "",
       routePrefix: "",
     };
