@@ -1,3 +1,4 @@
+/// <reference types="../types" />
 /// <reference types="dependency-injection/types" />
 /// <reference types="node" />
 
@@ -117,8 +118,6 @@ export declare class Server<PlatformInstance extends object = object> {
     private _handleRequest;
     private _catchRequestError;
 }
-
-export declare const SERVER_LABEL = "Server";
 
 export declare class ServerError extends Error {
     code: number;

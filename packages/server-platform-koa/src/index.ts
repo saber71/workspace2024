@@ -1,5 +1,6 @@
+/// <reference types="../types" />
 import Koa, { ParameterizedContext } from "koa";
-import koaBody from "koa-body";
+import { koaBody } from "koa-body";
 import mount from "koa-mount";
 import Router from "koa-router";
 import send from "koa-send";
@@ -44,11 +45,19 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
         .use(router.routes())
         .use(router.allowedMethods())
         .listen(option.port, option.hostname);
+      console.log("listening on %s", option.port);
     },
     useRoutes(routes) {
       for (let route in routes) {
         const object = routes[route];
-        router.use(route, async (ctx) => {
+        router.get(route, getHandler(object));
+        router.post(route, getHandler(object));
+        router.delete(route, getHandler(object));
+        router.put(route, getHandler(object));
+      }
+
+      function getHandler(object: RouteHandlerObject) {
+        return async (ctx: Koa.ParameterizedContext) => {
           const req = createServerRequest(ctx);
           const res = createServerResponse(ctx);
           try {
@@ -57,7 +66,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
             object.catchError(e as Error, req, res);
           }
           ctx.res.end();
-        });
+        };
       }
     },
     proxy(option) {
@@ -95,7 +104,7 @@ export function createServerRequest(
     href: ctx.href,
     path: ctx.path,
     search: ctx.search,
-    method: ctx.method.toUpperCase(),
+    method: ctx.method.toUpperCase() as MethodType,
     URL: ctx.URL,
     body: ctx.request.body,
     files: ctx.request.files,

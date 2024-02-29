@@ -1,5 +1,4 @@
-import { Container, Inject } from "dependency-injection";
-import { SERVER_LABEL } from "./constant";
+import { Container } from "dependency-injection";
 import { Pipeline } from "./decorators";
 import { ServerRequest } from "./request";
 import { ServerResponse } from "./response";
@@ -11,7 +10,6 @@ import { Session } from "./session";
 @Pipeline()
 export class RequestPipeline {
   constructor(
-    @Inject({ typeLabel: SERVER_LABEL })
     readonly server: Server,
     readonly request: ServerRequest,
     readonly response: ServerResponse,

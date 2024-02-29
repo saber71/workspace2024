@@ -61,7 +61,6 @@ function getOrCreateControllerMethod(target, methodName) {
 
 /* 本库所使用的依赖注入模块名 */ const MODULE_NAME = "server";
 /* Web服务器默认的监听端口 */ const DEFAULT_PORT = 4000;
-/* Server对象在容器中的标识。写出来是为了防止在代码中直接引用Server对象，避免可能的依赖循环 */ const SERVER_LABEL = "Server";
 
 var RouteManager;
 (function(RouteManager) {
@@ -300,11 +299,6 @@ function _ts_decorate$1(decorators, target, key, desc) {
 function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
-function _ts_param(paramIndex, decorator) {
-    return function(target, key) {
-        decorator(target, key, paramIndex);
-    };
-}
 class RequestPipeline {
     server;
     request;
@@ -338,9 +332,6 @@ class RequestPipeline {
 }
 RequestPipeline = _ts_decorate$1([
     Pipeline(),
-    _ts_param(0, Inject({
-        typeLabel: SERVER_LABEL
-    })),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
         typeof Server === "undefined" ? Object : Server,
@@ -423,7 +414,7 @@ let Server$1 = class Server {
     /* 初始化Web服务器 */ async _init(options) {
         this._errorHandlerDispatcher = new ErrorHandlerDispatcher(options.errorHandlers ?? []);
         this._requestPipelineClass = options.pipeline ?? RequestPipeline;
-        this._dependencyInjection.bindValue(SERVER_LABEL, this).bindFactory(Container.name, this.createContainer.bind(this));
+        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this));
         this._dependencyInjection.load({
             moduleName: MODULE_NAME
         });
@@ -455,4 +446,4 @@ let Server$1 = class Server {
     }
 };
 
-export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, Pipeline, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBodySender, RouteManager, SERVER_LABEL, Server$1 as Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, Pipeline, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBodySender, RouteManager, Server$1 as Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };

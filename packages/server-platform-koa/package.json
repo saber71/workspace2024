@@ -7,7 +7,7 @@
   "scripts": {
     "build": "vite build",
     "watch": "vite build --watch",
-    "test": "vitest"
+    "test": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
   },
   "peerDependencies": {
     "koa": "^2.15.0",

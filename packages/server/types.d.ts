@@ -39,20 +39,19 @@ declare interface ServerCreateOption {
   responseBodySender?: Class<ResponseBodySenderInterface>;
 }
 
-declare type Routes = Record<
-  string,
-  {
-    handle: (
-      req: import("src").ServerRequest,
-      res: import("src").ServerResponse,
-    ) => any;
-    catchError: (
-      err: Error,
-      req: import("src").ServerRequest,
-      res: import("src").ServerResponse,
-    ) => void;
-  }
->;
+declare type RouteHandlerObject = {
+  handle: (
+    req: import("src").ServerRequest,
+    res: import("src").ServerResponse,
+  ) => any;
+  catchError: (
+    err: Error,
+    req: import("src").ServerRequest,
+    res: import("src").ServerResponse,
+  ) => void;
+};
+
+declare type Routes = Record<string, RouteHandlerObject>;
 
 /* Web框架适配器，比如适配express、koa等 */
 declare interface ServerPlatformAdapter<

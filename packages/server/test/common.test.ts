@@ -1,5 +1,7 @@
 import { describe, test, expect } from "vitest";
 import { composeUrl } from "../src";
+//@ts-ignore
+import request from "supertest";
 
 describe("common.test", () => {
   test("composeUrl", () => {

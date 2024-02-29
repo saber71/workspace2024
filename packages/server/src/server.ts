@@ -1,5 +1,5 @@
 import { Container, LoadableContainer } from "dependency-injection";
-import { DEFAULT_PORT, MODULE_NAME, SERVER_LABEL } from "./constant";
+import { DEFAULT_PORT, MODULE_NAME } from "./constant";
 import { ResponseBodySender } from "./response-body-sender";
 import { RouteManager } from "./route-manager";
 import { ErrorHandlerDispatcher } from "./error-handler-dispatcher";
@@ -81,7 +81,7 @@ export class Server<PlatformInstance extends object = object> {
     this._requestPipelineClass = options.pipeline ?? RequestPipeline;
 
     this._dependencyInjection
-      .bindValue(SERVER_LABEL, this)
+      .bindValue(Server.name, this)
       .bindFactory(Container.name, this.createContainer.bind(this));
     this._dependencyInjection.load({ moduleName: MODULE_NAME });
 

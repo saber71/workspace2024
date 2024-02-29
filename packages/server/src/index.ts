@@ -1,3 +1,4 @@
+/// <reference types="../types"/>
 export * from "dependency-injection";
 export * from "./common";
 export * from "./constant";
