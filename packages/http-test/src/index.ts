@@ -75,7 +75,7 @@ export class ExpectResponse<Data> {
   /* 设置期待的响应体数据结构中的data字段，数据结构中的其他字段设为成功时的默认值 */
   expectBodyData(data: any) {
     return this.expectBody({
-      data,
+      object: data,
       success: true,
       code: 200,
       msg: "ok",
