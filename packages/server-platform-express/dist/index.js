@@ -48,6 +48,8 @@ function createServerPlatformExpress() {
             app.use(session({
                 secret: option.session?.secretKey ?? "express-secret-key",
                 name: option.session?.cookieKey,
+                resave: true,
+                saveUninitialized: false,
                 cookie: {
                     secure: true,
                     maxAge: option.session?.maxAge
@@ -83,7 +85,7 @@ function getRouteHandler(object) {
     };
 }
 function createServerRequest(req) {
-    const url = new URL(req.url);
+    const url = new URL("http://" + req.headers.host + req.url);
     const querystring = url.search.substring(1);
     let body = req.body;
     if (req.fields) {

@@ -13,14 +13,16 @@ export class ErrorController {
 
 export function errorControllerHttpTestSuits() {
   return httpTest({
-    url: "http://localhost:4000/error/throw-error",
+    url: "/error/throw-error",
     method: "DELETE",
   })
     .expectStatus(666)
     .expectBody({
-      success: true,
+      success: false,
       code: 666,
-      object: {},
+      object: {
+        code: 666,
+      },
       msg: "An error has occurred.",
     })
     .done();

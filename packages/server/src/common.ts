@@ -1,6 +1,7 @@
 import { Metadata } from "dependency-injection";
 import { ServerError } from "./errors";
 
+/* 组装url */
 export function composeUrl(...items: string[]) {
   return (
     "/" +

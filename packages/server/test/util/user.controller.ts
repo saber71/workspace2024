@@ -22,8 +22,7 @@ export class UserController {
 
 export function userControllerHttpTestSuits() {
   return httpTest({
-    baseURL: "",
-    url: "http://localhost:4000/user/api/find-by-id",
+    url: "/user/api/find-by-id",
     params: {
       id: 12,
     },

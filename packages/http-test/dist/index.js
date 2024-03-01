@@ -2,7 +2,16 @@ import axios from 'axios';
 import { expect } from 'vitest';
 
 /* 调用axios发起请求，返回准备对Response内容进行测试的对象 */ function httpTest(config) {
-    return new ExpectResponse(axios.request(config));
+    return new ExpectResponse(axios.request({
+        baseURL: "http://localhost:4000/",
+        validateStatus: ()=>true,
+        ...config
+    }).then((res)=>({
+            status: res.status,
+            headers: res.headers,
+            data: res.data,
+            href: res.request.path
+        })));
 }
 /* 对Response内容进行测试的对象 */ class ExpectResponse {
     _res;
@@ -11,6 +20,7 @@ import { expect } from 'vitest';
         this._expectHeaders = [];
         this._toTestBody = false;
     }
+    /* 缓存作为Promise结果的Response对象 */ _response;
     /* 期待的响应头内容 */ _expectHeaders;
     /* 期待的状态码 */ _expectStatus;
     /* 期待的响应体 */ _expectBody;
@@ -31,30 +41,47 @@ import { expect } from 'vitest';
         this._toTestBody = true;
         return this;
     }
+    /* 设置期待的响应体数据结构中的data字段，数据结构中的其他字段设为成功时的默认值 */ expectBodyData(data) {
+        return this.expectBody({
+            data,
+            success: true,
+            code: 200,
+            msg: "ok"
+        });
+    }
     /* 开始进行测试 */ async done() {
         const res = await this._res;
+        this._response = res;
         for (let item of this._expectHeaders){
-            ExpectResponse._toBe(res.headers[item[0].toLowerCase()], item[1]);
+            this._toBe(res, res.headers[item[0].toLowerCase()], item[1]);
         }
-        if (typeof this._expectStatus === "number") expect(res.status).toEqual(this._expectStatus);
-        if (this._toTestBody) expect(res.data).toEqual(this._expectBody);
+        if (typeof this._expectStatus === "number") expect(this._buildStatusObject(res.status)).toEqual(this._buildStatusObject(this._expectStatus));
+        if (this._toTestBody) expect(this._buildBodyObject(res.data)).toEqual(this._buildBodyObject(this._expectBody));
     }
-    /* 测试字符串是否满足期待 */ static _toBe(value, expectValue) {
-        const expectResult = {
-            value,
-            expectValue,
-            test: true
+    /* 测试字符串是否满足期待 */ _toBe(res, value, expectValue) {
+        const builder = this._buildToBeObject(value, expectValue);
+        if (expectValue instanceof RegExp) expect(builder(expectValue.test(value))).toEqual(builder(true));
+        else expect(builder(value === expectValue)).toEqual(builder(true));
+    }
+    /* 构建_toBe方法所需的数据结构 */ _buildToBeObject(value, expectValue) {
+        return (test)=>({
+                value,
+                expectValue,
+                test,
+                href: this._response.href
+            });
+    }
+    /* 构建进行状态码测试用的数据结构 */ _buildStatusObject(status) {
+        return {
+            href: this._response.href,
+            status
         };
-        if (expectValue instanceof RegExp) expect({
-            value,
-            expectValue,
-            test: expectValue.test(value)
-        }).toEqual(expectResult);
-        else expect({
-            value,
-            expectValue,
-            test: value === expectValue
-        }).toEqual(expectResult);
+    }
+    /* 构建进行响应头测试用的数据结构 */ _buildBodyObject(body) {
+        return {
+            href: this._response.href,
+            body
+        };
     }
 }
 
