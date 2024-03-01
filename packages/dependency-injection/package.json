@@ -10,6 +10,7 @@
     "test": "vitest"
   },
   "peerDependencies": {
+    "eventemitter3": "^5.0.1",
     "reflect-metadata": "^0.2.1"
   }
 }

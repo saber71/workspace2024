@@ -1,16 +1,38 @@
-export declare class Container {
+/// <reference types="../types" />
+
+import EventEmitter from 'eventemitter3';
+
+export declare class Container extends EventEmitter<{
+    loadClass: (clazz: Class, member: ContainerMember) => void;
+}> {
     protected readonly _memberMap: Map<string, ContainerMember>;
     private _extend?;
+    /**
+     * 设置要继承的父容器。当从容器中找不到值时，会尝试在父容器中寻找
+     * 会继承父容器中的可依赖注入对象，并将生成实例时的上下文环境替换成此实例
+     * 在取消继承时删除之
+     */
     extend(parent?: Container): this;
+    private _onLoadClass;
+    private _extendMember;
     /**
      * 给指定的标识符绑定值
      * @param label 标识符
      * @param value 指定的值
      * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
+     * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
      */
     bindValue(label: string, value: any): this;
-    bindFactory(label: string, value: (...args: any[]) => any): this;
-    bindGetter(label: string, value: () => any): this;
+    /**
+     * 给指定的标识符绑定一个工厂函数，在每次访问时生成一个新值
+     * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
+     */
+    bindFactory(label: string, value: (...args: any[]) => any, context?: any): this;
+    /**
+     * 给指定的标识符绑定一个getter，只在第一次访问时执行
+     * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
+     */
+    bindGetter(label: string, value: () => any, context?: any): this;
     unbind(label: string): this;
     unbindAll(): void;
     dispose(): void;
@@ -38,6 +60,9 @@ export declare class DependencyCycleError extends Error {
 }
 
 export declare function fillInMethodParameterTypes(parameterTypes: MethodParameterTypes, option?: MethodParameterOption, types?: Function[]): void;
+
+export declare class ForbiddenOverrideInjectableError extends Error {
+}
 
 export declare function getDecoratedName(ctx?: string | ClassMemberDecoratorContext): string | symbol;
 

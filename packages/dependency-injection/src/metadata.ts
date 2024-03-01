@@ -24,11 +24,16 @@ export class Metadata {
         (metadata = new Metadata(clazz)),
       );
       let p = Object.getPrototypeOf(clazz);
+      let merged = false;
       while (p?.name) {
         metadata.parentClassNames.push(p.name);
-        let parentMetadata = this._classNameMapMetadata.get(p.name);
-        if (parentMetadata && parentMetadata !== metadata)
-          metadata._merge(parentMetadata);
+        if (!merged) {
+          let parentMetadata = this._classNameMapMetadata.get(p.name);
+          if (parentMetadata && parentMetadata !== metadata) {
+            merged = true;
+            metadata._merge(parentMetadata);
+          }
+        }
         p = Object.getPrototypeOf(p);
       }
     }
