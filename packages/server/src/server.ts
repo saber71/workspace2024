@@ -46,7 +46,7 @@ export class Server<PlatformInstance extends object = object> {
 
   /* 创建一个依赖注入容器，并且继承自Server内部保有的根容器 */
   createContainer(): Container {
-    return new Container().extend(this._dependencyInjection);
+    return new LoadableContainer().extend(this._dependencyInjection);
   }
 
   /* 启动服务器 */

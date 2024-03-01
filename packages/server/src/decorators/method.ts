@@ -3,7 +3,7 @@ import { getOrCreateControllerMethod } from "../common";
 
 /* 方法装饰器。标识此方法用来处理路由。只有在类上装饰了Controller装饰器时才会生效 */
 export function Method(
-  option?: Pick<ControllerMethod, "route" | "routePrefix" | "type"> &
+  option?: Partial<Pick<ControllerMethod, "route" | "routePrefix" | "type">> &
     MethodParameterOption,
 ) {
   const inject = Inject({

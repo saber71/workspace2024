@@ -14,8 +14,8 @@ export class RequestPipeline {
     readonly request: ServerRequest,
     readonly response: ServerResponse,
   ) {
-    this._container = server
-      .createContainer()
+    this._container = server.createContainer();
+    this._container
       .bindValue(Container.name, this._container)
       .bindValue(ServerRequest.name, request)
       .bindValue(ServerResponse.name, response)

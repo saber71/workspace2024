@@ -5,9 +5,9 @@ describe("HttpTest", () => {
   test("ExpectResponse", async () => {
     await new ExpectResponse({
       headers: {
-        "Cache-Control": "no-cache",
-        "Content-Encoding": "zh-CN",
-        "Content-Type": "application/json",
+        "cache-control": "no-cache",
+        "content-encoding": "zh-CN",
+        "content-type": "application/json",
       },
       status: 200,
       data: {

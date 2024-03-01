@@ -12,6 +12,10 @@ export namespace RouteManager {
     return urlMapRouteHandlerSet.keys();
   }
 
+  /**
+   * 获取url对应的请求类型
+   * @throws NotFoundRouteHandlerError 当找不到url对应的RouteHandler时抛出
+   */
   export function getMethodTypes(url: string): Set<MethodType> {
     const set = new Set<MethodType>();
     const routeHandlerSet = urlMapRouteHandlerSet.get(url);
@@ -25,7 +29,7 @@ export namespace RouteManager {
 
   /**
    * 保存路由url及其控制器方法
-   * @throws DuplicateRouteHandlerError 当出现路由重复时抛出
+   * @throws DuplicateRouteHandlerError 当路由出现重复时抛出
    */
   export function register(
     type: MethodType,

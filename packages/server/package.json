@@ -11,5 +11,10 @@
   },
   "peerDependencies": {
     "dependency-injection": "workspace:^"
+  },
+  "devDependencies": {
+    "http-test": "workspace:*",
+    "server-platform-express": "workspace:*",
+    "server-platform-koa": "workspace:*"
   }
 }

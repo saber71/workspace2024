@@ -52,9 +52,11 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
         const object = routes[url];
         for (let methodType of object.methodTypes) {
           if (methodType === "GET") router.get(url, getHandler(object));
-          if (methodType === "POST") router.post(url, getHandler(object));
-          if (methodType === "DELETE") router.delete(url, getHandler(object));
-          if (methodType === "PUT") router.put(url, getHandler(object));
+          else if (methodType === "POST") router.post(url, getHandler(object));
+          else if (methodType === "DELETE")
+            router.delete(url, getHandler(object));
+          else if (methodType === "PUT") router.put(url, getHandler(object));
+          else throw new Error("unknown method type " + methodType);
         }
       }
 
@@ -136,18 +138,18 @@ export function createServerResponse(
     },
 
     body(value: any) {
-      let contentType = "text/plain;charset=utf-8";
+      let contentType = "text/plain";
       if (!(value instanceof Buffer)) {
         if (typeof value === "object") {
           value = JSON.stringify(value);
-          contentType = "application/json;charset=utf-8";
+          contentType = "application/json";
         } else if (typeof value !== "string") {
           value = String(value);
         }
       } else {
         contentType = "application/octet-stream";
       }
-      ctx.response.headers["content-type"] = contentType;
+      ctx.response.type = contentType;
       ctx.response.body = value;
     },
 

@@ -38,9 +38,10 @@ function createServerPlatformExpress() {
                     const object = route[url];
                     for (let methodType of object.methodTypes){
                         if (methodType === "GET") router.get(url, getRouteHandler(object));
-                        if (methodType === "POST") router.post(url, getRouteHandler(object));
-                        if (methodType === "DELETE") router.delete(url, getRouteHandler(object));
-                        if (methodType === "PUT") router.put(url, getRouteHandler(object));
+                        else if (methodType === "POST") router.post(url, getRouteHandler(object));
+                        else if (methodType === "DELETE") router.delete(url, getRouteHandler(object));
+                        else if (methodType === "PUT") router.put(url, getRouteHandler(object));
+                        else throw new Error("unknown method type " + methodType);
                     }
                 }
             }

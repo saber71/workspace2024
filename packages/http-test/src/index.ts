@@ -14,7 +14,7 @@ export class ExpectResponse<Data> {
   ) {}
 
   /* 期待的响应头内容 */
-  private readonly _expectHeaders: Array<[string | number, any]> = [];
+  private readonly _expectHeaders: Array<[string, any]> = [];
 
   /* 期待的状态码 */
   private _expectStatus?: number;
@@ -30,7 +30,7 @@ export class ExpectResponse<Data> {
     key: keyof AxiosResponse["headers"],
     expectValue: string | RegExp,
   ) {
-    this._expectHeaders.push([key, expectValue]);
+    this._expectHeaders.push([key as string, expectValue]);
     return this;
   }
 
@@ -51,7 +51,7 @@ export class ExpectResponse<Data> {
   async done() {
     const res = await this._res;
     for (let item of this._expectHeaders) {
-      ExpectResponse._toBe(res.headers[item[0]], item[1]);
+      ExpectResponse._toBe(res.headers[item[0].toLowerCase()], item[1]);
     }
     if (typeof this._expectStatus === "number")
       expect(res.status).toEqual(this._expectStatus);
@@ -60,9 +60,23 @@ export class ExpectResponse<Data> {
 
   /* 测试字符串是否满足期待 */
   private static _toBe(value: string, expectValue: string | RegExp) {
+    const expectResult = {
+      value,
+      expectValue,
+      test: true,
+    };
     if (expectValue instanceof RegExp)
-      expect(expectValue.test(value)).toEqual(true);
-    else expect(value).toEqual(expectValue);
+      expect({
+        value,
+        expectValue,
+        test: expectValue.test(value),
+      }).toEqual(expectResult);
+    else
+      expect({
+        value,
+        expectValue,
+        test: value === expectValue,
+      }).toEqual(expectResult);
   }
 }
 

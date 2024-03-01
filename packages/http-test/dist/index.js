@@ -34,14 +34,27 @@ import { expect } from 'vitest';
     /* 开始进行测试 */ async done() {
         const res = await this._res;
         for (let item of this._expectHeaders){
-            ExpectResponse._toBe(res.headers[item[0]], item[1]);
+            ExpectResponse._toBe(res.headers[item[0].toLowerCase()], item[1]);
         }
         if (typeof this._expectStatus === "number") expect(res.status).toEqual(this._expectStatus);
         if (this._toTestBody) expect(res.data).toEqual(this._expectBody);
     }
     /* 测试字符串是否满足期待 */ static _toBe(value, expectValue) {
-        if (expectValue instanceof RegExp) expect(expectValue.test(value)).toEqual(true);
-        else expect(value).toEqual(expectValue);
+        const expectResult = {
+            value,
+            expectValue,
+            test: true
+        };
+        if (expectValue instanceof RegExp) expect({
+            value,
+            expectValue,
+            test: expectValue.test(value)
+        }).toEqual(expectResult);
+        else expect({
+            value,
+            expectValue,
+            test: value === expectValue
+        }).toEqual(expectResult);
     }
 }
 

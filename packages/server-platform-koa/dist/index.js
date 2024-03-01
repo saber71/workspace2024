@@ -43,9 +43,10 @@ function createServerPlatformKoa() {
                 const object = routes[url];
                 for (let methodType of object.methodTypes){
                     if (methodType === "GET") router.get(url, getHandler(object));
-                    if (methodType === "POST") router.post(url, getHandler(object));
-                    if (methodType === "DELETE") router.delete(url, getHandler(object));
-                    if (methodType === "PUT") router.put(url, getHandler(object));
+                    else if (methodType === "POST") router.post(url, getHandler(object));
+                    else if (methodType === "DELETE") router.delete(url, getHandler(object));
+                    else if (methodType === "PUT") router.put(url, getHandler(object));
+                    else throw new Error("unknown method type " + methodType);
                 }
             }
             function getHandler(object) {
@@ -113,18 +114,18 @@ function createServerResponse(ctx) {
             return ctx.response.status;
         },
         body (value1) {
-            let contentType = "text/plain;charset=utf-8";
+            let contentType = "text/plain";
             if (!(value1 instanceof Buffer)) {
                 if (typeof value1 === "object") {
                     value1 = JSON.stringify(value1);
-                    contentType = "application/json;charset=utf-8";
+                    contentType = "application/json";
                 } else if (typeof value1 !== "string") {
                     value1 = String(value1);
                 }
             } else {
                 contentType = "application/octet-stream";
             }
-            ctx.response.headers["content-type"] = contentType;
+            ctx.response.type = contentType;
             ctx.response.body = value1;
         },
         async sendFile (filePath) {

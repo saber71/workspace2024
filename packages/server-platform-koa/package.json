@@ -6,8 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "vite build",
-    "watch": "vite build --watch",
-    "test": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
+    "watch": "vite build --watch"
   },
   "peerDependencies": {
     "koa": "^2.15.0",
