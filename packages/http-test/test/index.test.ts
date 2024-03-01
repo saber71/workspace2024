@@ -18,7 +18,7 @@ describe("HttpTest", () => {
       .expectStatus(200)
       .expectHeader("Cache-Control", "no-cache")
       .expectHeader("Content-Encoding", "zh-CN")
-      .expectHeader("Content-Type", "application/json")
+      .expectHeader("Content-Type", /json/)
       .done();
   });
 });

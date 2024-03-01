@@ -15,7 +15,7 @@ export declare class ExpectResponse<Data> {
     private static _toBe;
 }
 
-export declare function httpTest(config: AxiosRequestConfig): ExpectResponse<any>;
+export declare function httpTest<Data = any>(config: AxiosRequestConfig): ExpectResponse<Data>;
 
 declare interface Response_2<Data> extends Pick<AxiosResponse<Data>, "headers" | "data" | "status"> {
 }
