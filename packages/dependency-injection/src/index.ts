@@ -1,3 +1,4 @@
+/// <reference types="../types" />
 import "reflect-metadata";
 
 export * from "./metadata";

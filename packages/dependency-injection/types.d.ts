@@ -9,10 +9,16 @@ declare interface ContainerMember {
   value?: any;
   /* 每次访问时都会执行生成一个新值 */
   factory?: (...args: any[]) => any;
+  /* 指定factory的this */
+  factoryContext?: any;
   /* 懒加载，只在第一次访问的时候执行 */
   getter?: () => any;
+  /* 指定getter的this */
+  getterContext?: any;
   /* getter生成的值会缓存在这里 */
   getterValue?: any;
+  /* 标识是否是从父容器继承来 */
+  isExtend?: boolean;
 }
 
 /* 加载被装饰器Injectable装饰过的内容时可用的选项 */

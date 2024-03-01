@@ -1,17 +1,58 @@
+import EventEmitter from "eventemitter3";
 import { Metadata } from "./metadata";
 
 /* 用来管理需要进行依赖注入的实例的容器。这个类专门进行内容的管理 */
-export class Container {
+export class Container extends EventEmitter<{
+  /* 当加载了一个可以依赖注入的类时触发 */
+  loadClass: (clazz: Class, member: ContainerMember) => void;
+}> {
   /* 缓存容器中的内容，名字映射Member对象 */
   protected readonly _memberMap = new Map<string, ContainerMember>();
 
   /* 父容器。在当前容器中找不到值时，会尝试在父容器中寻找 */
   private _extend?: Container;
 
-  /* 设置要继承的父容器。当从容器中找不到值时，会尝试在父容器中寻找 */
+  /**
+   * 设置要继承的父容器。当从容器中找不到值时，会尝试在父容器中寻找
+   * 会继承父容器中的可依赖注入对象，并将生成实例时的上下文环境替换成此实例
+   * 在取消继承时删除之
+   */
   extend(parent?: Container) {
+    if (this._extend) {
+      this._extend.off("loadClass", this._onLoadClass, this);
+      Array.from(this._memberMap.values())
+        .filter((member) => member.isExtend)
+        .forEach((member) => {
+          if (member.isExtend) this._memberMap.delete(member.name);
+        });
+    }
     this._extend = parent;
+    if (this._extend) {
+      this._extend.on("loadClass", this._onLoadClass, this);
+      Array.from(this._extend._memberMap.values())
+        .filter((member) => member.metadata)
+        .forEach(this._extendMember.bind(this));
+    }
     return this;
+  }
+
+  /* 处理父容器触发的loadClass事件 */
+  private _onLoadClass(clazz: Class, member: ContainerMember) {
+    this._extendMember(member);
+    this.emit("loadClass", clazz, member);
+  }
+
+  /* 继承父容器中的可依赖注入对象 */
+  private _extendMember(member: ContainerMember) {
+    if (!this._memberMap.has(member.name)) {
+      const isLoadable = this instanceof LoadableContainer;
+      this._memberMap.set(member.name, {
+        ...member,
+        getterContext: isLoadable ? this : member.getterContext,
+        factoryContext: isLoadable ? this : member.factoryContext,
+        isExtend: true,
+      });
+    }
   }
 
   /**
@@ -19,29 +60,50 @@ export class Container {
    * @param label 标识符
    * @param value 指定的值
    * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
+   * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
    */
   bindValue(label: string, value: any) {
     if (value === undefined)
       throw new InvalidValueError("绑定的值不能是undefined");
     let member = this._memberMap.get(label);
     if (!member) member = this._newMember(label);
+    if (member.metadata)
+      throw new ForbiddenOverrideInjectableError(
+        "不能覆盖可依赖注入的对象" + label,
+      );
     member.value = value;
     return this;
   }
 
-  /* 给指定的标识符绑定一个工厂函数，在每次访问时生成一个新值 */
-  bindFactory(label: string, value: (...args: any[]) => any) {
+  /**
+   * 给指定的标识符绑定一个工厂函数，在每次访问时生成一个新值
+   * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
+   */
+  bindFactory(label: string, value: (...args: any[]) => any, context?: any) {
     let member = this._memberMap.get(label);
     if (!member) member = this._newMember(label);
+    if (member.metadata)
+      throw new ForbiddenOverrideInjectableError(
+        "不能覆盖可依赖注入的对象" + label,
+      );
     member.factory = value;
+    member.factoryContext = context;
     return this;
   }
 
-  /* 给指定的标识符绑定一个getter，只在第一次访问时执行 */
-  bindGetter(label: string, value: () => any) {
+  /**
+   * 给指定的标识符绑定一个getter，只在第一次访问时执行
+   * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
+   */
+  bindGetter(label: string, value: () => any, context?: any) {
     let member = this._memberMap.get(label);
     if (!member) member = this._newMember(label);
+    if (member.metadata)
+      throw new ForbiddenOverrideInjectableError(
+        "不能覆盖可依赖注入的对象" + label,
+      );
     member.getter = value;
+    member.getterContext = context;
     member.getterValue = undefined;
     return this;
   }
@@ -79,11 +141,12 @@ export class Container {
     }
     let value = member.value;
     if (value === undefined) {
-      if (member.factory) value = member.factory(...args);
+      if (member.factory)
+        value = member.factory.call(member.factoryContext, ...args);
       else {
         value = member.getterValue;
         if (value === undefined && member.getter) {
-          value = member.getterValue = member.getter();
+          value = member.getterValue = member.getter.call(member.getterContext);
           member.getter = undefined;
         }
       }
@@ -144,7 +207,7 @@ export class LoadableContainer extends Container {
   load(option: LoadOption = {}) {
     if (this._loaded)
       throw new ContainerRepeatLoadError(
-        "Container.load方法已被调用过，不能重复调用",
+        "LoadableContainer.load方法已被调用过，不能重复调用",
       );
     this._loaded = true;
     const metadataArray = Array.from(Metadata.getAllMetadata());
@@ -160,8 +223,8 @@ export class LoadableContainer extends Container {
         !metadata.moduleName ||
         metadata.moduleName === moduleName,
     );
-    for (let item of metadataArray) {
-      this._newMember(item.clazz.name, item);
+    for (let metadata of metadataArray) {
+      this._newMember(metadata.clazz.name, metadata);
     }
     if (overrideParent) {
       for (let item of metadataArray) {
@@ -179,7 +242,7 @@ export class LoadableContainer extends Container {
       const { metadata } = member;
       if (metadata) {
         const { clazz, fieldTypes } = metadata;
-        const generator = () => {
+        const generator = function (this: LoadableContainer) {
           if (creating.has(member.name))
             throw new DependencyCycleError(
               "依赖循环：" + Array.from(creating).join("->") + member.name,
@@ -195,8 +258,14 @@ export class LoadableContainer extends Container {
           return instance;
         };
         if (metadata.createImmediately) createImmediately.push(member);
-        if (metadata.singleton) member.getter = generator;
-        else member.factory = generator;
+        if (metadata.singleton) {
+          member.getter = generator;
+          member.getterContext = this;
+        } else {
+          member.factory = generator;
+          member.factoryContext = this;
+        }
+        this.emit("loadClass", clazz, member);
       }
     }
     for (let member of createImmediately) {
@@ -234,3 +303,6 @@ export class NotExistLabelError extends Error {}
 
 /* 试图调用一个未装饰Inject的方法时抛出 */
 export class MethodNotDecoratedInjectError extends Error {}
+
+/* 当要覆盖可依赖注入的对象时抛出 */
+export class ForbiddenOverrideInjectableError extends Error {}
