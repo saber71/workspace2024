@@ -139,4 +139,25 @@ describe("container.test", () => {
     expect(container.getValue(CC) !== container.getValue(CC)).toEqual(true);
     expect(container.call(a, "func")).toEqual("123");
   });
+
+  test("extend", () => {
+    @Injectable({ singleton: true })
+    class TestExtend {
+      @Inject()
+      prop: string;
+    }
+
+    const container = new LoadableContainer();
+    container.bindValue("String", "parent");
+
+    const childContainer = new LoadableContainer().extend(container);
+    childContainer.bindValue("String", "child");
+
+    container.loadFromClass([TestExtend]);
+
+    expect(childContainer.getValue<TestExtend>(TestExtend).prop).toEqual(
+      "child",
+    );
+    expect(container.getValue<TestExtend>(TestExtend).prop).toEqual("parent");
+  });
 });
