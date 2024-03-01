@@ -33,10 +33,9 @@ function createServerPlatformKoa() {
                     multiples: true
                 }
             })).use(session({
-                key: option.session?.cookieKey,
+                key: option.session?.cookieKey ?? "Secret key",
                 maxAge: option.session?.maxAge
             }, app)).use(router.routes()).use(router.allowedMethods()).listen(option.port, option.hostname);
-            console.log("listening on %s", option.port);
         },
         useRoutes (routes) {
             for(let url in routes){

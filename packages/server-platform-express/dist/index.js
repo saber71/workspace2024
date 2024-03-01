@@ -57,9 +57,7 @@ function createServerPlatformExpress() {
             }));
             app.use(formidableMiddleware({
                 multiples: true,
-                keepExtensions: true,
-                //@ts-ignore
-                allowEmptyFiles: true
+                keepExtensions: true
             }));
             app.use(router).listen(option.port ?? 4000, option.hostname || "");
         },
@@ -91,6 +89,18 @@ function createServerRequest(req) {
     if (req.fields) {
         if (typeof body === "object" && body) body = Object.assign({}, body, req.fields);
         else body = req.fields;
+    }
+    if (req.files) {
+        for(let field in req.files){
+            const files = req.files[field];
+            if (files instanceof Array) files.forEach(handleFile);
+            else handleFile(files);
+        }
+    }
+    /* 确保文件对象的字段与ServerFile类型保持一致 */ function handleFile(file) {
+        file.filepath = file.path;
+        file.originalFilename = file.name;
+        file.newFilename = path.basename(file.path);
     }
     return {
         original: req,

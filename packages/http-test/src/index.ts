@@ -2,7 +2,10 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { expect } from "vitest";
 
 /* 调用axios发起请求，返回准备对Response内容进行测试的对象 */
-export function httpTest<Data = any>(config: AxiosRequestConfig) {
+export function httpTest<Data = any>(
+  config: AxiosRequestConfig | (() => AxiosRequestConfig),
+) {
+  if (typeof config === "function") config = config();
   return new ExpectResponse<Data>(
     axios
       .request({

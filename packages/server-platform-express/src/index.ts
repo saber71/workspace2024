@@ -6,6 +6,7 @@ import express, {
 } from "express";
 import session from "express-session";
 import formidableMiddleware from "express-formidable";
+import * as fs from "fs";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { URL } from "node:url";
 import * as qs from "node:querystring";
@@ -68,8 +69,6 @@ export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
         formidableMiddleware({
           multiples: true,
           keepExtensions: true,
-          //@ts-ignore
-          allowEmptyFiles: true,
         }),
       );
       app.use(router).listen(option.port ?? 4000, option.hostname || "");
@@ -108,6 +107,21 @@ export function createServerRequest(req: Request): ServerRequest<Request> {
     if (typeof body === "object" && body)
       body = Object.assign({}, body, req.fields);
     else body = req.fields;
+  }
+
+  if (req.files) {
+    for (let field in req.files) {
+      const files = req.files[field];
+      if (files instanceof Array) files.forEach(handleFile);
+      else handleFile(files);
+    }
+  }
+
+  /* 确保文件对象的字段与ServerFile类型保持一致 */
+  function handleFile(file: any) {
+    file.filepath = file.path;
+    file.originalFilename = file.name;
+    file.newFilename = path.basename(file.path);
   }
 
   return {

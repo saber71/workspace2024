@@ -36,7 +36,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
         .use(
           session(
             {
-              key: option.session?.cookieKey,
+              key: option.session?.cookieKey ?? "Secret key",
               maxAge: option.session?.maxAge,
             },
             app,
@@ -45,7 +45,6 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
         .use(router.routes())
         .use(router.allowedMethods())
         .listen(option.port, option.hostname);
-      console.log("listening on %s", option.port);
     },
     useRoutes(routes) {
       for (let url in routes) {

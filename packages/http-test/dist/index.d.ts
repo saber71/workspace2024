@@ -23,7 +23,7 @@ export declare class ExpectResponse<Data> {
     private _buildHasHeaderKeyObject;
 }
 
-export declare function httpTest<Data = any>(config: AxiosRequestConfig): ExpectResponse<Data>;
+export declare function httpTest<Data = any>(config: AxiosRequestConfig | (() => AxiosRequestConfig)): ExpectResponse<Data>;
 
 declare interface Response_2<Data> extends Pick<AxiosResponse<Data>, "headers" | "data" | "status"> {
     href: string;

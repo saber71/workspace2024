@@ -2,6 +2,7 @@ import axios from 'axios';
 import { expect } from 'vitest';
 
 /* 调用axios发起请求，返回准备对Response内容进行测试的对象 */ function httpTest(config) {
+    if (typeof config === "function") config = config();
     return new ExpectResponse(axios.request({
         baseURL: "http://localhost:4000/",
         validateStatus: ()=>true,

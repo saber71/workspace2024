@@ -1,5 +1,9 @@
+import * as fs from "fs";
 import { httpTest } from "http-test";
-import { Controller, Method, ReqBody, Session } from "../../src";
+import * as path from "node:path";
+import { Controller, Method, ReqBody, ReqFile, Session } from "../../src";
+//@ts-ignore
+import FormData from "form-data";
 
 @Controller()
 export class CommonController {
@@ -14,6 +18,21 @@ export class CommonController {
     @ReqBody() body: any,
   ) {
     return body;
+  }
+
+  @Method({ type: "POST" })
+  uploadFile(
+    //@ts-ignore
+    @ReqFile("file")
+    file: ServerFile,
+    //@ts-ignore
+    @ReqBody()
+    body: any,
+  ) {
+    fs.rmSync(file.filepath);
+    return Object.assign(body, {
+      fileName: file.originalFilename,
+    });
   }
 }
 
@@ -36,6 +55,24 @@ export function commonControllerHttpTestSuits() {
       .expectBodyData({
         id: 12,
         name: "Test Post",
+      })
+      .done(),
+    httpTest(() => {
+      const formData = new FormData();
+      formData.append("id", 20);
+      formData.append(
+        "file",
+        fs.createReadStream(path.resolve(__dirname, "../../package.json")),
+      );
+      return {
+        method: "POST",
+        url: "/upload-file",
+        data: formData,
+      };
+    })
+      .expectBodyData({
+        id: "20",
+        fileName: "package.json",
       })
       .done(),
   ]);
