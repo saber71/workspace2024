@@ -32,6 +32,9 @@ export class ExpectResponse<Data> {
   /* 期待的响应头内容 */
   private readonly _expectHeaders: Array<[string, any]> = [];
 
+  /* 期待在响应头中存在的key */
+  private readonly _expectHasHeaderKeys: string[] = [];
+
   /* 期待的状态码 */
   private _expectStatus?: number;
 
@@ -40,6 +43,12 @@ export class ExpectResponse<Data> {
 
   /* 是否对响应体进行测试 */
   private _toTestBody = false;
+
+  /* 设置期待的在响应头中存在的key */
+  expectHasHeader(key: keyof AxiosResponse["headers"]) {
+    this._expectHasHeaderKeys.push(key as string);
+    return this;
+  }
 
   /* 设置期待的响应头 */
   expectHeader(
@@ -79,6 +88,10 @@ export class ExpectResponse<Data> {
     this._response = res;
     for (let item of this._expectHeaders) {
       this._toBe(res, res.headers[item[0].toLowerCase()], item[1]);
+    }
+    for (let key of this._expectHasHeaderKeys) {
+      const builder = this._buildHasHeaderKeyObject(key);
+      expect(builder(res.headers[key])).toBeTruthy();
     }
     if (typeof this._expectStatus === "number")
       expect(this._buildStatusObject(res.status)).toEqual(
@@ -120,6 +133,15 @@ export class ExpectResponse<Data> {
   /* 构建进行响应头测试用的数据结构 */
   private _buildBodyObject(body?: Data) {
     return { href: this._response.href, body };
+  }
+
+  /* 构建进行响应头是否存在指定key的测试用的数据结构 */
+  private _buildHasHeaderKeyObject(key: string) {
+    return (test: boolean) => ({
+      href: this._response.href,
+      headerKey: key,
+      test,
+    });
   }
 }
 

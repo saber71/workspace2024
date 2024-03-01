@@ -6,9 +6,11 @@ export declare class ExpectResponse<Data> {
     constructor(_res: Response_2<Data> | Promise<Response_2<Data>>);
     private _response;
     private readonly _expectHeaders;
+    private readonly _expectHasHeaderKeys;
     private _expectStatus?;
     private _expectBody?;
     private _toTestBody;
+    expectHasHeader(key: keyof AxiosResponse["headers"]): this;
     expectHeader(key: keyof AxiosResponse["headers"], expectValue: string | RegExp): this;
     expectStatus(code: number): this;
     expectBody(data: Data): this;
@@ -18,6 +20,7 @@ export declare class ExpectResponse<Data> {
     private _buildToBeObject;
     private _buildStatusObject;
     private _buildBodyObject;
+    private _buildHasHeaderKeyObject;
 }
 
 export declare function httpTest<Data = any>(config: AxiosRequestConfig): ExpectResponse<Data>;

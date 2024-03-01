@@ -18,13 +18,19 @@ import { expect } from 'vitest';
     constructor(/* 待接受测试的对象 */ _res){
         this._res = _res;
         this._expectHeaders = [];
+        this._expectHasHeaderKeys = [];
         this._toTestBody = false;
     }
     /* 缓存作为Promise结果的Response对象 */ _response;
     /* 期待的响应头内容 */ _expectHeaders;
+    /* 期待在响应头中存在的key */ _expectHasHeaderKeys;
     /* 期待的状态码 */ _expectStatus;
     /* 期待的响应体 */ _expectBody;
     /* 是否对响应体进行测试 */ _toTestBody;
+    /* 设置期待的在响应头中存在的key */ expectHasHeader(key) {
+        this._expectHasHeaderKeys.push(key);
+        return this;
+    }
     /* 设置期待的响应头 */ expectHeader(key, expectValue) {
         this._expectHeaders.push([
             key,
@@ -55,6 +61,10 @@ import { expect } from 'vitest';
         for (let item of this._expectHeaders){
             this._toBe(res, res.headers[item[0].toLowerCase()], item[1]);
         }
+        for (let key of this._expectHasHeaderKeys){
+            const builder = this._buildHasHeaderKeyObject(key);
+            expect(builder(res.headers[key])).toBeTruthy();
+        }
         if (typeof this._expectStatus === "number") expect(this._buildStatusObject(res.status)).toEqual(this._buildStatusObject(this._expectStatus));
         if (this._toTestBody) expect(this._buildBodyObject(res.data)).toEqual(this._buildBodyObject(this._expectBody));
     }
@@ -82,6 +92,13 @@ import { expect } from 'vitest';
             href: this._response.href,
             body
         };
+    }
+    /* 构建进行响应头是否存在指定key的测试用的数据结构 */ _buildHasHeaderKeyObject(key) {
+        return (test)=>({
+                href: this._response.href,
+                headerKey: key,
+                test
+            });
     }
 }
 
