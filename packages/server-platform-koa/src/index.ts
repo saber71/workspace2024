@@ -48,16 +48,18 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
       console.log("listening on %s", option.port);
     },
     useRoutes(routes) {
-      for (let route in routes) {
-        const object = routes[route];
-        router.get(route, getHandler(object));
-        router.post(route, getHandler(object));
-        router.delete(route, getHandler(object));
-        router.put(route, getHandler(object));
+      for (let url in routes) {
+        const object = routes[url];
+        for (let methodType of object.methodTypes) {
+          if (methodType === "GET") router.get(url, getHandler(object));
+          if (methodType === "POST") router.post(url, getHandler(object));
+          if (methodType === "DELETE") router.delete(url, getHandler(object));
+          if (methodType === "PUT") router.put(url, getHandler(object));
+        }
       }
 
       function getHandler(object: RouteHandlerObject) {
-        return async (ctx: Koa.ParameterizedContext) => {
+        return async (ctx: Koa.ParameterizedContext, next: () => void) => {
           const req = createServerRequest(ctx);
           const res = createServerResponse(ctx);
           try {
@@ -65,7 +67,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
           } catch (e) {
             object.catchError(e as Error, req, res);
           }
-          ctx.res.end();
+          next();
         };
       }
     },

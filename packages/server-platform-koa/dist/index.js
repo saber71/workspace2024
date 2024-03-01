@@ -1,5 +1,5 @@
 import Koa from 'koa';
-import koaBody from 'koa-body';
+import { koaBody } from 'koa-body';
 import mount from 'koa-mount';
 import Router from 'koa-router';
 import send from 'koa-send';
@@ -36,11 +36,20 @@ function createServerPlatformKoa() {
                 key: option.session?.cookieKey,
                 maxAge: option.session?.maxAge
             }, app)).use(router.routes()).use(router.allowedMethods()).listen(option.port, option.hostname);
+            console.log("listening on %s", option.port);
         },
         useRoutes (routes) {
-            for(let route in routes){
-                const object = routes[route];
-                router.use(route, async (ctx)=>{
+            for(let url in routes){
+                const object = routes[url];
+                for (let methodType of object.methodTypes){
+                    if (methodType === "GET") router.get(url, getHandler(object));
+                    if (methodType === "POST") router.post(url, getHandler(object));
+                    if (methodType === "DELETE") router.delete(url, getHandler(object));
+                    if (methodType === "PUT") router.put(url, getHandler(object));
+                }
+            }
+            function getHandler(object) {
+                return async (ctx, next)=>{
                     const req = createServerRequest(ctx);
                     const res = createServerResponse(ctx);
                     try {
@@ -48,8 +57,8 @@ function createServerPlatformKoa() {
                     } catch (e) {
                         object.catchError(e, req, res);
                     }
-                    ctx.res.end();
-                });
+                    next();
+                };
             }
         },
         proxy (option) {

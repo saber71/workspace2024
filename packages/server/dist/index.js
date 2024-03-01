@@ -1,4 +1,4 @@
-import { Metadata, Injectable, Inject, getDecoratedName, Container, LoadableContainer } from 'dependency-injection';
+import { Metadata, Injectable, Inject, getDecoratedName, LoadableContainer, Container } from 'dependency-injection';
 export * from 'dependency-injection';
 
 /* server自定义错误的根类型 */ class ServerError extends Error {
@@ -69,6 +69,14 @@ var RouteManager;
         return urlMapRouteHandlerSet.keys();
     }
     /* 获取所有路由url */ RouteManager.getUrls = getUrls;
+    function getMethodTypes(url) {
+        const set = new Set();
+        const routeHandlerSet = urlMapRouteHandlerSet.get(url);
+        if (!routeHandlerSet) throw new NotFoundRouteHandlerError(`${url} Not Found route handler`);
+        Object.keys(routeHandlerSet).forEach((methodType)=>set.add(methodType));
+        return set;
+    }
+    RouteManager.getMethodTypes = getMethodTypes;
     function register(type, url, controllerClass, methodName) {
         let handler = urlMapRouteHandlerSet.get(url);
         if (!handler) urlMapRouteHandlerSet.set(url, handler = {});
@@ -259,88 +267,7 @@ var RouteManager;
     }
 }
 
-/* 读取/更新会话对象 */ class Session {
-    req;
-    res;
-    constructor(req, res){
-        this.req = req;
-        this.res = res;
-    }
-    /* 更新会话对象 */ set(key, value) {
-        if (!this.res.session) this.res.session = {};
-        this.res.session[key] = value;
-        return this;
-    }
-    /* 读取会话对象 */ get(key) {
-        return this.req.session?.[key];
-    }
-    /**
-   * 读取会话对象
-   * @throws SessionKeyNotExistError 当在session上找不到key时抛出
-   */ fetch(key) {
-        if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
-        return this.req.session[key];
-    }
-    /* 判断会话上是否存在指定的key */ has(key) {
-        if (!this.req.session) return false;
-        return key in this.req.session;
-    }
-    /* 删除会话对象 */ destroy() {
-        this.res.session = null;
-    }
-}
-
 function _ts_decorate$1(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-function _ts_metadata(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-}
-class RequestPipeline {
-    server;
-    request;
-    response;
-    constructor(server, request, response){
-        this.server = server;
-        this.request = request;
-        this.response = response;
-        this._container = server.createContainer().bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
-    }
-    /* 依赖注入容器 */ _container;
-    /* 启动管道，开始处理请求 */ async start() {
-        const responseBodySender = this.server.responseBodySender;
-        let result;
-        try {
-            const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
-            result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
-        } catch (e) {
-            result = e;
-            const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(e);
-            if (errorHandlerClass) {
-                const errorHandler = this._container.getValue(errorHandlerClass);
-                result = await errorHandler.handle(e, this.response, this.request);
-            }
-        }
-        responseBodySender.send(result, this.response);
-    }
-    /* 销毁管道 */ dispose() {
-        this._container.dispose();
-    }
-}
-RequestPipeline = _ts_decorate$1([
-    Pipeline(),
-    _ts_metadata("design:type", Function),
-    _ts_metadata("design:paramtypes", [
-        typeof Server === "undefined" ? Object : Server,
-        typeof ServerRequest === "undefined" ? Object : ServerRequest,
-        typeof ServerResponse === "undefined" ? Object : ServerResponse
-    ])
-], RequestPipeline);
-
-function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -353,6 +280,7 @@ class ResponseBodySender {
             success = false;
             code = value.code ?? 500;
             msg = value.message;
+            console.error(value);
         }
         res.statusCode = code;
         res.body({
@@ -363,11 +291,11 @@ class ResponseBodySender {
         });
     }
 }
-ResponseBodySender = _ts_decorate([
+ResponseBodySender = _ts_decorate$1([
     Injectable()
 ], ResponseBodySender);
 
-let Server$1 = class Server {
+class Server {
     _serverPlatform;
     /* 创建Server对象 */ static async create(options) {
         const app = new Server(options.serverPlatformAdapter);
@@ -411,6 +339,14 @@ let Server$1 = class Server {
         this._serverPlatform.proxy(option);
         return this;
     }
+    /* 处理请求 */ async handleRequest(request, response) {
+        const container = this.createContainer().extend(this._dependencyInjection);
+        container.bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response);
+        const pipeline = container.getValue(this._requestPipelineClass);
+        await pipeline.start();
+        pipeline.dispose();
+        container.dispose();
+    }
     /* 初始化Web服务器 */ async _init(options) {
         this._errorHandlerDispatcher = new ErrorHandlerDispatcher(options.errorHandlers ?? []);
         this._requestPipelineClass = options.pipeline ?? RequestPipeline;
@@ -427,23 +363,97 @@ let Server$1 = class Server {
         const routes = {};
         for (let url of urls){
             routes[url] = {
-                handle: this._handleRequest.bind(this),
-                catchError: this._catchRequestError.bind(this)
+                handle: this.handleRequest.bind(this),
+                catchError: this._catchRequestError.bind(this),
+                methodTypes: RouteManager.getMethodTypes(url)
             };
         }
         this._serverPlatform.useRoutes(routes);
     }
-    /* 处理请求 */ async _handleRequest(request, response) {
-        const container = this.createContainer().extend(this._dependencyInjection);
-        container.bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response);
-        const pipeline = container.getValue(this._requestPipelineClass);
-        await pipeline.start();
-        pipeline.dispose();
-        container.dispose();
-    }
     /* 处理请求中的错误 */ _catchRequestError(err, _, response) {
         this._responseBodySender.send(err, response);
     }
-};
+}
 
-export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, Pipeline, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBodySender, RouteManager, Server$1 as Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+/* 读取/更新会话对象 */ class Session {
+    req;
+    res;
+    constructor(req, res){
+        this.req = req;
+        this.res = res;
+    }
+    /* 更新会话对象 */ set(key, value) {
+        if (!this.res.session) this.res.session = {};
+        this.res.session[key] = value;
+        return this;
+    }
+    /* 读取会话对象 */ get(key) {
+        return this.req.session?.[key];
+    }
+    /**
+   * 读取会话对象
+   * @throws SessionKeyNotExistError 当在session上找不到key时抛出
+   */ fetch(key) {
+        if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
+        return this.req.session[key];
+    }
+    /* 判断会话上是否存在指定的key */ has(key) {
+        if (!this.req.session) return false;
+        return key in this.req.session;
+    }
+    /* 删除会话对象 */ destroy() {
+        this.res.session = null;
+    }
+}
+
+function _ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function _ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+class RequestPipeline {
+    server;
+    request;
+    response;
+    constructor(server, request, response){
+        this.server = server;
+        this.request = request;
+        this.response = response;
+        this._container = server.createContainer().bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
+    }
+    /* 依赖注入容器 */ _container;
+    /* 启动管道，开始处理请求 */ async start() {
+        const responseBodySender = this.server.responseBodySender;
+        let result;
+        try {
+            const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
+            result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
+        } catch (e) {
+            result = e;
+            const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(e);
+            if (errorHandlerClass) {
+                const errorHandler = this._container.getValue(errorHandlerClass);
+                result = await errorHandler.handle(e, this.response, this.request);
+            }
+        }
+        responseBodySender.send(result, this.response);
+    }
+    /* 销毁管道 */ dispose() {
+        this._container.dispose();
+    }
+}
+RequestPipeline = _ts_decorate([
+    Pipeline(),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof Server === "undefined" ? Object : Server,
+        typeof ServerRequest === "undefined" ? Object : ServerRequest,
+        typeof ServerResponse === "undefined" ? Object : ServerResponse
+    ])
+], RequestPipeline);
+
+export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, Pipeline, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };

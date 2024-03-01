@@ -80,6 +80,7 @@ export declare class ResponseBodySender implements ResponseBodySenderInterface {
 
 export declare namespace RouteManager {
     export function getUrls(): IterableIterator<string>;
+    export function getMethodTypes(url: string): Set<MethodType>;
     /**
      * 保存路由url及其控制器方法
      * @throws DuplicateRouteHandlerError 当出现路由重复时抛出
@@ -113,9 +114,9 @@ export declare class Server<PlatformInstance extends object = object> {
      */
     staticAssets(assetsPath: string, routePathPrefix: string): this;
     proxy(option: ServerProxyOption): this;
+    handleRequest(request: ServerRequest, response: ServerResponse): Promise<void>;
     private _init;
     private _setupRoutes;
-    private _handleRequest;
     private _catchRequestError;
 }
 

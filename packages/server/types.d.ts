@@ -49,6 +49,7 @@ declare type RouteHandlerObject = {
     req: import("src").ServerRequest,
     res: import("src").ServerResponse,
   ) => void;
+  methodTypes: Set<MethodType>;
 };
 
 declare type Routes = Record<string, RouteHandlerObject>;

@@ -12,6 +12,7 @@ export class ResponseBodySender implements ResponseBodySenderInterface {
       success = false;
       code = (value as any).code ?? 500;
       msg = value.message;
+      console.error(value);
     }
     res.statusCode = code;
     res.body({

@@ -71,6 +71,18 @@ export class Server<PlatformInstance extends object = object> {
     return this;
   }
 
+  /* 处理请求 */
+  async handleRequest(request: ServerRequest, response: ServerResponse) {
+    const container = this.createContainer().extend(this._dependencyInjection);
+    container
+      .bindValue(ServerRequest.name, request)
+      .bindValue(ServerResponse.name, response);
+    const pipeline = container.getValue(this._requestPipelineClass);
+    await pipeline.start();
+    pipeline.dispose();
+    container.dispose();
+  }
+
   /* 初始化Web服务器 */
   private async _init(
     options: Omit<ServerCreateOption, "serverPlatformAdapter">,
@@ -99,26 +111,12 @@ export class Server<PlatformInstance extends object = object> {
     const routes: Routes = {};
     for (let url of urls) {
       routes[url] = {
-        handle: this._handleRequest.bind(this),
+        handle: this.handleRequest.bind(this),
         catchError: this._catchRequestError.bind(this),
+        methodTypes: RouteManager.getMethodTypes(url),
       };
     }
     this._serverPlatform.useRoutes(routes);
-  }
-
-  /* 处理请求 */
-  private async _handleRequest(
-    request: ServerRequest,
-    response: ServerResponse,
-  ) {
-    const container = this.createContainer().extend(this._dependencyInjection);
-    container
-      .bindValue(ServerRequest.name, request)
-      .bindValue(ServerResponse.name, response);
-    const pipeline = container.getValue(this._requestPipelineClass);
-    await pipeline.start();
-    pipeline.dispose();
-    container.dispose();
   }
 
   /* 处理请求中的错误 */

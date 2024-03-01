@@ -3,7 +3,7 @@ import { Pipeline } from "./decorators";
 import { ServerRequest } from "./request";
 import { ServerResponse } from "./response";
 import { RouteManager } from "./route-manager";
-import type { Server } from "./server";
+import { Server } from "./server";
 import { Session } from "./session";
 
 /* 用来处理请求的管道 */
