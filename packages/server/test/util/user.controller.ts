@@ -32,7 +32,7 @@ export function userControllerHttpTestSuits() {
     .expectBody({
       success: true,
       code: 200,
-      object: { id: "12" },
+      object: { id: 12 },
       msg: "ok",
     })
     .done();

@@ -1,7 +1,15 @@
 import * as fs from "fs";
 import { httpTest } from "http-test";
 import * as path from "node:path";
-import { Controller, Method, ReqBody, ReqFile, Session } from "../../src";
+import { expect } from "vitest";
+import {
+  Controller,
+  Method,
+  ReqBody,
+  ReqFile,
+  ReqQuery,
+  Session,
+} from "../../src";
 //@ts-ignore
 import FormData from "form-data";
 
@@ -17,7 +25,9 @@ export class CommonController {
     //@ts-ignore
     @ReqBody() body: any,
   ) {
-    return body;
+    expect(body.id).toEqual(12);
+    expect(body.date).toBeInstanceOf(Date);
+    return { ...body, date: typeof body.date };
   }
 
   @Method({ type: "POST" })
@@ -33,6 +43,14 @@ export class CommonController {
     return Object.assign(body, {
       fileName: file.originalFilename,
     });
+  }
+
+  @Method({ type: "POST" })
+  testQueryNoParser(
+    //@ts-ignore
+    @ReqQuery({ parsers: null }) query: any,
+  ) {
+    return query;
   }
 }
 
@@ -50,11 +68,13 @@ export function commonControllerHttpTestSuits() {
       data: {
         id: 12,
         name: "Test Post",
+        date: new Date(),
       },
     })
       .expectBodyData({
         id: 12,
         name: "Test Post",
+        date: "object",
       })
       .done(),
     httpTest(() => {
@@ -71,8 +91,21 @@ export function commonControllerHttpTestSuits() {
       };
     })
       .expectBodyData({
-        id: "20",
+        id: 20,
         fileName: "package.json",
+      })
+      .done(),
+    httpTest({
+      method: "POST",
+      url: "/test-query-no-parser",
+      params: {
+        id: 12,
+        name: "Test Post",
+      },
+    })
+      .expectBodyData({
+        id: "12",
+        name: "Test Post",
       })
       .done(),
   ]);

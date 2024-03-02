@@ -36,6 +36,7 @@ declare interface ServerCreateOption {
   /* 指定用于处理请求的管道 */
   pipeline?: Class<import("src").RequestPipeline>;
 
+  /* 用来处理需要由ServerResponse发送的内容 */
   responseBodySender?: Class<ResponseBodySenderInterface>;
 }
 
@@ -48,7 +49,7 @@ declare type RouteHandlerObject = {
     err: Error,
     req: import("src").ServerRequest,
     res: import("src").ServerResponse,
-  ) => void;
+  ) => void | Promise<void>;
   methodTypes: Set<MethodType>;
 };
 
@@ -132,11 +133,14 @@ declare interface ControllerMethod {
   route: string;
 }
 
+/* 类的类型 */
 declare type ServerClassType =
   | "no-special"
   | "pipeline"
   | "error-handler"
-  | "controller";
+  | "controller"
+  | "response-body-sender"
+  | "parser";
 
 /* 保存类的自定义数据。挂在类的元数据上 */
 declare interface MetadataServerUserData {
@@ -183,13 +187,16 @@ declare interface RouteHandler {
 
 /* 处理请求后发送内容 */
 declare interface ResponseBodySenderInterface {
-  send(value: any, res: import("src").ServerResponse): void;
+  send(value: any, res: import("src").ServerResponse): void | Promise<void>;
 }
 
-/* 默认的响应内容结构 */
-declare interface RegularResponseBody<T = any> {
-  code: number;
-  msg: string;
-  success: boolean;
-  object: T;
+/* 用来转化数据，如将对象中的字符串转为number/boolean或反过来 */
+declare interface ParserInterface {
+  parse(value: any): any;
+}
+
+/* 配置转化器和验证器 */
+declare interface ParserAndValidator {
+  parsers?: Class<ParserInterface> | Class<ParserInterface>[] | null;
+  validator?: boolean;
 }

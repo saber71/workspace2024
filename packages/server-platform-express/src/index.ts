@@ -92,7 +92,7 @@ function getRouteHandler(object: RouteHandlerObject) {
     try {
       await object.handle(request, response);
     } catch (e) {
-      object.catchError(e as Error, request, response);
+      await object.catchError(e as Error, request, response);
     }
     next();
   };

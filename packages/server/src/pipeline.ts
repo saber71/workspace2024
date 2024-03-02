@@ -52,7 +52,7 @@ export class RequestPipeline {
         );
       }
     }
-    responseBodySender.send(result, this.response);
+    return responseBodySender.send(result, this.response);
   }
 
   /* 销毁管道 */

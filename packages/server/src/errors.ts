@@ -19,3 +19,9 @@ export class ImproperDecoratorError extends ServerError {}
 
 /* 当在session上找不到key时抛出 */
 export class SessionKeyNotExistError extends ServerError {}
+
+/* 当根据类型名找不到对应的验证器时抛出 */
+export class NotFoundValidatorError extends ServerError {}
+
+/* 当数据验证失败时抛出 */
+export class ValidateFailedError extends ServerError {}

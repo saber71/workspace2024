@@ -66,7 +66,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
           try {
             await object.handle(req, res);
           } catch (e) {
-            object.catchError(e as Error, req, res);
+            await object.catchError(e as Error, req, res);
           }
           next();
         };

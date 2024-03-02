@@ -1,5 +1,14 @@
-import { Metadata } from "dependency-injection";
-import { ServerError } from "./errors";
+import { validate as classValidate } from "class-validator";
+import {
+  type Container,
+  Metadata,
+  NotExistLabelError,
+} from "dependency-injection";
+import {
+  NotFoundValidatorError,
+  ServerError,
+  ValidateFailedError,
+} from "./errors";
 
 /* 组装url */
 export function composeUrl(...items: string[]) {
@@ -19,6 +28,7 @@ export function removeHeadTailSlash(str: string) {
   return str;
 }
 
+/* 得到或新建专给server库使用的userData */
 export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   const metadata = Metadata.getOrCreateMetadata(obj);
   const userData = metadata.userData as MetadataServerUserData;
@@ -32,6 +42,7 @@ export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   return userData;
 }
 
+/* 得到或新建控制器方法信息对象 */
 export function getOrCreateControllerMethod(
   target: any,
   methodName: string,
@@ -57,4 +68,33 @@ export function getOrCreateControllerMethod(
     userData.__server__controllerMethods[methodName] = res;
   }
   return res;
+}
+
+/**
+ * 验证指定的数据
+ * @throws NotFoundValidatorError 当找不到类型对应的验证器时抛出
+ * @throws ValidateFailedError 当数据验证失败时抛出
+ */
+export async function validate(
+  container: Container,
+  target: any,
+  methodName: string,
+  argIndex: number,
+  value: any,
+) {
+  const metadata = Metadata.getOrCreateMetadata(target);
+  const parameterTypes = metadata.getMethodParameterTypes(methodName);
+  const type = parameterTypes.types[argIndex];
+  try {
+    const instance = container.getValue(type) as any;
+    const errors = await classValidate(Object.assign(instance, value));
+    if (errors.length)
+      throw new ValidateFailedError(
+        errors.map((err) => err.toString()).join("\n"),
+      );
+  } catch (e) {
+    if (e instanceof NotExistLabelError)
+      throw new NotFoundValidatorError(`找不到类型${type}对应的验证器`);
+    throw e;
+  }
 }

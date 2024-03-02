@@ -20,9 +20,7 @@ export function errorControllerHttpTestSuits() {
     .expectBody({
       success: false,
       code: 666,
-      object: {
-        code: 666,
-      },
+      object: {},
       msg: "An error has occurred.",
     })
     .done();

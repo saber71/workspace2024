@@ -16,7 +16,7 @@ export * from 'dependency-injection';
 /* 当在session上找不到key时抛出 */ class SessionKeyNotExistError extends ServerError {
 }
 
-function composeUrl(...items) {
+/* 组装url */ function composeUrl(...items) {
     return "/" + items.map(removeHeadTailSlash).filter((str)=>str.length > 0).join("/");
 }
 /* 删除头尾的斜线 */ function removeHeadTailSlash(str) {
@@ -24,7 +24,7 @@ function composeUrl(...items) {
     while(str[str.length - 1] === "/")str = str.slice(0, str.length - 1);
     return str;
 }
-function getOrCreateMetadataUserData(obj) {
+/* 得到或新建专给server库使用的userData */ function getOrCreateMetadataUserData(obj) {
     const metadata = Metadata.getOrCreateMetadata(obj);
     const userData = metadata.userData;
     if (!userData.__server__) {
@@ -36,7 +36,7 @@ function getOrCreateMetadataUserData(obj) {
     }
     return userData;
 }
-function getOrCreateControllerMethod(target, methodName) {
+/* 得到或新建控制器方法信息对象 */ function getOrCreateControllerMethod(target, methodName) {
     const userData = getOrCreateMetadataUserData(target);
     let res = userData.__server__controllerMethods[methodName];
     if (!res) {
@@ -76,7 +76,10 @@ var RouteManager;
         Object.keys(routeHandlerSet).forEach((methodType)=>set.add(methodType));
         return set;
     }
-    RouteManager.getMethodTypes = getMethodTypes;
+    /**
+   * 获取url对应的请求类型
+   * @throws NotFoundRouteHandlerError 当找不到url对应的RouteHandler时抛出
+   */ RouteManager.getMethodTypes = getMethodTypes;
     function register(type, url, controllerClass, methodName) {
         let handler = urlMapRouteHandlerSet.get(url);
         if (!handler) urlMapRouteHandlerSet.set(url, handler = {});
@@ -88,7 +91,7 @@ var RouteManager;
     }
     /**
    * 保存路由url及其控制器方法
-   * @throws DuplicateRouteHandlerError 当出现路由重复时抛出
+   * @throws DuplicateRouteHandlerError 当路由出现重复时抛出
    */ RouteManager.register = register;
     function getRouteHandler(methodType, url) {
         const handler = urlMapRouteHandlerSet.get(url)?.[methodType];
@@ -146,6 +149,18 @@ var RouteManager;
         if (option?.type) ctrMethod.type = option.type;
         if (option?.route) ctrMethod.route = option.route;
         if (option?.routePrefix) ctrMethod.routePrefix = option.routePrefix;
+    };
+}
+
+/* 标识该类用来处理值的转换 */ function Parser() {
+    const injectable = Injectable({
+        singleton: true,
+        moduleName: MODULE_NAME
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "parser";
     };
 }
 
@@ -217,9 +232,48 @@ var RouteManager;
     });
 }
 
-/* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery() {
+function _ts_decorate$2(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+class RegularParser {
+    parse(value) {
+        if (typeof value === "string") return parseString(value);
+        if (typeof value === "object" && value) {
+            for(let prop in value){
+                const val = value[prop];
+                value[prop] = this.parse(val);
+            }
+        }
+        return value;
+        function parseString(value) {
+            if (value === "true") return true;
+            else if (value === "false") return false;
+            const number = Number(value);
+            if (!Number.isNaN(number)) return number;
+            return value;
+        }
+    }
+}
+RegularParser = _ts_decorate$2([
+    Parser()
+], RegularParser);
+/* 将输入的值进行转化 */ function parse(container, parsers, value) {
+    if (!parsers && parsers === undefined) parsers = [
+        RegularParser
+    ];
+    if (parsers && !(parsers instanceof Array)) parsers = [
+        parsers
+    ];
+    if (!parsers) return value;
+    return parsers.reduce((value, parserClass)=>container.getValue(parserClass).parse(value), value);
+}
+
+/* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
     return Inject({
-        typeValueGetter: (container)=>container.getValue(ServerRequest).query
+        typeValueGetter: (container)=>parse(container, option?.parsers, container.getValue(ServerRequest).query)
     });
 }
 
@@ -245,6 +299,18 @@ var RouteManager;
     return Inject({
         typeValueGetter: (container)=>container.getValue(ServerResponse)
     });
+}
+
+/* 标识类用来处理需要返回的内容 */ function ResponseBodySender() {
+    const injectable = Injectable({
+        singleton: true,
+        moduleName: MODULE_NAME
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "response-body-sender";
+    };
 }
 
 /* 错误处理器派发器，匹配Error对应的错误处理器 */ class ErrorHandlerDispatcher {
@@ -273,27 +339,43 @@ function _ts_decorate$1(decorators, target, key, desc) {
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-class ResponseBodySender {
-    send(value, res) {
-        let success = true, code = 200, msg = "ok";
-        if (value instanceof Error) {
-            success = false;
-            code = value.code ?? 500;
-            msg = value.message;
-            console.error(value);
-        }
-        res.statusCode = code;
-        res.body({
-            code,
-            success,
-            msg,
-            object: value
+/* 将要返回的响应体内容 */ class ResponseBody {
+    object;
+    success;
+    code;
+    message;
+    /* 从Error对象生成响应体内容 */ static fromError(error) {
+        return new ResponseBody({}, false, error.code, error.message);
+    }
+    /* 从值生成响应体内容 */ static from(value) {
+        if (value instanceof Error) return this.fromError(value);
+        else if (value instanceof ResponseBody) return value;
+        return new ResponseBody(value);
+    }
+    static fromFilePath(filePath) {
+        return this.from({
+            filePath,
+            __isFilePath__: true
         });
     }
+    constructor(object, success = true, code = 200, message = "ok"){
+        this.object = object;
+        this.success = success;
+        this.code = code;
+        this.message = message;
+    }
 }
-ResponseBodySender = _ts_decorate$1([
-    Injectable()
-], ResponseBodySender);
+class RegularResponseBodySender {
+    send(value, res) {
+        const responseBody = ResponseBody.from(value);
+        res.statusCode = responseBody.code;
+        if (responseBody.object?.__isFilePath__) return res.sendFile(responseBody.object.filePath);
+        else res.body(responseBody);
+    }
+}
+RegularResponseBodySender = _ts_decorate$1([
+    ResponseBodySender()
+], RegularResponseBodySender);
 
 class Server {
     _serverPlatform;
@@ -321,7 +403,7 @@ class Server {
         return this._responseBodySender;
     }
     /* 创建一个依赖注入容器，并且继承自Server内部保有的根容器 */ createContainer() {
-        return new Container().extend(this._dependencyInjection);
+        return new LoadableContainer().extend(this._dependencyInjection);
     }
     /* 启动服务器 */ bootstrap(option = {}) {
         if (!option.port) option.port = DEFAULT_PORT;
@@ -354,7 +436,7 @@ class Server {
         this._dependencyInjection.load({
             moduleName: MODULE_NAME
         });
-        this._responseBodySender = this._dependencyInjection.getValue(options.responseBodySender ?? ResponseBodySender);
+        this._responseBodySender = this._dependencyInjection.getValue(options.responseBodySender ?? RegularResponseBodySender);
         this._setupRoutes();
         this._platformInstance = await this._serverPlatform.create();
     }
@@ -371,7 +453,7 @@ class Server {
         this._serverPlatform.useRoutes(routes);
     }
     /* 处理请求中的错误 */ _catchRequestError(err, _, response) {
-        this._responseBodySender.send(err, response);
+        return this._responseBodySender.send(err, response);
     }
 }
 
@@ -423,7 +505,8 @@ class RequestPipeline {
         this.server = server;
         this.request = request;
         this.response = response;
-        this._container = server.createContainer().bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
+        this._container = server.createContainer();
+        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
     }
     /* 依赖注入容器 */ _container;
     /* 启动管道，开始处理请求 */ async start() {
@@ -440,7 +523,7 @@ class RequestPipeline {
                 result = await errorHandler.handle(e, this.response, this.request);
             }
         }
-        responseBodySender.send(result, this.response);
+        return responseBodySender.send(result, this.response);
     }
     /* 销毁管道 */ dispose() {
         this._container.dispose();
@@ -456,4 +539,4 @@ RequestPipeline = _ts_decorate([
     ])
 ], RequestPipeline);
 
-export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, Pipeline, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, parse, removeHeadTailSlash };

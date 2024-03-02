@@ -1,6 +1,6 @@
 import { Container, LoadableContainer } from "dependency-injection";
 import { DEFAULT_PORT, MODULE_NAME } from "./constant";
-import { ResponseBodySender } from "./response-body-sender";
+import { RegularResponseBodySender } from "./response-body-sender";
 import { RouteManager } from "./route-manager";
 import { ErrorHandlerDispatcher } from "./error-handler-dispatcher";
 import { RequestPipeline } from "./pipeline";
@@ -39,8 +39,8 @@ export class Server<PlatformInstance extends object = object> {
   }
 
   /* 响应体body构建者的Class */
-  private _responseBodySender: ResponseBodySender;
-  get responseBodySender(): ResponseBodySender {
+  private _responseBodySender: ResponseBodySenderInterface;
+  get responseBodySender(): ResponseBodySenderInterface {
     return this._responseBodySender;
   }
 
@@ -98,7 +98,7 @@ export class Server<PlatformInstance extends object = object> {
     this._dependencyInjection.load({ moduleName: MODULE_NAME });
 
     this._responseBodySender = this._dependencyInjection.getValue(
-      options.responseBodySender ?? ResponseBodySender,
+      options.responseBodySender ?? RegularResponseBodySender,
     );
 
     this._setupRoutes();
@@ -125,6 +125,6 @@ export class Server<PlatformInstance extends object = object> {
     _: ServerRequest,
     response: ServerResponse,
   ) {
-    this._responseBodySender.send(err, response);
+    return this._responseBodySender.send(err, response);
   }
 }

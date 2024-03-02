@@ -55,7 +55,7 @@ function createServerPlatformKoa() {
                     try {
                         await object.handle(req, res);
                     } catch (e) {
-                        object.catchError(e, req, res);
+                        await object.catchError(e, req, res);
                     }
                     next();
                 };

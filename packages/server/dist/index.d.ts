@@ -1,4 +1,4 @@
-/// <reference types="../types" />
+/// <reference types="../types.d.ts" />
 /// <reference types="dependency-injection/types" />
 /// <reference types="node" />
 
@@ -35,7 +35,7 @@ export declare function getOrCreateMetadataUserData(obj: any): MetadataServerUse
 export declare class ImproperDecoratorError extends ServerError {
 }
 
-export declare function Method(option?: Pick<ControllerMethod, "route" | "routePrefix" | "type"> & MethodParameterOption): (target: any, methodName?: any) => void;
+export declare function Method(option?: Partial<Pick<ControllerMethod, "route" | "routePrefix" | "type">> & MethodParameterOption): (target: any, methodName?: any) => void;
 
 export declare const MODULE_NAME = "server";
 
@@ -46,7 +46,19 @@ export declare class NotFoundRouteHandlerError extends ServerError {
     code: number;
 }
 
+export declare function parse(container: Container, parsers: Class<ParserInterface> | Class<ParserInterface>[] | null | undefined, value: any): any;
+
+export declare function Parser(): (clazz: Class, _?: any) => void;
+
 export declare function Pipeline(): (clazz: Class, _?: any) => void;
+
+export declare class RegularParser implements ParserInterface {
+    parse(value: any): any;
+}
+
+export declare class RegularResponseBodySender implements ResponseBodySenderInterface {
+    send(value: any, res: ServerResponse): Promise<void> | undefined;
+}
 
 export declare function removeHeadTailSlash(str: string): string;
 
@@ -58,7 +70,9 @@ export declare function ReqFile(fieldName: string): (clazz: any, propName: any, 
 
 export declare function ReqFiles(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqQuery(): (clazz: any, propName: any, index?: any) => void;
+export declare function ReqQuery(option?: {
+    parsers?: Class<ParserInterface> | Class<ParserInterface>[] | null;
+}): (clazz: any, propName: any, index?: any) => void;
 
 export declare function ReqSession(): (clazz: any, propName: any, index?: any) => void;
 
@@ -74,16 +88,29 @@ export declare class RequestPipeline {
 
 export declare function Res(): (clazz: any, propName: any, index?: any) => void;
 
-export declare class ResponseBodySender implements ResponseBodySenderInterface {
-    send(value: any, res: ServerResponse): void;
+export declare class ResponseBody {
+    readonly object: any;
+    readonly success: boolean;
+    readonly code: number;
+    readonly message: string;
+    static fromError(error: Error): ResponseBody;
+    static from(value: any): ResponseBody;
+    static fromFilePath(filePath: string): ResponseBody;
+    constructor(object: any, success?: boolean, code?: number, message?: string);
 }
+
+export declare function ResponseBodySender(): (clazz: Class, _?: any) => void;
 
 export declare namespace RouteManager {
     export function getUrls(): IterableIterator<string>;
+    /**
+     * 获取url对应的请求类型
+     * @throws NotFoundRouteHandlerError 当找不到url对应的RouteHandler时抛出
+     */
     export function getMethodTypes(url: string): Set<MethodType>;
     /**
      * 保存路由url及其控制器方法
-     * @throws DuplicateRouteHandlerError 当出现路由重复时抛出
+     * @throws DuplicateRouteHandlerError 当路由出现重复时抛出
      */
     export function register(type: MethodType, url: string, controllerClass: Class, methodName: string): void;
     /**
@@ -104,7 +131,7 @@ export declare class Server<PlatformInstance extends object = object> {
     private _errorHandlerDispatcher;
     get errorHandlerDispatcher(): ErrorHandlerDispatcher;
     private _responseBodySender;
-    get responseBodySender(): ResponseBodySender;
+    get responseBodySender(): ResponseBodySenderInterface;
     createContainer(): Container;
     bootstrap(option?: ServerBootstrapOption): void;
     /**
