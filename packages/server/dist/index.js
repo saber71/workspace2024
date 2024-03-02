@@ -1,5 +1,6 @@
-import { Metadata, Injectable, Inject, getDecoratedName, LoadableContainer, Container } from 'dependency-injection';
+import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, LoadableContainer, Container } from 'dependency-injection';
 export * from 'dependency-injection';
+import { validate as validate$1 } from 'class-validator';
 
 /* server自定义错误的根类型 */ class ServerError extends Error {
     code = 500;
@@ -14,6 +15,10 @@ export * from 'dependency-injection';
 /* 当不恰当的使用装饰器时抛出 */ class ImproperDecoratorError extends ServerError {
 }
 /* 当在session上找不到key时抛出 */ class SessionKeyNotExistError extends ServerError {
+}
+/* 当根据类型名找不到对应的验证器时抛出 */ class NotFoundValidatorError extends ServerError {
+}
+/* 当数据验证失败时抛出 */ class ValidateFailedError extends ServerError {
 }
 
 /* 组装url */ function composeUrl(...items) {
@@ -200,8 +205,88 @@ var RouteManager;
     });
 }
 
-/* 属性/参数装饰器。为被装饰者注入请求体 */ function ReqBody() {
-    return Inject({
+function _ts_decorate$2(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+class RegularParser {
+    parse(value) {
+        if (typeof value === "string") return parseString(value);
+        if (typeof value === "object" && value) {
+            for(let prop in value){
+                const val = value[prop];
+                value[prop] = this.parse(val);
+            }
+        }
+        return value;
+        function parseString(value) {
+            if (value === "true") return true;
+            else if (value === "false") return false;
+            if (value.length === 0) return "";
+            const number = Number(value);
+            if (!Number.isNaN(number)) return number;
+            const date = new Date(value);
+            if (date.toString() !== "Invalid Date") return date;
+            return value;
+        }
+    }
+}
+RegularParser = _ts_decorate$2([
+    Parser()
+], RegularParser);
+
+/* 对输入进行转化和校验 */ function ParserAndValidate(option) {
+    let targetObject, targetMethodName = "", targetIndex = 0;
+    const inject = Inject({
+        typeValueGetter: (container)=>{
+            const value = parse(container, option.parsers, option.typeValueGetter(container));
+            if (option.validator === false) return value;
+            validate(container, targetObject, targetMethodName, targetIndex, value);
+            return value;
+        }
+    });
+    return (target, methodName, index)=>{
+        inject(target, methodName, index);
+        targetObject = target;
+        targetMethodName = getDecoratedName(methodName);
+        targetIndex = index;
+    };
+}
+/**
+ * 验证指定的数据
+ * @throws NotFoundValidatorError 当找不到类型对应的验证器时抛出
+ * @throws ValidateFailedError 当数据验证失败时抛出
+ */ function validate(container, target, methodName, argIndex, value) {
+    const metadata = Metadata.getOrCreateMetadata(target);
+    const parameterTypes = metadata.getMethodParameterTypes(methodName);
+    const type = parameterTypes.types[argIndex];
+    if (type === "String" || type === "Boolean" || type === "Number" || type === "Object" || type === "Function" || type === "Symbol") return;
+    const errorProps = [];
+    try {
+        const instance = container.getValue(type);
+        if (typeof instance === "object") errorProps.push(...validate$1(Object.assign(instance, value)));
+    } catch (e) {
+        if (e instanceof NotExistLabelError) throw new NotFoundValidatorError(`找不到类型${type}对应的验证器`);
+        throw e;
+    }
+    if (errorProps.length) throw new ValidateFailedError(errorProps.map((propName)=>`${type}.${propName}校验失败。`).join("\n"));
+}
+/* 将输入的值进行转化 */ function parse(container, parsers, value) {
+    if (!parsers && parsers === undefined) parsers = [
+        RegularParser
+    ];
+    if (parsers && !(parsers instanceof Array)) parsers = [
+        parsers
+    ];
+    if (!parsers) return value;
+    return parsers.reduce((value, parserClass)=>container.getValue(parserClass).parse(value), value);
+}
+
+/* 属性/参数装饰器。为被装饰者注入请求体 */ function ReqBody(option) {
+    return ParserAndValidate({
+        ...option,
         typeValueGetter: (container)=>container.getValue(ServerRequest).body
     });
 }
@@ -232,48 +317,10 @@ var RouteManager;
     });
 }
 
-function _ts_decorate$2(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-class RegularParser {
-    parse(value) {
-        if (typeof value === "string") return parseString(value);
-        if (typeof value === "object" && value) {
-            for(let prop in value){
-                const val = value[prop];
-                value[prop] = this.parse(val);
-            }
-        }
-        return value;
-        function parseString(value) {
-            if (value === "true") return true;
-            else if (value === "false") return false;
-            const number = Number(value);
-            if (!Number.isNaN(number)) return number;
-            return value;
-        }
-    }
-}
-RegularParser = _ts_decorate$2([
-    Parser()
-], RegularParser);
-/* 将输入的值进行转化 */ function parse(container, parsers, value) {
-    if (!parsers && parsers === undefined) parsers = [
-        RegularParser
-    ];
-    if (parsers && !(parsers instanceof Array)) parsers = [
-        parsers
-    ];
-    if (!parsers) return value;
-    return parsers.reduce((value, parserClass)=>container.getValue(parserClass).parse(value), value);
-}
-
 /* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
-    return Inject({
-        typeValueGetter: (container)=>parse(container, option?.parsers, container.getValue(ServerRequest).query)
+    return ParserAndValidate({
+        ...option,
+        typeValueGetter: (container)=>container.getValue(ServerRequest).query
     });
 }
 
@@ -343,9 +390,9 @@ function _ts_decorate$1(decorators, target, key, desc) {
     object;
     success;
     code;
-    message;
+    msg;
     /* 从Error对象生成响应体内容 */ static fromError(error) {
-        return new ResponseBody({}, false, error.code, error.message);
+        return new ResponseBody({}, false, error.code ?? 500, error.message);
     }
     /* 从值生成响应体内容 */ static from(value) {
         if (value instanceof Error) return this.fromError(value);
@@ -358,11 +405,11 @@ function _ts_decorate$1(decorators, target, key, desc) {
             __isFilePath__: true
         });
     }
-    constructor(object, success = true, code = 200, message = "ok"){
+    constructor(object, success = true, code = 200, msg = "ok"){
         this.object = object;
         this.success = success;
         this.code = code;
-        this.message = message;
+        this.msg = msg;
     }
 }
 class RegularResponseBodySender {
@@ -539,4 +586,4 @@ RequestPipeline = _ts_decorate([
     ])
 ], RequestPipeline);
 
-export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, parse, removeHeadTailSlash };
+export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ValidateFailedError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };

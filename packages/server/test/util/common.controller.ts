@@ -1,3 +1,5 @@
+/// <reference types="../../types.d.ts"/>
+import { Validation } from "class-validator";
 import * as fs from "fs";
 import { httpTest } from "http-test";
 import * as path from "node:path";
@@ -12,6 +14,14 @@ import {
 } from "../../src";
 //@ts-ignore
 import FormData from "form-data";
+
+class QueryForTest {
+  @Validation("isNumberStrict")
+  id: number;
+
+  @Validation("isLength", { min: 1 })
+  name: string;
+}
 
 @Controller()
 export class CommonController {
@@ -49,6 +59,14 @@ export class CommonController {
   testQueryNoParser(
     //@ts-ignore
     @ReqQuery({ parsers: null }) query: any,
+  ) {
+    return query;
+  }
+
+  @Method({ type: "GET" })
+  testClassValidator(
+    //@ts-ignore
+    @ReqQuery() query: QueryForTest,
   ) {
     return query;
   }
@@ -106,6 +124,34 @@ export function commonControllerHttpTestSuits() {
       .expectBodyData({
         id: "12",
         name: "Test Post",
+      })
+      .done(),
+    httpTest({
+      method: "Get",
+      url: "/test-class-validator",
+      params: {
+        id: 12,
+        name: "Test Post",
+      },
+    })
+      .expectBodyData({
+        id: 12,
+        name: "Test Post",
+      })
+      .done(),
+    httpTest({
+      method: "Get",
+      url: "/test-class-validator",
+      params: {
+        id: 12,
+        name: "",
+      },
+    })
+      .expectBody({
+        code: 500,
+        success: false,
+        object: {},
+        msg: "QueryForTest.name校验失败。",
       })
       .done(),
   ]);

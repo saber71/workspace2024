@@ -5,7 +5,12 @@ import { ServerResponse } from "./response";
 export class ResponseBody {
   /* 从Error对象生成响应体内容 */
   static fromError(error: Error): ResponseBody {
-    return new ResponseBody({}, false, (error as any).code, error.message);
+    return new ResponseBody(
+      {},
+      false,
+      (error as any).code ?? 500,
+      error.message,
+    );
   }
 
   /* 从值生成响应体内容 */

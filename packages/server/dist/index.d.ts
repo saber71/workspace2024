@@ -46,7 +46,8 @@ export declare class NotFoundRouteHandlerError extends ServerError {
     code: number;
 }
 
-export declare function parse(container: Container, parsers: Class<ParserInterface> | Class<ParserInterface>[] | null | undefined, value: any): any;
+export declare class NotFoundValidatorError extends ServerError {
+}
 
 export declare function Parser(): (clazz: Class, _?: any) => void;
 
@@ -64,15 +65,13 @@ export declare function removeHeadTailSlash(str: string): string;
 
 export declare function Req(): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqBody(): (clazz: any, propName: any, index?: any) => void;
+export declare function ReqBody(option?: ParserAndValidator): (target: any, methodName?: any, index?: any) => void;
 
 export declare function ReqFile(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
 export declare function ReqFiles(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqQuery(option?: {
-    parsers?: Class<ParserInterface> | Class<ParserInterface>[] | null;
-}): (clazz: any, propName: any, index?: any) => void;
+export declare function ReqQuery(option?: ParserAndValidator): (target: any, methodName?: any, index?: any) => void;
 
 export declare function ReqSession(): (clazz: any, propName: any, index?: any) => void;
 
@@ -92,11 +91,11 @@ export declare class ResponseBody {
     readonly object: any;
     readonly success: boolean;
     readonly code: number;
-    readonly message: string;
+    readonly msg: string;
     static fromError(error: Error): ResponseBody;
     static from(value: any): ResponseBody;
     static fromFilePath(filePath: string): ResponseBody;
-    constructor(object: any, success?: boolean, code?: number, message?: string);
+    constructor(object: any, success?: boolean, code?: number, msg?: string);
 }
 
 export declare function ResponseBodySender(): (clazz: Class, _?: any) => void;
@@ -196,6 +195,9 @@ export declare class Session<T extends Record<string, any>> {
 }
 
 export declare class SessionKeyNotExistError extends ServerError {
+}
+
+export declare class ValidateFailedError extends ServerError {
 }
 
 
