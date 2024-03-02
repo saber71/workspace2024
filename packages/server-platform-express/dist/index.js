@@ -1,138 +1,173 @@
-var b = Object.defineProperty;
-var c = (s, t) => b(s, "name", { value: t, configurable: !0 });
-import u from "express";
-import w from "express-session";
-import R from "express-formidable";
-import { createProxyMiddleware as j } from "http-proxy-middleware";
-import { URL as k } from "node:url";
-import * as A from "node:querystring";
-import * as C from "node:path";
-function L() {
-  const s = u(), t = u.Router(), o = [], e = [], i = [];
-  return {
-    name: "express",
-    create() {
-      return Promise.resolve(s);
-    },
-    staticAssets(r, a) {
-      o.push([a, u.static(r)]);
-    },
-    useRoutes(r) {
-      e.push(r);
-    },
-    bootstrap(r) {
-      var a, f, m;
-      for (let n of i)
-        s.use(n);
-      for (let n of o)
-        t.use(n[0], n[1]);
-      for (let n of e)
-        for (let p in n) {
-          const d = n[p];
-          t.use(p, async (h, l) => {
-            const g = E(h), y = S(h, l);
-            try {
-              await d.handle(g, y);
-            } catch (x) {
-              d.catchError(x, g, y);
+import express from 'express';
+import session from 'express-session';
+import formidableMiddleware from 'express-formidable';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import { URL } from 'node:url';
+import * as qs from 'node:querystring';
+import * as path from 'node:path';
+
+function createServerPlatformExpress() {
+    const app = express();
+    const router = express.Router();
+    const staticAssets = [];
+    const routes = [];
+    const proxies = [];
+    return {
+        name: "express",
+        create () {
+            return Promise.resolve(app);
+        },
+        staticAssets (assetsPath, routePathPrefix) {
+            staticAssets.push([
+                routePathPrefix,
+                express.static(assetsPath)
+            ]);
+        },
+        useRoutes (data) {
+            routes.push(data);
+        },
+        bootstrap (option) {
+            for (let proxy of proxies){
+                app.use(proxy);
             }
-            l.end();
-          });
+            for (let item of staticAssets){
+                router.use(item[0], item[1]);
+            }
+            for (let route of routes){
+                for(let url in route){
+                    const object = route[url];
+                    for (let methodType of object.methodTypes){
+                        if (methodType === "GET") router.get(url, getRouteHandler(object));
+                        else if (methodType === "POST") router.post(url, getRouteHandler(object));
+                        else if (methodType === "DELETE") router.delete(url, getRouteHandler(object));
+                        else if (methodType === "PUT") router.put(url, getRouteHandler(object));
+                        else throw new Error("unknown method type " + methodType);
+                    }
+                }
+            }
+            app.use(session({
+                secret: option.session?.secretKey ?? "express-secret-key",
+                name: option.session?.cookieKey,
+                resave: true,
+                saveUninitialized: false,
+                cookie: {
+                    secure: true,
+                    maxAge: option.session?.maxAge
+                }
+            }));
+            app.use(formidableMiddleware({
+                multiples: true,
+                keepExtensions: true
+            }));
+            app.use(router).listen(option.port ?? 4000, option.hostname || "");
+        },
+        proxy (option) {
+            proxies.push(createProxyMiddleware(option.src, {
+                target: option.target,
+                changeOrigin: option.changeOrigin,
+                pathRewrite: option.rewrites
+            }));
         }
-      s.use(
-        w({
-          secret: ((a = r.session) == null ? void 0 : a.secretKey) ?? "express-secret-key",
-          name: (f = r.session) == null ? void 0 : f.cookieKey,
-          cookie: {
-            secure: !0,
-            maxAge: (m = r.session) == null ? void 0 : m.maxAge
-          }
-        })
-      ), s.use(
-        R({
-          multiples: !0,
-          keepExtensions: !0,
-          //@ts-ignore
-          allowEmptyFiles: !0
-        })
-      ), s.use(t).listen(r.port ?? 4e3, r.hostname || "");
-    },
-    proxy(r) {
-      i.push(
-        j(r.src, {
-          target: r.target,
-          changeOrigin: r.changeOrigin,
-          pathRewrite: r.rewrites
-        })
-      );
-    }
-  };
+    };
 }
-c(L, "createServerPlatformExpress");
-function E(s) {
-  const t = new k(s.url), o = t.search.substring(1);
-  let e = s.body;
-  return s.fields && (typeof e == "object" && e ? e = Object.assign({}, e, s.fields) : e = s.fields), {
-    original: s,
-    headers: s.headers,
-    hostname: s.hostname,
-    href: t.href,
-    url: s.url,
-    URL: t,
-    host: s.host,
-    search: t.search,
-    querystring: o,
-    path: s.path,
-    method: s.method.toUpperCase(),
-    query: A.parse(o),
-    origin: s.originalUrl,
-    body: e,
-    session: s.session,
-    files: s.files
-  };
+function getRouteHandler(object) {
+    return async (req, res, next)=>{
+        const request = createServerRequest(req);
+        const response = createServerResponse(req, res);
+        try {
+            await object.handle(request, response);
+        } catch (e) {
+            await object.catchError(e, request, response);
+        }
+        next();
+    };
 }
-c(E, "createServerRequest");
-function S(s, t) {
-  const o = new Proxy(
-    {},
-    {
-      set(e, i, r) {
-        return t.setHeader(i, r), !0;
-      },
-      get(e, i) {
-        return t.getHeader(i);
-      }
+function createServerRequest(req) {
+    const url = new URL("http://" + req.headers.host + req.url);
+    const querystring = url.search.substring(1);
+    let body = req.body;
+    if (req.fields) {
+        if (typeof body === "object" && body) body = Object.assign({}, body, req.fields);
+        else body = req.fields;
     }
-  );
-  return {
-    set statusCode(e) {
-      t.status(e);
-    },
-    get statusCode() {
-      return t.statusCode;
-    },
-    set session(e) {
-      s.session = e;
-    },
-    get session() {
-      return s.session;
-    },
-    original: t,
-    headers: o,
-    body(e) {
-      e instanceof Buffer ? t.send(e) : typeof e == "object" ? t.json(e) : (typeof e != "string" && (e = String(e)), t.send(e));
-    },
-    async sendFile(e) {
-      t.attachment(C.basename(e)), t.sendFile(e);
-    },
-    redirect(e) {
-      t.redirect(e);
+    if (req.files) {
+        for(let field in req.files){
+            const files = req.files[field];
+            if (files instanceof Array) files.forEach(handleFile);
+            else handleFile(files);
+        }
     }
-  };
+    /* 确保文件对象的字段与ServerFile类型保持一致 */ function handleFile(file) {
+        file.filepath = file.path;
+        file.originalFilename = file.name;
+        file.newFilename = path.basename(file.path);
+    }
+    return {
+        original: req,
+        headers: req.headers,
+        hostname: req.hostname,
+        href: url.href,
+        url: req.url,
+        URL: url,
+        host: url.host,
+        search: url.search,
+        querystring,
+        path: req.path,
+        method: req.method.toUpperCase(),
+        query: qs.parse(querystring),
+        origin: req.originalUrl,
+        body,
+        session: req.session,
+        files: req.files
+    };
 }
-c(S, "createServerResponse");
-export {
-  L as createServerPlatformExpress,
-  E as createServerRequest,
-  S as createServerResponse
-};
+function createServerResponse(req, res) {
+    const headers = new Proxy({}, {
+        set (_, p, newValue) {
+            res.setHeader(p, newValue);
+            return true;
+        },
+        get (_, p) {
+            return res.getHeader(p);
+        }
+    });
+    return {
+        set statusCode (value){
+            res.status(value);
+        },
+        get statusCode () {
+            return res.statusCode;
+        },
+        set session (value){
+            req.session = value;
+        },
+        get session () {
+            return req.session;
+        },
+        original: res,
+        headers,
+        body (value1) {
+            if (!(value1 instanceof Buffer)) {
+                if (typeof value1 === "object") {
+                    res.json(value1);
+                } else if (typeof value1 !== "string") {
+                    value1 = String(value1);
+                    res.send(value1);
+                } else {
+                    res.send(value1);
+                }
+            } else {
+                res.send(value1);
+            }
+        },
+        async sendFile (filePath) {
+            res.attachment(path.basename(filePath));
+            res.sendFile(filePath);
+        },
+        redirect (url) {
+            res.redirect(url);
+        }
+    };
+}
+
+export { createServerPlatformExpress, createServerRequest, createServerResponse };

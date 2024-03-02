@@ -1,10 +1,27 @@
-import { Metadata, Injectable, getDecoratedName, Container, LoadableContainer } from 'dependency-injection';
+import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, LoadableContainer, Container } from 'dependency-injection';
 export * from 'dependency-injection';
-import 'reflect-metadata';
+import { validate as validate$1 } from 'class-validator';
 
-class ServerError extends Error {
+/* server自定义错误的根类型 */ class ServerError extends Error {
+    code = 500;
 }
-function composeUrl(...items) {
+/* 当出现路由重复时抛出 */ class DuplicateRouteHandlerError extends ServerError {
+}
+/* 当找不到路由对应的控制器方法时抛出 */ class NotFoundRouteHandlerError extends ServerError {
+    code = 404;
+}
+/* 当在ServerRequest对象中找不到指定字段的文件时抛出 */ class NotFoundFileError extends ServerError {
+}
+/* 当不恰当的使用装饰器时抛出 */ class ImproperDecoratorError extends ServerError {
+}
+/* 当在session上找不到key时抛出 */ class SessionKeyNotExistError extends ServerError {
+}
+/* 当根据类型名找不到对应的验证器时抛出 */ class NotFoundValidatorError extends ServerError {
+}
+/* 当数据验证失败时抛出 */ class ValidateFailedError extends ServerError {
+}
+
+/* 组装url */ function composeUrl(...items) {
     return "/" + items.map(removeHeadTailSlash).filter((str)=>str.length > 0).join("/");
 }
 /* 删除头尾的斜线 */ function removeHeadTailSlash(str) {
@@ -12,34 +29,29 @@ function composeUrl(...items) {
     while(str[str.length - 1] === "/")str = str.slice(0, str.length - 1);
     return str;
 }
-function getOrCreateMetadataUserData(obj) {
+/* 得到或新建专给server库使用的userData */ function getOrCreateMetadataUserData(obj) {
     const metadata = Metadata.getOrCreateMetadata(obj);
     const userData = metadata.userData;
     if (!userData.__server__) {
         userData.__server__ = true;
-        userData.__server__isErrorHandler = false;
-        userData.__server__isController = false;
-        userData.__server__isPipeline = false;
-        userData.__server__metadata = metadata;
+        userData.__server__classType = "no-special";
         userData.__server__controllerRoutePrefix = "";
         userData.__server__controllerMethods = {};
         userData.__server__handle_error_type = ServerError;
     }
     return userData;
 }
-function getOrCreateControllerMethod(target, methodName) {
+/* 得到或新建控制器方法信息对象 */ function getOrCreateControllerMethod(target, methodName) {
     const userData = getOrCreateMetadataUserData(target);
     let res = userData.__server__controllerMethods[methodName];
     if (!res) {
         res = {
             methodName,
-            methodType: "GET",
-            paramtypes: [],
-            paramGetters: {},
+            type: "GET",
             route: "",
             routePrefix: ""
         };
-        /* parse findBuId to find-by-id */ for(let i = 0; i < methodName.length; i++){
+        /* parse findById to find-by-id */ for(let i = 0; i < methodName.length; i++){
             let char = methodName[i];
             if (/[A-Z]/.test(char)) {
                 char = char.toLowerCase();
@@ -54,41 +66,119 @@ function getOrCreateControllerMethod(target, methodName) {
 
 /* 本库所使用的依赖注入模块名 */ const MODULE_NAME = "server";
 /* Web服务器默认的监听端口 */ const DEFAULT_PORT = 4000;
-/* Server对象在容器中的标识。写出来是为了防止在代码中直接引用Server对象，避免可能的依赖循环 */ const SERVER_LABEL = "Server";
-const PARAMTYPES_REQUEST = "__server__request";
-const PARAMTYPES_RESPONSE = "__server__response";
-const PARAMTYPES_REQUEST_QUERY = "__server__request_query";
-const PARAMTYPES_REQUEST_BODY = "__server__request_body";
-const PARAMTYPES_SESSION = "__server__request_session";
-const PARAMTYPES_FILE = "__server__request_file";
-const PARAMTYPES_FILES = "__server__request_files";
 
-var ControllerManager;
-(function(ControllerManager) {
-    const urlMapRouteHandler = new Map();
+var RouteManager;
+(function(RouteManager) {
+    const urlMapRouteHandlerSet = new Map();
+    function getUrls() {
+        return urlMapRouteHandlerSet.keys();
+    }
+    /* 获取所有路由url */ RouteManager.getUrls = getUrls;
+    function getMethodTypes(url) {
+        const set = new Set();
+        const routeHandlerSet = urlMapRouteHandlerSet.get(url);
+        if (!routeHandlerSet) throw new NotFoundRouteHandlerError(`${url} Not Found route handler`);
+        Object.keys(routeHandlerSet).forEach((methodType)=>set.add(methodType));
+        return set;
+    }
+    /**
+   * 获取url对应的请求类型
+   * @throws NotFoundRouteHandlerError 当找不到url对应的RouteHandler时抛出
+   */ RouteManager.getMethodTypes = getMethodTypes;
     function register(type, url, controllerClass, methodName) {
-        let handler = urlMapRouteHandler.get(url);
-        if (!handler) urlMapRouteHandler.set(url, handler = {});
+        let handler = urlMapRouteHandlerSet.get(url);
+        if (!handler) urlMapRouteHandlerSet.set(url, handler = {});
         if (handler[type]) throw new DuplicateRouteHandlerError(`${type}:${url}的路由处理方法出现重复`);
         handler[type] = {
             controllerClass,
             methodName
         };
     }
-    ControllerManager.register = register;
+    /**
+   * 保存路由url及其控制器方法
+   * @throws DuplicateRouteHandlerError 当路由出现重复时抛出
+   */ RouteManager.register = register;
     function getRouteHandler(methodType, url) {
-        const handler = urlMapRouteHandler.get(url)?.[methodType];
-        if (!handler) throw new NotFoundRouteHandlerError();
+        const handler = urlMapRouteHandlerSet.get(url)?.[methodType];
+        if (!handler) throw new NotFoundRouteHandlerError(`${methodType}:${url} Not Found route handler`);
         return handler;
     }
-    ControllerManager.getRouteHandler = getRouteHandler;
-    let DuplicateRouteHandlerError = class DuplicateRouteHandlerError extends ServerError {
+    /**
+   * 查找路由url对应的控制器方法
+   * @throws NotFoundRouteHandlerError 当找不到路由对应的控制器方法时抛出
+   */ RouteManager.getRouteHandler = getRouteHandler;
+})(RouteManager || (RouteManager = {}));
+
+/* 类装饰器。标识类的实例为控制器，单例，系统初始化时创建 */ function Controller(option) {
+    const injectable = Injectable({
+        createImmediately: true,
+        singleton: true,
+        moduleName: MODULE_NAME,
+        paramtypes: option?.paramtypes,
+        paramGetters: option?.paramGetters
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "controller";
+        userData.__server__controllerRoutePrefix = option?.routePrefix ?? "";
+        for(let methodName in userData.__server__controllerMethods){
+            const method = userData.__server__controllerMethods[methodName];
+            RouteManager.register(method.type, composeUrl(userData.__server__controllerRoutePrefix, method.routePrefix, method.route), clazz, methodName);
+        }
     };
-    ControllerManager.DuplicateRouteHandlerError = DuplicateRouteHandlerError;
-    let NotFoundRouteHandlerError = class NotFoundRouteHandlerError extends ServerError {
+}
+
+/* 类装饰器。标识类的实例是错误处理器。单例。 */ function ErrorHandler(errorClass) {
+    const injectable = Injectable({
+        singleton: true,
+        moduleName: MODULE_NAME
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "error-handler";
+        userData.__server__handle_error_type = errorClass;
     };
-    ControllerManager.NotFoundRouteHandlerError = NotFoundRouteHandlerError;
-})(ControllerManager || (ControllerManager = {}));
+}
+
+/* 方法装饰器。标识此方法用来处理路由。只有在类上装饰了Controller装饰器时才会生效 */ function Method(option) {
+    const inject = Inject({
+        paramtypes: option?.paramtypes,
+        paramGetters: option?.paramGetters
+    });
+    return (target, methodName)=>{
+        methodName = getDecoratedName(methodName);
+        inject(target, methodName);
+        const ctrMethod = getOrCreateControllerMethod(target, methodName);
+        if (option?.type) ctrMethod.type = option.type;
+        if (option?.route) ctrMethod.route = option.route;
+        if (option?.routePrefix) ctrMethod.routePrefix = option.routePrefix;
+    };
+}
+
+/* 标识该类用来处理值的转换 */ function Parser() {
+    const injectable = Injectable({
+        singleton: true,
+        moduleName: MODULE_NAME
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "parser";
+    };
+}
+
+/* 类装饰器。标识此类的实例为管道。 */ function Pipeline() {
+    const injectable = Injectable({
+        moduleName: MODULE_NAME
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "pipeline";
+    };
+}
 
 /* 本库封装的请求对象，抹除不同框架的请求对象的不同 */ class ServerRequest {
     /* Web框架的原请求对象 */ original;
@@ -97,183 +187,148 @@ var ControllerManager;
     /* 请求体内容 */ body;
     /* 上传的文件 */ files;
     /* Get request URL. */ url;
-    /**
-   * Get origin of URL.
-   */ origin;
-    /**
-   * Get full request URL.
-   */ href;
-    /**
-   * Get request method.
-   */ method;
-    /**
-   * Get request pathname.
-   */ path;
-    /**
-   * Get parsed query-string.
-   */ query;
-    /**
-   * Get query string.
-   */ querystring;
-    /**
-   * Get the search string. Same as the querystring
-   * except it includes the leading ?.
-   */ search;
-    /**
-   * Parse the "Host" header field host
-   * and support X-Forwarded-Host when a
-   * proxy is enabled.
-   */ host;
-    /**
-   * Parse the "Host" header field hostname
-   * and support X-Forwarded-Host when a
-   * proxy is enabled.
-   */ hostname;
-    /**
-   * Get WHATWG parsed URL object.
-   */ URL;
+    /* Get origin of URL. */ origin;
+    /* Get full request URL. */ href;
+    /* Get request method. */ method;
+    /* Get request pathname. */ path;
+    /* Get parsed query-string. */ query;
+    /* Get query string. */ querystring;
+    /* Get the search string. Same as the querystring except it includes the leading ?. */ search;
+    /* Parse the "Host" header field host and support X-Forwarded-Host when a proxy is enabled. */ host;
+    /* Parse the "Host" header field hostname and support X-Forwarded-Host when a proxy is enabled. */ hostname;
+    /* Get WHATWG parsed URL object. */ URL;
 }
 
-function ErrorHandler(errorClass) {
-    const injectable = Injectable({
-        singleton: true,
-        moduleName: MODULE_NAME
+/* 属性/参数装饰器。为被装饰者注入ServerRequest实例 */ function Req() {
+    return Inject({
+        typeValueGetter: (container)=>container.getValue(ServerRequest)
     });
-    return (clazz, _)=>{
-        injectable(clazz, _);
-        const userData = getOrCreateMetadataUserData(clazz);
-        userData.__server__isErrorHandler = true;
-        userData.__server__handle_error_type = errorClass;
-    };
-}
-function Controller(option) {
-    const injectable = Injectable({
-        createImmediately: true,
-        singleton: true,
-        moduleName: MODULE_NAME
-    });
-    return (clazz, _)=>{
-        injectable(clazz, _);
-        const userData = getOrCreateMetadataUserData(clazz);
-        userData.__server__isController = true;
-        userData.__server__controllerRoutePrefix = option?.routePrefix ?? "";
-        for(let methodName in userData.__server__controllerMethods){
-            const method = userData.__server__controllerMethods[methodName];
-            ControllerManager.register(method.methodType, composeUrl(userData.__server__controllerRoutePrefix, method.routePrefix, method.route), clazz, methodName);
-        }
-    };
-}
-function Method(option) {
-    return (target, methodName)=>{
-        methodName = getDecoratedName(methodName);
-        const ctrMethod = getOrCreateControllerMethod(target, methodName);
-        if (option?.type) ctrMethod.methodType = option.type;
-        if (option?.route) ctrMethod.route = option.route;
-        if (option?.routePrefix) ctrMethod.routePrefix = option.routePrefix;
-        if (option?.paramtypes) {
-            for(let index in option.paramtypes){
-                if (ctrMethod.paramtypes[index]) continue;
-                ctrMethod.paramtypes[index] = option.paramtypes[index];
-            }
-        }
-        const paramtypes = Reflect.getMetadata("design:paramtypes", target, methodName);
-        if (paramtypes) {
-            for(let i = 0; i < paramtypes.length; i++){
-                if (ctrMethod.paramtypes[i]) continue;
-                ctrMethod.paramtypes[i] = paramtypes[i].name;
-            }
-        }
-    };
-}
-function ParamType(option) {
-    return (target, methodName, index)=>{
-        methodName = getDecoratedName(methodName);
-        const ctrMethod = getOrCreateControllerMethod(target, methodName);
-        ctrMethod.paramtypes[index] = option.label;
-        if (option.getter) ctrMethod.paramGetters[index] = option.getter;
-    };
-}
-function Req() {
-    return ParamType({
-        label: PARAMTYPES_REQUEST
-    });
-}
-function Res() {
-    return ParamType({
-        label: PARAMTYPES_RESPONSE
-    });
-}
-function ReqBody() {
-    return ParamType({
-        label: PARAMTYPES_REQUEST_BODY
-    });
-}
-function ReqQuery() {
-    return ParamType({
-        label: PARAMTYPES_REQUEST_QUERY
-    });
-}
-function ReqSession() {
-    return ParamType({
-        label: PARAMTYPES_SESSION
-    });
-}
-function ReqFile(fieldName) {
-    return ParamType({
-        label: PARAMTYPES_FILE,
-        getter: (container)=>{
-            const request = container.getValue(ServerRequest);
-            if (!request.files) throw new NotFoundFileError();
-            const files = request.files[fieldName];
-            if (!files) throw new NotFoundFileError();
-            if (files instanceof Array) throw new ImproperDecoratorError();
-            return files;
-        }
-    });
-}
-function ReqFiles(fieldName) {
-    return ParamType({
-        label: PARAMTYPES_FILES,
-        getter: (container)=>{
-            const request = container.getValue(ServerRequest);
-            if (!request.files) throw new NotFoundFileError();
-            const files = request.files[fieldName];
-            if (!files) throw new NotFoundFileError();
-            if (files instanceof Array) return files;
-            throw new ImproperDecoratorError();
-        }
-    });
-}
-class NotFoundFileError extends Error {
-}
-class ImproperDecoratorError extends Error {
-}
-function Pipeline() {
-    const injectable = Injectable({
-        moduleName: MODULE_NAME
-    });
-    return (clazz, _)=>{
-        injectable(clazz, _);
-        const userData = getOrCreateMetadataUserData(clazz);
-        userData.__server__isPipeline = true;
-    };
 }
 
-function _ts_decorate$1(decorators, target, key, desc) {
+function _ts_decorate$2(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-class ServerErrorHandler {
-    handle(err, res) {
-        res.statusCode = 500;
-        res.body(err.message);
+class RegularParser {
+    parse(value) {
+        if (typeof value === "string") return parseString(value);
+        if (typeof value === "object" && value) {
+            for(let prop in value){
+                const val = value[prop];
+                value[prop] = this.parse(val);
+            }
+        }
+        return value;
+        function parseString(value) {
+            if (value === "true") return true;
+            else if (value === "false") return false;
+            if (value.length === 0) return "";
+            const number = Number(value);
+            if (!Number.isNaN(number)) return number;
+            const date = new Date(value);
+            if (date.toString() !== "Invalid Date") return date;
+            return value;
+        }
     }
 }
-ServerErrorHandler = _ts_decorate$1([
-    ErrorHandler(ServerError)
-], ServerErrorHandler);
+RegularParser = _ts_decorate$2([
+    Parser()
+], RegularParser);
+
+/* 对输入进行转化和校验 */ function ParserAndValidate(option) {
+    let targetObject, targetMethodName = "", targetIndex = 0;
+    const inject = Inject({
+        typeValueGetter: (container)=>{
+            const value = parse(container, option.parsers, option.typeValueGetter(container));
+            if (option.validator === false) return value;
+            validate(container, targetObject, targetMethodName, targetIndex, value);
+            return value;
+        }
+    });
+    return (target, methodName, index)=>{
+        inject(target, methodName, index);
+        targetObject = target;
+        targetMethodName = getDecoratedName(methodName);
+        targetIndex = index;
+    };
+}
+/**
+ * 验证指定的数据
+ * @throws NotFoundValidatorError 当找不到类型对应的验证器时抛出
+ * @throws ValidateFailedError 当数据验证失败时抛出
+ */ function validate(container, target, methodName, argIndex, value) {
+    const metadata = Metadata.getOrCreateMetadata(target);
+    const parameterTypes = metadata.getMethodParameterTypes(methodName);
+    const type = parameterTypes.types[argIndex];
+    if (type === "String" || type === "Boolean" || type === "Number" || type === "Object" || type === "Function" || type === "Symbol") return;
+    const errorProps = [];
+    try {
+        const instance = container.getValue(type);
+        if (typeof instance === "object") errorProps.push(...validate$1(Object.assign(instance, value)));
+    } catch (e) {
+        if (e instanceof NotExistLabelError) throw new NotFoundValidatorError(`找不到类型${type}对应的验证器`);
+        throw e;
+    }
+    if (errorProps.length) throw new ValidateFailedError(errorProps.map((propName)=>`${type}.${propName}校验失败。`).join("\n"));
+}
+/* 将输入的值进行转化 */ function parse(container, parsers, value) {
+    if (!parsers && parsers === undefined) parsers = [
+        RegularParser
+    ];
+    if (parsers && !(parsers instanceof Array)) parsers = [
+        parsers
+    ];
+    if (!parsers) return value;
+    return parsers.reduce((value, parserClass)=>container.getValue(parserClass).parse(value), value);
+}
+
+/* 属性/参数装饰器。为被装饰者注入请求体 */ function ReqBody(option) {
+    return ParserAndValidate({
+        ...option,
+        typeValueGetter: (container)=>container.getValue(ServerRequest).body
+    });
+}
+
+/* 属性/参数装饰器。为被装饰者注入指定字段的上传的单个文件对象 */ function ReqFile(fieldName) {
+    return Inject({
+        typeValueGetter: (container)=>{
+            const request = container.getValue(ServerRequest);
+            if (!request.files) throw new NotFoundFileError();
+            const files = request.files[fieldName];
+            if (!files) throw new NotFoundFileError(`字段${fieldName}的文件不存在`);
+            if (files instanceof Array) throw new ImproperDecoratorError("指定字段的文件不止一个，请使用ReqFiles装饰器");
+            return files;
+        }
+    });
+}
+
+/* 属性/参数装饰器。为被装饰者注入指定字段的上传的多个文件对象 */ function ReqFiles(fieldName) {
+    return Inject({
+        typeValueGetter: (container)=>{
+            const request = container.getValue(ServerRequest);
+            if (!request.files) throw new NotFoundFileError();
+            const files = request.files[fieldName];
+            if (!files) throw new NotFoundFileError(`字段${fieldName}的文件不存在`);
+            if (files instanceof Array) return files;
+            throw new ImproperDecoratorError("指定字段的文件只有一个，请使用ReqFile装饰器");
+        }
+    });
+}
+
+/* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
+    return ParserAndValidate({
+        ...option,
+        typeValueGetter: (container)=>container.getValue(ServerRequest).query
+    });
+}
+
+/* 属性/参数装饰器。为被装饰者注入session对象 */ function ReqSession() {
+    return Inject({
+        typeValueGetter: (container)=>container.getValue(ServerRequest).session
+    });
+}
 
 /* 本库封装的响应对象，抹除不同框架的响应对象的不同 */ class ServerResponse {
     /* Web框架的原响应对象 */ original;
@@ -287,34 +342,197 @@ ServerErrorHandler = _ts_decorate$1([
     /* 重定向 */ redirect(url) {}
 }
 
-class Session {
+/* 属性/参数装饰器。为被装饰者注入ServerResponse实例 */ function Res() {
+    return Inject({
+        typeValueGetter: (container)=>container.getValue(ServerResponse)
+    });
+}
+
+/* 标识类用来处理需要返回的内容 */ function ResponseBodySender() {
+    const injectable = Injectable({
+        singleton: true,
+        moduleName: MODULE_NAME
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "response-body-sender";
+    };
+}
+
+/* 错误处理器派发器，匹配Error对应的错误处理器 */ class ErrorHandlerDispatcher {
+    _errorHandlerClasses = new Array();
+    constructor(customErrorHandlers){
+        this._errorHandlerClasses.push(...customErrorHandlers);
+        this._checkErrorHandlers();
+    }
+    /* 匹配Error对应的错误处理器 */ dispatch(error) {
+        for (let errorHandlerClass of this._errorHandlerClasses){
+            const userData = getOrCreateMetadataUserData(errorHandlerClass);
+            if (error instanceof userData.__server__handle_error_type) return errorHandlerClass;
+        }
+    }
+    /* 检查现有的类是否都装饰ErrorHandler */ _checkErrorHandlers() {
+        for (let errorHandlerClass of this._errorHandlerClasses){
+            const userData = getOrCreateMetadataUserData(errorHandlerClass);
+            if (userData.__server__classType !== "error-handler") throw new ServerError(errorHandlerClass.name + "未装饰ErrorHandler");
+        }
+    }
+}
+
+function _ts_decorate$1(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+/* 将要返回的响应体内容 */ class ResponseBody {
+    object;
+    success;
+    code;
+    msg;
+    /* 从Error对象生成响应体内容 */ static fromError(error) {
+        return new ResponseBody({}, false, error.code ?? 500, error.message);
+    }
+    /* 从值生成响应体内容 */ static from(value) {
+        if (value instanceof Error) return this.fromError(value);
+        else if (value instanceof ResponseBody) return value;
+        return new ResponseBody(value);
+    }
+    static fromFilePath(filePath) {
+        return this.from({
+            filePath,
+            __isFilePath__: true
+        });
+    }
+    constructor(object, success = true, code = 200, msg = "ok"){
+        this.object = object;
+        this.success = success;
+        this.code = code;
+        this.msg = msg;
+    }
+}
+class RegularResponseBodySender {
+    send(value, res) {
+        const responseBody = ResponseBody.from(value);
+        res.statusCode = responseBody.code;
+        if (responseBody.object?.__isFilePath__) return res.sendFile(responseBody.object.filePath);
+        else res.body(responseBody);
+    }
+}
+RegularResponseBodySender = _ts_decorate$1([
+    ResponseBodySender()
+], RegularResponseBodySender);
+
+class Server {
+    _serverPlatform;
+    /* 创建Server对象 */ static async create(options) {
+        const app = new Server(options.serverPlatformAdapter);
+        await app._init(options);
+        return app;
+    }
+    constructor(/* Web框架的适配器 */ _serverPlatform){
+        this._serverPlatform = _serverPlatform;
+        this._dependencyInjection = new LoadableContainer();
+    }
+    /* 依赖注入的容器 */ _dependencyInjection;
+    /* 用来处理请求的管道类 */ _requestPipelineClass;
+    /* Web框架的实例 */ _platformInstance;
+    get platformInstance() {
+        return this._platformInstance;
+    }
+    /* 错误处理器派发器，匹配Error对应的错误处理器 */ _errorHandlerDispatcher;
+    get errorHandlerDispatcher() {
+        return this._errorHandlerDispatcher;
+    }
+    /* 响应体body构建者的Class */ _responseBodySender;
+    get responseBodySender() {
+        return this._responseBodySender;
+    }
+    /* 创建一个依赖注入容器，并且继承自Server内部保有的根容器 */ createContainer() {
+        return new LoadableContainer().extend(this._dependencyInjection);
+    }
+    /* 启动服务器 */ bootstrap(option = {}) {
+        if (!option.port) option.port = DEFAULT_PORT;
+        this._serverPlatform.bootstrap(option);
+    }
+    /**
+   * 支持静态资源
+   * @param assetsPath 静态资源的文件夹路径
+   * @param routePathPrefix 访问静态资源的路由前缀
+   */ staticAssets(assetsPath, routePathPrefix) {
+        this._serverPlatform.staticAssets(assetsPath, routePathPrefix);
+        return this;
+    }
+    /* 配置代理转发 */ proxy(option) {
+        this._serverPlatform.proxy(option);
+        return this;
+    }
+    /* 处理请求 */ async handleRequest(request, response) {
+        const container = this.createContainer().extend(this._dependencyInjection);
+        container.bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response);
+        const pipeline = container.getValue(this._requestPipelineClass);
+        await pipeline.start();
+        pipeline.dispose();
+        container.dispose();
+    }
+    /* 初始化Web服务器 */ async _init(options) {
+        this._errorHandlerDispatcher = new ErrorHandlerDispatcher(options.errorHandlers ?? []);
+        this._requestPipelineClass = options.pipeline ?? RequestPipeline;
+        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this));
+        this._dependencyInjection.load({
+            moduleName: MODULE_NAME
+        });
+        this._responseBodySender = this._dependencyInjection.getValue(options.responseBodySender ?? RegularResponseBodySender);
+        this._setupRoutes();
+        this._platformInstance = await this._serverPlatform.create();
+    }
+    /* 给Web框架设置路由 */ _setupRoutes() {
+        const urls = RouteManager.getUrls();
+        const routes = {};
+        for (let url of urls){
+            routes[url] = {
+                handle: this.handleRequest.bind(this),
+                catchError: this._catchRequestError.bind(this),
+                methodTypes: RouteManager.getMethodTypes(url)
+            };
+        }
+        this._serverPlatform.useRoutes(routes);
+    }
+    /* 处理请求中的错误 */ _catchRequestError(err, _, response) {
+        return this._responseBodySender.send(err, response);
+    }
+}
+
+/* 读取/更新会话对象 */ class Session {
     req;
     res;
     constructor(req, res){
         this.req = req;
         this.res = res;
     }
-    set(key, value) {
+    /* 更新会话对象 */ set(key, value) {
         if (!this.res.session) this.res.session = {};
         this.res.session[key] = value;
         return this;
     }
-    get(key) {
+    /* 读取会话对象 */ get(key) {
         return this.req.session?.[key];
     }
-    fetch(key) {
-        if (!this.has(key)) throw new SessionKeyNotExistError();
+    /**
+   * 读取会话对象
+   * @throws SessionKeyNotExistError 当在session上找不到key时抛出
+   */ fetch(key) {
+        if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
         return this.req.session[key];
     }
-    has(key) {
+    /* 判断会话上是否存在指定的key */ has(key) {
         if (!this.req.session) return false;
         return key in this.req.session;
     }
-    destroy() {
+    /* 删除会话对象 */ destroy() {
         this.res.session = null;
     }
-}
-class SessionKeyNotExistError extends ServerError {
 }
 
 function _ts_decorate(decorators, target, key, desc) {
@@ -327,107 +545,45 @@ function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
 class RequestPipeline {
-    container;
+    server;
     request;
     response;
-    constructor(container, request, response){
-        this.container = container;
+    constructor(server, request, response){
+        this.server = server;
         this.request = request;
         this.response = response;
-        this.container.bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindValue(PARAMTYPES_REQUEST, request).bindValue(PARAMTYPES_RESPONSE, response).bindValue(PARAMTYPES_REQUEST_QUERY, request.query).bindValue(PARAMTYPES_REQUEST_BODY, request.body).bindGetter(PARAMTYPES_SESSION, ()=>new Session(request, response)).bindGetter(Session.name, ()=>new Session(request, response));
+        this._container = server.createContainer();
+        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
     }
-    start() {
+    /* 依赖注入容器 */ _container;
+    /* 启动管道，开始处理请求 */ async start() {
+        const responseBodySender = this.server.responseBodySender;
+        let result;
         try {
-            const server = this.container.getValue(SERVER_LABEL);
-            const routeHandler = server.getRouteHandler(this.request.path);
-            routeHandler.call(this.container);
-        } catch (e) {}
+            const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
+            result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
+        } catch (e) {
+            result = e;
+            const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(e);
+            if (errorHandlerClass) {
+                const errorHandler = this._container.getValue(errorHandlerClass);
+                result = await errorHandler.handle(e, this.response, this.request);
+            }
+        }
+        return responseBodySender.send(result, this.response);
     }
-    dispose() {
-        this.container.dispose();
+    /* 销毁管道 */ dispose() {
+        this._container.dispose();
     }
 }
 RequestPipeline = _ts_decorate([
     Pipeline(),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
-        typeof Container === "undefined" ? Object : Container,
+        typeof Server === "undefined" ? Object : Server,
         typeof ServerRequest === "undefined" ? Object : ServerRequest,
         typeof ServerResponse === "undefined" ? Object : ServerResponse
     ])
 ], RequestPipeline);
 
-/* 保存一个路由对应的Controller和方法。能够执行方法并返回结果 */ class RouteHandler {
-    controller;
-    methodName;
-    constructor(controller, methodName){
-        this.controller = controller;
-        this.methodName = methodName;
-    }
-    /**
-   * 执行方法
-   * @param container 依赖注入容器
-   */ call(container) {
-        const controllerMethod = getOrCreateControllerMethod(this.controller.constructor, this.methodName);
-        return container[this.methodName](...controllerMethod.paramtypes.map((type, index)=>controllerMethod.paramGetters[index]?.(container) ?? container.getValue(type)));
-    }
-}
-
-class Server {
-    _serverPlatform;
-    /* 创建Server对象 */ static async create(serverPlatform) {
-        const app = new Server(serverPlatform);
-        await app._init();
-        return app;
-    }
-    constructor(/* Web框架的适配器 */ _serverPlatform){
-        this._serverPlatform = _serverPlatform;
-        this._routeHandlerMap = new Map();
-        this._dependencyInjection = new LoadableContainer();
-    }
-    /* 路由路径映射RouteHandler */ _routeHandlerMap;
-    /* 依赖注入的容器 */ _dependencyInjection;
-    /* Web框架的实例 */ _platformInstance;
-    /* 返回Web框架的实例 */ get platformInstance() {
-        return this._platformInstance;
-    }
-    /* 创建一个依赖注入容器，并且继承自Server内部保有的根容器 */ createContainer() {
-        return new Container().extend(this._dependencyInjection);
-    }
-    /* 启动服务器 */ async bootstrap(option = {}) {
-        if (!option.port) option.port = DEFAULT_PORT;
-        this._serverPlatform.bootstrap(option);
-    }
-    /**
-   * 根据请求的path获取对应的路由处理对象
-   * @throws NotFountRouteHandlerError 找不到路由处理对象时抛出
-   */ getRouteHandler(path) {
-        const routeHandler = this._routeHandlerMap.get(path);
-        if (!routeHandler) throw new NotFountRouteHandlerError(`找不到path ${path} 对应的RouteHandler对象`);
-        return routeHandler;
-    }
-    /* 初始化Web服务器 */ async _init() {
-        this._dependencyInjection.bindValue(SERVER_LABEL, this).bindFactory(Container.name, this.createContainer.bind(this));
-        this._platformInstance = await this._serverPlatform.create();
-        this._dependencyInjection.load({
-            moduleName: MODULE_NAME
-        });
-        const controllerMetadataArray = Array.from(Metadata.getAllMetadata()).filter((item)=>getOrCreateMetadataUserData(item.clazz).__server__isController);
-        for (let metadata of controllerMetadataArray){
-            const userData = getOrCreateMetadataUserData(metadata.clazz);
-            for(let methodName in userData.__server__controllerMethods){
-                const controllerMethod = userData.__server__controllerMethods[methodName];
-                const path = "/" + [
-                    removeHeadTailSlash(userData.__server__controllerRoutePrefix),
-                    removeHeadTailSlash(controllerMethod.routePrefix),
-                    removeHeadTailSlash(controllerMethod.route)
-                ].filter((item)=>!!item).join("/");
-                this._routeHandlerMap.set(path, new RouteHandler(this._dependencyInjection.getValue(metadata.clazz), controllerMethod.methodName));
-            }
-        }
-    }
-}
-/* 当根据请求的path找不到RouteHandler对象时抛出 */ class NotFountRouteHandlerError extends ServerError {
-}
-
-export { Controller, DEFAULT_PORT, ErrorHandler, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFountRouteHandlerError, PARAMTYPES_FILE, PARAMTYPES_FILES, PARAMTYPES_REQUEST, PARAMTYPES_REQUEST_BODY, PARAMTYPES_REQUEST_QUERY, PARAMTYPES_RESPONSE, PARAMTYPES_SESSION, ParamType, Pipeline, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, RouteHandler, SERVER_LABEL, Server, ServerError, ServerErrorHandler, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ValidateFailedError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };

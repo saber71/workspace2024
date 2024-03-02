@@ -1,127 +1,153 @@
+/// <reference types="../types.d.ts" />
 /// <reference types="dependency-injection/types" />
+/// <reference types="node" />
 
 import { Container } from 'dependency-injection';
-import { IncomingHttpHeaders } from 'node:http';
-import { OutgoingHttpHeaders } from 'node:http';
-import { ParsedUrlQuery } from 'node:querystring';
-import { URL as URL_2 } from 'node:url';
+import type { IncomingHttpHeaders } from 'node:http';
+import type { OutgoingHttpHeaders } from 'node:http';
+import type { ParsedUrlQuery } from 'node:querystring';
+import type { URL as URL_2 } from 'node:url';
 
 export declare function composeUrl(...items: string[]): string;
 
 export declare function Controller(option?: {
     routePrefix?: string;
-}): (clazz: Class, _?: any) => void;
+} & MethodParameterOption): (clazz: Class, _?: any) => void;
 
 export declare const DEFAULT_PORT = 4000;
 
-declare function ErrorHandler_2<T extends Error>(errorClass: Class<T>): (clazz: Class, _?: any) => void;
-export { ErrorHandler_2 as ErrorHandler }
+export declare class DuplicateRouteHandlerError extends ServerError {
+}
+
+export declare function ErrorHandler<T extends Error>(errorClass: Class<T>): (clazz: Class, _?: any) => void;
+
+export declare class ErrorHandlerDispatcher {
+    private readonly _errorHandlerClasses;
+    constructor(customErrorHandlers: ErrorHandlerClass[]);
+    dispatch(error: Error): ErrorHandlerClass | undefined;
+    private _checkErrorHandlers;
+}
 
 export declare function getOrCreateControllerMethod(target: any, methodName: string): ControllerMethod;
 
 export declare function getOrCreateMetadataUserData(obj: any): MetadataServerUserData;
 
-export declare class ImproperDecoratorError extends Error {
+export declare class ImproperDecoratorError extends ServerError {
 }
 
-export declare function Method(option?: {
-    type: MethodType;
-    routePrefix?: string;
-    route?: string;
-    paramtypes?: Record<number, string>;
-}): (target: any, methodName?: any) => void;
+export declare function Method(option?: Partial<Pick<ControllerMethod, "route" | "routePrefix" | "type">> & MethodParameterOption): (target: any, methodName?: any) => void;
 
 export declare const MODULE_NAME = "server";
 
-export declare class NotFoundFileError extends Error {
+export declare class NotFoundFileError extends ServerError {
 }
 
-export declare class NotFountRouteHandlerError extends ServerError {
+export declare class NotFoundRouteHandlerError extends ServerError {
+    code: number;
 }
 
-export declare function ParamType(option: {
-    label: string;
-    getter?: (container: Container) => any;
-}): (target: any, methodName: any, index: number) => void;
+export declare class NotFoundValidatorError extends ServerError {
+}
 
-export declare const PARAMTYPES_FILE = "__server__request_file";
-
-export declare const PARAMTYPES_FILES = "__server__request_files";
-
-export declare const PARAMTYPES_REQUEST = "__server__request";
-
-export declare const PARAMTYPES_REQUEST_BODY = "__server__request_body";
-
-export declare const PARAMTYPES_REQUEST_QUERY = "__server__request_query";
-
-export declare const PARAMTYPES_RESPONSE = "__server__response";
-
-export declare const PARAMTYPES_SESSION = "__server__request_session";
+export declare function Parser(): (clazz: Class, _?: any) => void;
 
 export declare function Pipeline(): (clazz: Class, _?: any) => void;
 
+export declare class RegularParser implements ParserInterface {
+    parse(value: any): any;
+}
+
+export declare class RegularResponseBodySender implements ResponseBodySenderInterface {
+    send(value: any, res: ServerResponse): Promise<void> | undefined;
+}
+
 export declare function removeHeadTailSlash(str: string): string;
 
-export declare function Req(): (target: any, methodName: any, index: number) => void;
+export declare function Req(): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqBody(): (target: any, methodName: any, index: number) => void;
+export declare function ReqBody(option?: ParserAndValidator): (target: any, methodName?: any, index?: any) => void;
 
-export declare function ReqFile(fieldName: string): (target: any, methodName: any, index: number) => void;
+export declare function ReqFile(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqFiles(fieldName: string): (target: any, methodName: any, index: number) => void;
+export declare function ReqFiles(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqQuery(): (target: any, methodName: any, index: number) => void;
+export declare function ReqQuery(option?: ParserAndValidator): (target: any, methodName?: any, index?: any) => void;
 
-export declare function ReqSession(): (target: any, methodName: any, index: number) => void;
+export declare function ReqSession(): (clazz: any, propName: any, index?: any) => void;
 
 export declare class RequestPipeline {
-    readonly container: Container;
+    readonly server: Server;
     readonly request: ServerRequest;
     readonly response: ServerResponse;
-    constructor(container: Container, request: ServerRequest, response: ServerResponse);
-    start(): void;
+    constructor(server: Server, request: ServerRequest, response: ServerResponse);
+    private readonly _container;
+    start(): Promise<void>;
     dispose(): void;
 }
 
-export declare function Res(): (target: any, methodName: any, index: number) => void;
+export declare function Res(): (clazz: any, propName: any, index?: any) => void;
 
-declare class RouteHandler_2<Controller extends object = object> {
-    readonly controller: Controller;
-    readonly methodName: string;
-    constructor(controller: Controller, methodName: string);
-    /**
-     * 执行方法
-     * @param container 依赖注入容器
-     */
-    call(container: Container): any;
+export declare class ResponseBody {
+    readonly object: any;
+    readonly success: boolean;
+    readonly code: number;
+    readonly msg: string;
+    static fromError(error: Error): ResponseBody;
+    static from(value: any): ResponseBody;
+    static fromFilePath(filePath: string): ResponseBody;
+    constructor(object: any, success?: boolean, code?: number, msg?: string);
 }
-export { RouteHandler_2 as RouteHandler }
+
+export declare function ResponseBodySender(): (clazz: Class, _?: any) => void;
+
+export declare namespace RouteManager {
+    export function getUrls(): IterableIterator<string>;
+    /**
+     * 获取url对应的请求类型
+     * @throws NotFoundRouteHandlerError 当找不到url对应的RouteHandler时抛出
+     */
+    export function getMethodTypes(url: string): Set<MethodType>;
+    /**
+     * 保存路由url及其控制器方法
+     * @throws DuplicateRouteHandlerError 当路由出现重复时抛出
+     */
+    export function register(type: MethodType, url: string, controllerClass: Class, methodName: string): void;
+    /**
+     * 查找路由url对应的控制器方法
+     * @throws NotFoundRouteHandlerError 当找不到路由对应的控制器方法时抛出
+     */
+    export function getRouteHandler(methodType: MethodType, url: string): RouteHandler;
+}
 
 export declare class Server<PlatformInstance extends object = object> {
     private readonly _serverPlatform;
-    static create(serverPlatform: ServerPlatformAdapter): Promise<Server<object>>;
+    static create(options: ServerCreateOption): Promise<Server<object>>;
     private constructor();
-    private readonly _routeHandlerMap;
     private readonly _dependencyInjection;
+    private _requestPipelineClass;
     private _platformInstance;
     get platformInstance(): PlatformInstance;
+    private _errorHandlerDispatcher;
+    get errorHandlerDispatcher(): ErrorHandlerDispatcher;
+    private _responseBodySender;
+    get responseBodySender(): ResponseBodySenderInterface;
     createContainer(): Container;
-    bootstrap(option?: ServerBootstrapOption): Promise<void>;
+    bootstrap(option?: ServerBootstrapOption): void;
     /**
-     * 根据请求的path获取对应的路由处理对象
-     * @throws NotFountRouteHandlerError 找不到路由处理对象时抛出
+     * 支持静态资源
+     * @param assetsPath 静态资源的文件夹路径
+     * @param routePathPrefix 访问静态资源的路由前缀
      */
-    getRouteHandler(path: string): RouteHandler_2<object>;
+    staticAssets(assetsPath: string, routePathPrefix: string): this;
+    proxy(option: ServerProxyOption): this;
+    handleRequest(request: ServerRequest, response: ServerResponse): Promise<void>;
     private _init;
+    private _setupRoutes;
+    private _catchRequestError;
 }
-
-export declare const SERVER_LABEL = "Server";
 
 export declare class ServerError extends Error {
-}
-
-export declare class ServerErrorHandler implements ErrorHandler<ServerError> {
-    handle(err: ServerError, res: ServerResponse): void | Promise<void>;
+    code: number;
 }
 
 export declare class ServerRequest<Original extends object = object> {
@@ -131,50 +157,15 @@ export declare class ServerRequest<Original extends object = object> {
     readonly body: any;
     readonly files: Record<string, ServerFile | ServerFile[] | undefined> | undefined;
     readonly url: string;
-    /**
-     * Get origin of URL.
-     */
     readonly origin: string;
-    /**
-     * Get full request URL.
-     */
     readonly href: string;
-    /**
-     * Get request method.
-     */
-    readonly method: string;
-    /**
-     * Get request pathname.
-     */
+    readonly method: MethodType;
     readonly path: string;
-    /**
-     * Get parsed query-string.
-     */
     readonly query: ParsedUrlQuery;
-    /**
-     * Get query string.
-     */
     readonly querystring: string;
-    /**
-     * Get the search string. Same as the querystring
-     * except it includes the leading ?.
-     */
     readonly search: string;
-    /**
-     * Parse the "Host" header field host
-     * and support X-Forwarded-Host when a
-     * proxy is enabled.
-     */
     readonly host: string;
-    /**
-     * Parse the "Host" header field hostname
-     * and support X-Forwarded-Host when a
-     * proxy is enabled.
-     */
     readonly hostname: string;
-    /**
-     * Get WHATWG parsed URL object.
-     */
     readonly URL: URL_2;
 }
 
@@ -188,18 +179,25 @@ export declare class ServerResponse<Original extends object = object> {
     redirect(url: string): void;
 }
 
-export declare class Session<T extends object> {
+export declare class Session<T extends Record<string, any>> {
     readonly req: ServerRequest;
     readonly res: ServerResponse;
     constructor(req: ServerRequest, res: ServerResponse);
     set<Key extends keyof T>(key: Key, value: T[Key]): this;
     get<Key extends keyof T>(key: Key): T[Key] | undefined;
+    /**
+     * 读取会话对象
+     * @throws SessionKeyNotExistError 当在session上找不到key时抛出
+     */
     fetch<Key extends keyof T>(key: Key): T[Key];
     has<Key extends keyof T>(key: Key): boolean;
     destroy(): void;
 }
 
 export declare class SessionKeyNotExistError extends ServerError {
+}
+
+export declare class ValidateFailedError extends ServerError {
 }
 
 

@@ -1,126 +1,141 @@
-var p = Object.defineProperty;
-var u = (e, s) => p(e, "name", { value: s, configurable: !0 });
-import h from "koa";
-import y from "koa-body";
-import d from "koa-mount";
-import g from "koa-router";
-import l from "koa-send";
-import c from "koa-session";
-import w from "koa-static";
-import b from "node:path";
-import q from "koa-proxies";
-function N() {
-  const e = new h(), s = new g(), o = [];
-  return {
-    name: "koa",
-    create() {
-      return Promise.resolve(e);
-    },
-    staticAssets(r, t) {
-      e.use(d(t, w(r)));
-    },
-    bootstrap(r) {
-      var t, n, i;
-      (t = r.session) != null && t.secretKey && (e.keys = [r.session.secretKey]), o.forEach((a) => e.use(a)), e.use(
-        y({
-          multipart: !0,
-          formidable: { keepExtensions: !0, multiples: !0 }
-        })
-      ).use(
-        c(
-          {
-            key: (n = r.session) == null ? void 0 : n.cookieKey,
-            maxAge: (i = r.session) == null ? void 0 : i.maxAge
-          },
-          e
-        )
-      ).use(s.routes()).use(s.allowedMethods()).listen(r.port, r.hostname);
-    },
-    useRoutes(r) {
-      for (let t in r) {
-        const n = r[t];
-        s.use(t, async (i) => {
-          const a = R(i), m = k(i);
-          try {
-            await n.handle(a, m);
-          } catch (f) {
-            n.catchError(f, a, m);
-          }
-          i.res.end();
-        });
-      }
-    },
-    proxy(r) {
-      o.push(
-        q(r.src, {
-          changeOrigin: r.changeOrigin,
-          target: r.target,
-          rewrite: r.rewrites ? (t) => {
-            for (let n in r.rewrites) {
-              const i = new RegExp(n);
-              t = t.replace(i, r.rewrites[n]);
+import Koa from 'koa';
+import { koaBody } from 'koa-body';
+import mount from 'koa-mount';
+import Router from 'koa-router';
+import send from 'koa-send';
+import session from 'koa-session';
+import staticServe from 'koa-static';
+import path from 'node:path';
+import proxy from 'koa-proxies';
+
+/// <reference types="../types" />
+function createServerPlatformKoa() {
+    const app = new Koa();
+    const router = new Router();
+    const proxies = [];
+    return {
+        name: "koa",
+        create () {
+            return Promise.resolve(app);
+        },
+        staticAssets (assetsPath, routePathPrefix) {
+            app.use(mount(routePathPrefix, staticServe(assetsPath)));
+        },
+        bootstrap (option) {
+            if (option.session?.secretKey) app.keys = [
+                option.session.secretKey
+            ];
+            proxies.forEach((proxy)=>app.use(proxy));
+            app.use(koaBody({
+                multipart: true,
+                formidable: {
+                    keepExtensions: true,
+                    multiples: true
+                }
+            })).use(session({
+                key: option.session?.cookieKey ?? "Secret key",
+                maxAge: option.session?.maxAge
+            }, app)).use(router.routes()).use(router.allowedMethods()).listen(option.port, option.hostname);
+        },
+        useRoutes (routes) {
+            for(let url in routes){
+                const object = routes[url];
+                for (let methodType of object.methodTypes){
+                    if (methodType === "GET") router.get(url, getHandler(object));
+                    else if (methodType === "POST") router.post(url, getHandler(object));
+                    else if (methodType === "DELETE") router.delete(url, getHandler(object));
+                    else if (methodType === "PUT") router.put(url, getHandler(object));
+                    else throw new Error("unknown method type " + methodType);
+                }
             }
-            return t;
-          } : void 0
-        })
-      );
-    }
-  };
+            function getHandler(object) {
+                return async (ctx, next)=>{
+                    const req = createServerRequest(ctx);
+                    const res = createServerResponse(ctx);
+                    try {
+                        await object.handle(req, res);
+                    } catch (e) {
+                        await object.catchError(e, req, res);
+                    }
+                    next();
+                };
+            }
+        },
+        proxy (option) {
+            proxies.push(proxy(option.src, {
+                changeOrigin: option.changeOrigin,
+                target: option.target,
+                rewrite: option.rewrites ? (path)=>{
+                    for(let rewritesKey in option.rewrites){
+                        const reg = new RegExp(rewritesKey);
+                        path = path.replace(reg, option.rewrites[rewritesKey]);
+                    }
+                    return path;
+                } : undefined
+            }));
+        }
+    };
 }
-u(N, "createServerPlatformKoa");
-function R(e) {
-  return {
-    original: e.request,
-    origin: e.origin,
-    url: e.url,
-    query: e.query,
-    querystring: e.querystring,
-    hostname: e.hostname,
-    headers: e.headers,
-    host: e.host,
-    href: e.href,
-    path: e.path,
-    search: e.search,
-    method: e.method.toUpperCase(),
-    URL: e.URL,
-    body: e.request.body,
-    files: e.request.files,
-    session: e.session
-  };
+function createServerRequest(ctx) {
+    return {
+        original: ctx.request,
+        origin: ctx.origin,
+        url: ctx.url,
+        query: ctx.query,
+        querystring: ctx.querystring,
+        hostname: ctx.hostname,
+        headers: ctx.headers,
+        host: ctx.host,
+        href: ctx.href,
+        path: ctx.path,
+        search: ctx.search,
+        method: ctx.method.toUpperCase(),
+        URL: ctx.URL,
+        body: ctx.request.body,
+        files: ctx.request.files,
+        session: ctx.session
+    };
 }
-u(R, "createServerRequest");
-function k(e) {
-  return {
-    original: e.response,
-    headers: e.response.headers,
-    get session() {
-      return e.session;
-    },
-    set session(s) {
-      e.session = s;
-    },
-    set statusCode(s) {
-      e.response.status = s;
-    },
-    get statusCode() {
-      return e.response.status;
-    },
-    body(s) {
-      let o = "text/plain;charset=utf-8";
-      s instanceof Buffer ? o = "application/octet-stream" : typeof s == "object" ? (s = JSON.stringify(s), o = "application/json;charset=utf-8") : typeof s != "string" && (s = String(s)), e.response.headers["content-type"] = o, e.response.body = s;
-    },
-    async sendFile(s) {
-      const o = b.basename(s);
-      e.attachment(o), await l(e, o);
-    },
-    redirect(s) {
-      e.response.redirect(s);
-    }
-  };
+function createServerResponse(ctx) {
+    return {
+        original: ctx.response,
+        headers: ctx.response.headers,
+        get session () {
+            return ctx.session;
+        },
+        set session (value){
+            ctx.session = value;
+        },
+        set statusCode (value){
+            ctx.response.status = value;
+        },
+        get statusCode () {
+            return ctx.response.status;
+        },
+        body (value1) {
+            let contentType = "text/plain";
+            if (!(value1 instanceof Buffer)) {
+                if (typeof value1 === "object") {
+                    value1 = JSON.stringify(value1);
+                    contentType = "application/json";
+                } else if (typeof value1 !== "string") {
+                    value1 = String(value1);
+                }
+            } else {
+                contentType = "application/octet-stream";
+            }
+            ctx.response.type = contentType;
+            ctx.response.body = value1;
+        },
+        async sendFile (filePath) {
+            const fileName = path.basename(filePath);
+            ctx.attachment(fileName);
+            await send(ctx, fileName);
+        },
+        redirect (url) {
+            ctx.response.redirect(url);
+        }
+    };
 }
-u(k, "createServerResponse");
-export {
-  N as createServerPlatformKoa,
-  R as createServerRequest,
-  k as createServerResponse
-};
+
+export { createServerPlatformKoa, createServerRequest, createServerResponse };

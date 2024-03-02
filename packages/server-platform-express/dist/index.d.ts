@@ -1,4 +1,4 @@
-/// <reference types="server/types" />
+/// <reference types="../types" />
 
 import { Express as Express_2 } from 'express';
 import { Request as Request_2 } from 'express';

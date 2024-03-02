@@ -10,7 +10,12 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "dependency-injection": "workspace:^",
-    "reflect-metadata": "^0.2.1"
+    "class-validator": "workspace:^",
+    "dependency-injection": "workspace:^"
+  },
+  "devDependencies": {
+    "http-test": "workspace:*",
+    "server-platform-express": "workspace:*",
+    "server-platform-koa": "workspace:*"
   }
 }

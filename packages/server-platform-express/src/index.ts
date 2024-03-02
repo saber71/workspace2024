@@ -1,6 +1,12 @@
-import express, { type Express, Request, Response } from "express";
+import express, {
+  type Express,
+  type NextFunction,
+  type Request,
+  type Response,
+} from "express";
 import session from "express-session";
 import formidableMiddleware from "express-formidable";
+import * as fs from "fs";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { URL } from "node:url";
 import * as qs from "node:querystring";
@@ -33,24 +39,26 @@ export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
         router.use(item[0], item[1]);
       }
       for (let route of routes) {
-        for (let path in route) {
-          const object = route[path];
-          router.use(path, async (req, res) => {
-            const request = createServerRequest(req);
-            const response = createServerResponse(req, res);
-            try {
-              await object.handle(request, response);
-            } catch (e) {
-              object.catchError(e as Error, request, response);
-            }
-            res.end();
-          });
+        for (let url in route) {
+          const object = route[url];
+          for (let methodType of object.methodTypes) {
+            if (methodType === "GET") router.get(url, getRouteHandler(object));
+            else if (methodType === "POST")
+              router.post(url, getRouteHandler(object));
+            else if (methodType === "DELETE")
+              router.delete(url, getRouteHandler(object));
+            else if (methodType === "PUT")
+              router.put(url, getRouteHandler(object));
+            else throw new Error("unknown method type " + methodType);
+          }
         }
       }
       app.use(
         session({
           secret: option.session?.secretKey ?? "express-secret-key",
           name: option.session?.cookieKey,
+          resave: true,
+          saveUninitialized: false,
           cookie: {
             secure: true,
             maxAge: option.session?.maxAge,
@@ -61,8 +69,6 @@ export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
         formidableMiddleware({
           multiples: true,
           keepExtensions: true,
-          //@ts-ignore
-          allowEmptyFiles: true,
         }),
       );
       app.use(router).listen(option.port ?? 4000, option.hostname || "");
@@ -79,8 +85,21 @@ export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
   } satisfies ServerPlatformAdapter<Express>;
 }
 
+function getRouteHandler(object: RouteHandlerObject) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const request = createServerRequest(req);
+    const response = createServerResponse(req, res);
+    try {
+      await object.handle(request, response);
+    } catch (e) {
+      await object.catchError(e as Error, request, response);
+    }
+    next();
+  };
+}
+
 export function createServerRequest(req: Request): ServerRequest<Request> {
-  const url = new URL(req.url);
+  const url = new URL("http://" + req.headers.host + req.url);
   const querystring = url.search.substring(1);
 
   let body: any = req.body;
@@ -90,6 +109,21 @@ export function createServerRequest(req: Request): ServerRequest<Request> {
     else body = req.fields;
   }
 
+  if (req.files) {
+    for (let field in req.files) {
+      const files = req.files[field];
+      if (files instanceof Array) files.forEach(handleFile);
+      else handleFile(files);
+    }
+  }
+
+  /* 确保文件对象的字段与ServerFile类型保持一致 */
+  function handleFile(file: any) {
+    file.filepath = file.path;
+    file.originalFilename = file.name;
+    file.newFilename = path.basename(file.path);
+  }
+
   return {
     original: req,
     headers: req.headers,
@@ -97,11 +131,11 @@ export function createServerRequest(req: Request): ServerRequest<Request> {
     href: url.href,
     url: req.url,
     URL: url,
-    host: req.host,
+    host: url.host,
     search: url.search,
     querystring,
     path: req.path,
-    method: req.method.toUpperCase(),
+    method: req.method.toUpperCase() as MethodType,
     query: qs.parse(querystring),
     origin: req.originalUrl,
     body,

@@ -1,5 +1,6 @@
+/// <reference types="../types" />
 import Koa, { ParameterizedContext } from "koa";
-import koaBody from "koa-body";
+import { koaBody } from "koa-body";
 import mount from "koa-mount";
 import Router from "koa-router";
 import send from "koa-send";
@@ -35,7 +36,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
         .use(
           session(
             {
-              key: option.session?.cookieKey,
+              key: option.session?.cookieKey ?? "Secret key",
               maxAge: option.session?.maxAge,
             },
             app,
@@ -46,18 +47,29 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
         .listen(option.port, option.hostname);
     },
     useRoutes(routes) {
-      for (let route in routes) {
-        const object = routes[route];
-        router.use(route, async (ctx) => {
+      for (let url in routes) {
+        const object = routes[url];
+        for (let methodType of object.methodTypes) {
+          if (methodType === "GET") router.get(url, getHandler(object));
+          else if (methodType === "POST") router.post(url, getHandler(object));
+          else if (methodType === "DELETE")
+            router.delete(url, getHandler(object));
+          else if (methodType === "PUT") router.put(url, getHandler(object));
+          else throw new Error("unknown method type " + methodType);
+        }
+      }
+
+      function getHandler(object: RouteHandlerObject) {
+        return async (ctx: Koa.ParameterizedContext, next: () => void) => {
           const req = createServerRequest(ctx);
           const res = createServerResponse(ctx);
           try {
             await object.handle(req, res);
           } catch (e) {
-            object.catchError(e as Error, req, res);
+            await object.catchError(e as Error, req, res);
           }
-          ctx.res.end();
-        });
+          next();
+        };
       }
     },
     proxy(option) {
@@ -95,7 +107,7 @@ export function createServerRequest(
     href: ctx.href,
     path: ctx.path,
     search: ctx.search,
-    method: ctx.method.toUpperCase(),
+    method: ctx.method.toUpperCase() as MethodType,
     URL: ctx.URL,
     body: ctx.request.body,
     files: ctx.request.files,
@@ -125,18 +137,18 @@ export function createServerResponse(
     },
 
     body(value: any) {
-      let contentType = "text/plain;charset=utf-8";
+      let contentType = "text/plain";
       if (!(value instanceof Buffer)) {
         if (typeof value === "object") {
           value = JSON.stringify(value);
-          contentType = "application/json;charset=utf-8";
+          contentType = "application/json";
         } else if (typeof value !== "string") {
           value = String(value);
         }
       } else {
         contentType = "application/octet-stream";
       }
-      ctx.response.headers["content-type"] = contentType;
+      ctx.response.type = contentType;
       ctx.response.body = value;
     },
 

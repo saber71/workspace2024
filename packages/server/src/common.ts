@@ -1,7 +1,7 @@
 import { Metadata } from "dependency-injection";
+import { ServerError } from "./errors";
 
-export class ServerError extends Error {}
-
+/* 组装url */
 export function composeUrl(...items: string[]) {
   return (
     "/" +
@@ -19,15 +19,13 @@ export function removeHeadTailSlash(str: string) {
   return str;
 }
 
+/* 得到或新建专给server库使用的userData */
 export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   const metadata = Metadata.getOrCreateMetadata(obj);
   const userData = metadata.userData as MetadataServerUserData;
   if (!userData.__server__) {
     userData.__server__ = true;
-    userData.__server__isErrorHandler = false;
-    userData.__server__isController = false;
-    userData.__server__isPipeline = false;
-    userData.__server__metadata = metadata;
+    userData.__server__classType = "no-special";
     userData.__server__controllerRoutePrefix = "";
     userData.__server__controllerMethods = {};
     userData.__server__handle_error_type = ServerError;
@@ -35,6 +33,7 @@ export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   return userData;
 }
 
+/* 得到或新建控制器方法信息对象 */
 export function getOrCreateControllerMethod(
   target: any,
   methodName: string,
@@ -44,7 +43,7 @@ export function getOrCreateControllerMethod(
   if (!res) {
     res = {
       methodName,
-      methodType: "GET",
+      type: "GET",
       route: "",
       routePrefix: "",
     };
