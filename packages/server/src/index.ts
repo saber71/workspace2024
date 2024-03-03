@@ -1,4 +1,5 @@
 /// <reference types="../types.d.ts"/>
+export * from "class-validator";
 export * from "dependency-injection";
 export * from "./common";
 export * from "./constant";

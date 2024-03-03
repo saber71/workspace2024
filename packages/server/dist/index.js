@@ -1,12 +1,21 @@
+import { validate as validate$1 } from 'class-validator';
+export * from 'class-validator';
 import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, LoadableContainer, Container } from 'dependency-injection';
 export * from 'dependency-injection';
-import { validate as validate$1 } from 'class-validator';
 import chalk from 'chalk';
 import * as process from 'node:process';
 
 /* server自定义错误的根类型 */ class ServerError extends Error {
     code = 500;
     name = "ServerError";
+}
+/* 当请求不具备权限时抛出 */ class UnauthorizedError extends ServerError {
+    code = 401;
+    name = "UnauthorizedError";
+}
+/* 当找不到数据时抛出 */ class NotFoundError extends ServerError {
+    code = 404;
+    name = "NotFoundError";
 }
 /* 当出现路由重复时抛出 */ class DuplicateRouteHandlerError extends ServerError {
     name = "DuplicateRouteHandlerError";
@@ -705,4 +714,4 @@ RequestPipeline = _ts_decorate([
     ])
 ], RequestPipeline);
 
-export { CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ValidateFailedError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };

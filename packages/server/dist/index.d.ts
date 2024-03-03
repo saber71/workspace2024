@@ -52,6 +52,11 @@ export declare function Method(option?: Partial<Pick<ControllerMethod, "route" |
 
 export declare const MODULE_NAME = "server";
 
+export declare class NotFoundError extends ServerError {
+    code: number;
+    name: string;
+}
+
 export declare class NotFoundFileError extends ServerError {
     name: string;
 }
@@ -220,11 +225,17 @@ export declare class SessionKeyNotExistError extends ServerError {
     name: string;
 }
 
+export declare class UnauthorizedError extends ServerError {
+    code: number;
+    name: string;
+}
+
 export declare class ValidateFailedError extends ServerError {
     name: string;
 }
 
 
+export * from "class-validator";
 export * from "dependency-injection";
 
 export { }

@@ -4,6 +4,18 @@ export class ServerError extends Error {
   name = "ServerError";
 }
 
+/* 当请求不具备权限时抛出 */
+export class UnauthorizedError extends ServerError {
+  code = 401;
+  name = "UnauthorizedError";
+}
+
+/* 当找不到数据时抛出 */
+export class NotFoundError extends ServerError {
+  code = 404;
+  name = "NotFoundError";
+}
+
 /* 当出现路由重复时抛出 */
 export class DuplicateRouteHandlerError extends ServerError {
   name = "DuplicateRouteHandlerError";
