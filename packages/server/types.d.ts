@@ -27,6 +27,9 @@ declare interface ServerFile {
 
 /* 创建Server对象时传入的选项 */
 declare interface ServerCreateOption {
+  /* 上下文环境名。默认server */
+  contextName?: string;
+
   /* Web框架适配器 */
   serverPlatformAdapter: ServerPlatformAdapter;
 
@@ -38,6 +41,15 @@ declare interface ServerCreateOption {
 
   /* 用来处理需要由ServerResponse发送的内容 */
   responseBodySender?: Class<ResponseBodySenderInterface>;
+
+  /* 用来处理日志 */
+  loggers?: Class<LoggerInterface>[];
+
+  /* 是否输出日志内容到控制台。默认true */
+  consoleLogger?: boolean;
+
+  /* 路由守卫集合 */
+  guards?: Class<GuardInterface>[];
 }
 
 declare type RouteHandlerObject = {
@@ -140,7 +152,8 @@ declare type ServerClassType =
   | "error-handler"
   | "controller"
   | "response-body-sender"
-  | "parser";
+  | "parser"
+  | "guard";
 
 /* 保存类的自定义数据。挂在类的元数据上 */
 declare interface MetadataServerUserData {
@@ -199,4 +212,25 @@ declare interface ParserInterface {
 declare interface ParserAndValidator {
   parsers?: Class<ParserInterface> | Class<ParserInterface>[] | null;
   validator?: boolean;
+}
+
+/* 日志等级 */
+declare type LogLevel =
+  | "log"
+  | "error"
+  | "warn"
+  | "debug"
+  | "verbose"
+  | "fatal"
+  | string;
+
+/* 处理日志相关 */
+declare interface LoggerInterface {
+  log(level: LogLevel, message: string | Error): void;
+}
+
+/* 在执行路由对应的方法前执行，如果请求不合法可以抛出错误打断请求流程 */
+declare interface GuardInterface {
+  /* 调用时，入参将会通过依赖注入获取，所以该方法必须用Inject装饰 */
+  guard(...args: any[]): void | Promise<void>;
 }

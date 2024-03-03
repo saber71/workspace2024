@@ -1,5 +1,6 @@
 import { Container, LoadableContainer } from "dependency-injection";
-import { DEFAULT_PORT, MODULE_NAME } from "./constant";
+import { CONTEXT_LABEL, DEFAULT_PORT, MODULE_NAME } from "./constant";
+import { ConsoleLogger } from "./logger";
 import { RegularResponseBodySender } from "./response-body-sender";
 import { RouteManager } from "./route-manager";
 import { ErrorHandlerDispatcher } from "./error-handler-dispatcher";
@@ -22,6 +23,9 @@ export class Server<PlatformInstance extends object = object> {
 
   /* 依赖注入的容器 */
   private readonly _dependencyInjection = new LoadableContainer();
+  get dependencyInjection(): Container {
+    return this._dependencyInjection;
+  }
 
   /* 用来处理请求的管道类 */
   private _requestPipelineClass: Class<RequestPipeline>;
@@ -44,6 +48,23 @@ export class Server<PlatformInstance extends object = object> {
     return this._responseBodySender;
   }
 
+  /* 用来处理日志的Logger类集合 */
+  private readonly _loggerClasses: Array<Class<LoggerInterface>> = [];
+
+  /* 路由守卫类的集合 */
+  private readonly _guardClasses: Array<Class<GuardInterface>> = [];
+  get guardClasses(): ReadonlyArray<Class<GuardInterface>> {
+    return this._guardClasses;
+  }
+
+  /* 输出日志 */
+  log(logLevel: LogLevel, message: string | Error) {
+    for (let loggerClass of this._loggerClasses) {
+      const logger = this._dependencyInjection.getValue(loggerClass);
+      logger.log(logLevel, message);
+    }
+  }
+
   /* 创建一个依赖注入容器，并且继承自Server内部保有的根容器 */
   createContainer(): Container {
     return new LoadableContainer().extend(this._dependencyInjection);
@@ -53,6 +74,7 @@ export class Server<PlatformInstance extends object = object> {
   bootstrap(option: ServerBootstrapOption = {}) {
     if (!option.port) option.port = DEFAULT_PORT;
     this._serverPlatform.bootstrap(option);
+    this.log("log", `启动成功，监听端口${option.port}`);
   }
 
   /**
@@ -73,6 +95,7 @@ export class Server<PlatformInstance extends object = object> {
 
   /* 处理请求 */
   async handleRequest(request: ServerRequest, response: ServerResponse) {
+    this.log("log", `[${request.method}] ${request.url}`);
     const container = this.createContainer().extend(this._dependencyInjection);
     container
       .bindValue(ServerRequest.name, request)
@@ -94,12 +117,26 @@ export class Server<PlatformInstance extends object = object> {
 
     this._dependencyInjection
       .bindValue(Server.name, this)
-      .bindFactory(Container.name, this.createContainer.bind(this));
+      .bindFactory(Container.name, this.createContainer.bind(this))
+      .bindValue(
+        CONTEXT_LABEL,
+        (options.contextName || "server") + ":" + this._serverPlatform.name,
+      );
+
     this._dependencyInjection.load({ moduleName: MODULE_NAME });
 
     this._responseBodySender = this._dependencyInjection.getValue(
       options.responseBodySender ?? RegularResponseBodySender,
     );
+
+    if (options.consoleLogger !== false)
+      this._loggerClasses.push(ConsoleLogger);
+
+    if (options.loggers) {
+      this._loggerClasses.push(...options.loggers);
+    }
+
+    if (options.guards) this._guardClasses.push(...options.guards);
 
     this._setupRoutes();
     this._platformInstance = await this._serverPlatform.create();
@@ -125,6 +162,7 @@ export class Server<PlatformInstance extends object = object> {
     _: ServerRequest,
     response: ServerResponse,
   ) {
+    this.log("error", err);
     return this._responseBodySender.send(err, response);
   }
 }

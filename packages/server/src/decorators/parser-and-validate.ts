@@ -9,6 +9,9 @@ import {
 import { NotFoundValidatorError, ValidateFailedError } from "../errors";
 import { RegularParser } from "../parser";
 
+const parsedKey = Symbol("parsed");
+const validatedKey = Symbol("validated");
+
 /* 对输入进行转化和校验 */
 export function ParserAndValidate(
   option: ParserAndValidator & {
@@ -20,13 +23,21 @@ export function ParserAndValidate(
     targetIndex = 0;
   const inject = Inject({
     typeValueGetter: (container) => {
-      const value = parse(
-        container,
-        option.parsers,
-        option.typeValueGetter(container),
-      );
-      if (option.validator === false) return value;
-      validate(container, targetObject, targetMethodName, targetIndex, value);
+      const prevValue = option.typeValueGetter(container);
+      let value: any;
+      if (typeof prevValue === "object") {
+        if (!prevValue[parsedKey]) {
+          value = parse(container, option.parsers, prevValue);
+          prevValue[parsedKey] = true;
+        }
+      } else {
+        value = parse(container, option.parsers, prevValue);
+      }
+      if (option.validator === false || typeof value !== "object") return value;
+      if (!value[validatedKey]) {
+        value[validatedKey] = true;
+        validate(container, targetObject, targetMethodName, targetIndex, value);
+      }
       return value;
     },
   });

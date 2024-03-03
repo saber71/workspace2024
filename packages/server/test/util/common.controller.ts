@@ -27,7 +27,7 @@ class QueryForTest {
 export class CommonController {
   @Method()
   setSession(session: Session<any>) {
-    session.set("id", 20);
+    session.set("userId", 20);
   }
 
   @Method({ type: "POST" })
@@ -79,6 +79,7 @@ export function commonControllerHttpTestSuits() {
       url: "/set-session",
     })
       .expectHasHeader("set-cookie")
+      .expectStatus(200)
       .done(),
     httpTest({
       method: "POST",

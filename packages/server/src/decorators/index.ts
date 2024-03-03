@@ -1,5 +1,6 @@
 export * from "./controller";
 export * from "./error-handler";
+export * from "./guard";
 export * from "./method";
 export * from "./parser";
 export * from "./pipeline";

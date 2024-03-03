@@ -1,24 +1,34 @@
 import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, LoadableContainer, Container } from 'dependency-injection';
 export * from 'dependency-injection';
 import { validate as validate$1 } from 'class-validator';
+import chalk from 'chalk';
+import * as process from 'node:process';
 
 /* server自定义错误的根类型 */ class ServerError extends Error {
     code = 500;
+    name = "ServerError";
 }
 /* 当出现路由重复时抛出 */ class DuplicateRouteHandlerError extends ServerError {
+    name = "DuplicateRouteHandlerError";
 }
 /* 当找不到路由对应的控制器方法时抛出 */ class NotFoundRouteHandlerError extends ServerError {
     code = 404;
+    name = "NotFoundRouteHandlerError";
 }
 /* 当在ServerRequest对象中找不到指定字段的文件时抛出 */ class NotFoundFileError extends ServerError {
+    name = "NotFoundFileError";
 }
 /* 当不恰当的使用装饰器时抛出 */ class ImproperDecoratorError extends ServerError {
+    name = "ImproperDecoratorError";
 }
 /* 当在session上找不到key时抛出 */ class SessionKeyNotExistError extends ServerError {
+    name = "SessionKeyNotExistError";
 }
 /* 当根据类型名找不到对应的验证器时抛出 */ class NotFoundValidatorError extends ServerError {
+    name = "NotFoundValidatorError";
 }
 /* 当数据验证失败时抛出 */ class ValidateFailedError extends ServerError {
+    name = "ValidateFailedError";
 }
 
 /* 组装url */ function composeUrl(...items) {
@@ -66,6 +76,7 @@ import { validate as validate$1 } from 'class-validator';
 
 /* 本库所使用的依赖注入模块名 */ const MODULE_NAME = "server";
 /* Web服务器默认的监听端口 */ const DEFAULT_PORT = 4000;
+/* 环境名在依赖注入容器中的标签名，用于日志输出 */ const CONTEXT_LABEL = "ContextName";
 
 var RouteManager;
 (function(RouteManager) {
@@ -142,6 +153,18 @@ var RouteManager;
     };
 }
 
+/* 标识该类为路由守卫 */ function Guard() {
+    const injectable = Injectable({
+        singleton: true,
+        moduleName: MODULE_NAME
+    });
+    return (clazz, _)=>{
+        injectable(clazz, _);
+        const userData = getOrCreateMetadataUserData(clazz);
+        userData.__server__classType = "guard";
+    };
+}
+
 /* 方法装饰器。标识此方法用来处理路由。只有在类上装饰了Controller装饰器时才会生效 */ function Method(option) {
     const inject = Inject({
         paramtypes: option?.paramtypes,
@@ -205,7 +228,7 @@ var RouteManager;
     });
 }
 
-function _ts_decorate$2(decorators, target, key, desc) {
+function _ts_decorate$3(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -233,17 +256,31 @@ class RegularParser {
         }
     }
 }
-RegularParser = _ts_decorate$2([
+RegularParser = _ts_decorate$3([
     Parser()
 ], RegularParser);
 
+const parsedKey = Symbol("parsed");
+const validatedKey = Symbol("validated");
 /* 对输入进行转化和校验 */ function ParserAndValidate(option) {
     let targetObject, targetMethodName = "", targetIndex = 0;
     const inject = Inject({
         typeValueGetter: (container)=>{
-            const value = parse(container, option.parsers, option.typeValueGetter(container));
-            if (option.validator === false) return value;
-            validate(container, targetObject, targetMethodName, targetIndex, value);
+            const prevValue = option.typeValueGetter(container);
+            let value;
+            if (typeof prevValue === "object") {
+                if (!prevValue[parsedKey]) {
+                    value = parse(container, option.parsers, prevValue);
+                    prevValue[parsedKey] = true;
+                }
+            } else {
+                value = parse(container, option.parsers, prevValue);
+            }
+            if (option.validator === false || typeof value !== "object") return value;
+            if (!value[validatedKey]) {
+                value[validatedKey] = true;
+                validate(container, targetObject, targetMethodName, targetIndex, value);
+            }
             return value;
         }
     });
@@ -380,6 +417,58 @@ RegularParser = _ts_decorate$2([
     }
 }
 
+function _ts_decorate$2(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function _ts_metadata$1(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    day: "2-digit",
+    month: "2-digit"
+});
+class ConsoleLogger {
+    contextName;
+    constructor(contextName){
+        this.contextName = contextName;
+        this.logLevelColorMap = {
+            debug: chalk.magentaBright,
+            warn: chalk.yellow,
+            error: chalk.red,
+            verbose: chalk.cyanBright,
+            fatal: chalk.bold,
+            log: chalk.green
+        };
+    }
+    /* 日志颜色表 */ logLevelColorMap;
+    log(level, message) {
+        const colorize = this.logLevelColorMap[level] ?? this.logLevelColorMap.log;
+        if (message instanceof Error) message = colorize(message);
+        const output = `[${this.contextName}] ${colorize(process.pid)} - ${dateTimeFormatter.format(Date.now())} ${colorize(level.toUpperCase())} ${message}\n`;
+        process.stdout.write(output);
+    }
+}
+ConsoleLogger = _ts_decorate$2([
+    Injectable({
+        moduleName: MODULE_NAME,
+        singleton: true,
+        paramtypes: [
+            CONTEXT_LABEL
+        ]
+    }),
+    _ts_metadata$1("design:type", Function),
+    _ts_metadata$1("design:paramtypes", [
+        String
+    ])
+], ConsoleLogger);
+
 function _ts_decorate$1(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -434,8 +523,13 @@ class Server {
     constructor(/* Web框架的适配器 */ _serverPlatform){
         this._serverPlatform = _serverPlatform;
         this._dependencyInjection = new LoadableContainer();
+        this._loggerClasses = [];
+        this._guardClasses = [];
     }
     /* 依赖注入的容器 */ _dependencyInjection;
+    get dependencyInjection() {
+        return this._dependencyInjection;
+    }
     /* 用来处理请求的管道类 */ _requestPipelineClass;
     /* Web框架的实例 */ _platformInstance;
     get platformInstance() {
@@ -449,12 +543,24 @@ class Server {
     get responseBodySender() {
         return this._responseBodySender;
     }
+    /* 用来处理日志的Logger类集合 */ _loggerClasses;
+    /* 路由守卫类的集合 */ _guardClasses;
+    get guardClasses() {
+        return this._guardClasses;
+    }
+    /* 输出日志 */ log(logLevel, message) {
+        for (let loggerClass of this._loggerClasses){
+            const logger = this._dependencyInjection.getValue(loggerClass);
+            logger.log(logLevel, message);
+        }
+    }
     /* 创建一个依赖注入容器，并且继承自Server内部保有的根容器 */ createContainer() {
         return new LoadableContainer().extend(this._dependencyInjection);
     }
     /* 启动服务器 */ bootstrap(option = {}) {
         if (!option.port) option.port = DEFAULT_PORT;
         this._serverPlatform.bootstrap(option);
+        this.log("log", `启动成功，监听端口${option.port}`);
     }
     /**
    * 支持静态资源
@@ -469,6 +575,7 @@ class Server {
         return this;
     }
     /* 处理请求 */ async handleRequest(request, response) {
+        this.log("log", `[${request.method}] ${request.url}`);
         const container = this.createContainer().extend(this._dependencyInjection);
         container.bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response);
         const pipeline = container.getValue(this._requestPipelineClass);
@@ -479,11 +586,16 @@ class Server {
     /* 初始化Web服务器 */ async _init(options) {
         this._errorHandlerDispatcher = new ErrorHandlerDispatcher(options.errorHandlers ?? []);
         this._requestPipelineClass = options.pipeline ?? RequestPipeline;
-        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this));
+        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this)).bindValue(CONTEXT_LABEL, (options.contextName || "server") + ":" + this._serverPlatform.name);
         this._dependencyInjection.load({
             moduleName: MODULE_NAME
         });
         this._responseBodySender = this._dependencyInjection.getValue(options.responseBodySender ?? RegularResponseBodySender);
+        if (options.consoleLogger !== false) this._loggerClasses.push(ConsoleLogger);
+        if (options.loggers) {
+            this._loggerClasses.push(...options.loggers);
+        }
+        if (options.guards) this._guardClasses.push(...options.guards);
         this._setupRoutes();
         this._platformInstance = await this._serverPlatform.create();
     }
@@ -500,6 +612,7 @@ class Server {
         this._serverPlatform.useRoutes(routes);
     }
     /* 处理请求中的错误 */ _catchRequestError(err, _, response) {
+        this.log("error", err);
         return this._responseBodySender.send(err, response);
     }
 }
@@ -512,6 +625,7 @@ class Server {
         this.res = res;
     }
     /* 更新会话对象 */ set(key, value) {
+        /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */ if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
         if (!this.res.session) this.res.session = {};
         this.res.session[key] = value;
         return this;
@@ -560,9 +674,14 @@ class RequestPipeline {
         const responseBodySender = this.server.responseBodySender;
         let result;
         try {
+            for (let guardClass of this.server.guardClasses){
+                const guard = this._container.getValue(guardClass);
+                await this._container.call(guard, "guard");
+            }
             const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
             result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
         } catch (e) {
+            this.server.log("error", e);
             result = e;
             const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(e);
             if (errorHandlerClass) {
@@ -586,4 +705,4 @@ RequestPipeline = _ts_decorate([
     ])
 ], RequestPipeline);
 
-export { Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ValidateFailedError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ValidateFailedError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
