@@ -1,5 +1,5 @@
 import { model, Schema, connect } from 'mongoose';
-import { Validation, Method, ReqBody, ReqQuery, Controller, NotFoundError, Server } from 'server';
+import { Validation, Method, ReqBody, ReqQuery, Controller, NotFoundError, Injectable, Server } from 'server';
 import { createServerPlatformKoa } from 'server-platform-koa';
 
 const RoleModel = model("Role", new Schema({
@@ -42,13 +42,13 @@ model("User", new Schema({
     }
 }));
 
-function _ts_decorate(decorators, target, key, desc) {
+function _ts_decorate$1(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-function _ts_metadata(k, v) {
+function _ts_metadata$1(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
 function _ts_param(paramIndex, decorator) {
@@ -60,13 +60,13 @@ class CreateRoleDTO {
     name;
     authorizations;
 }
-_ts_decorate([
+_ts_decorate$1([
     Validation("isStringStrict"),
-    _ts_metadata("design:type", String)
+    _ts_metadata$1("design:type", String)
 ], CreateRoleDTO.prototype, "name", void 0);
-_ts_decorate([
+_ts_decorate$1([
     Validation("isObjectStrict"),
-    _ts_metadata("design:type", Object)
+    _ts_metadata$1("design:type", Object)
 ], CreateRoleDTO.prototype, "authorizations", void 0);
 class UpdateRoleDTO {
     id;
@@ -75,25 +75,25 @@ class UpdateRoleDTO {
     putAuthorizations;
     deleteAuthorizations;
 }
-_ts_decorate([
+_ts_decorate$1([
     Validation("isStringStrict"),
-    _ts_metadata("design:type", String)
+    _ts_metadata$1("design:type", String)
 ], UpdateRoleDTO.prototype, "id", void 0);
-_ts_decorate([
+_ts_decorate$1([
     Validation("isBoolean"),
-    _ts_metadata("design:type", Boolean)
+    _ts_metadata$1("design:type", Boolean)
 ], UpdateRoleDTO.prototype, "toDelete", void 0);
-_ts_decorate([
+_ts_decorate$1([
     Validation("isString"),
-    _ts_metadata("design:type", String)
+    _ts_metadata$1("design:type", String)
 ], UpdateRoleDTO.prototype, "name", void 0);
-_ts_decorate([
+_ts_decorate$1([
     Validation("isObject"),
-    _ts_metadata("design:type", Object)
+    _ts_metadata$1("design:type", Object)
 ], UpdateRoleDTO.prototype, "putAuthorizations", void 0);
-_ts_decorate([
+_ts_decorate$1([
     Validation("isArray"),
-    _ts_metadata("design:type", Array)
+    _ts_metadata$1("design:type", Array)
 ], UpdateRoleDTO.prototype, "deleteAuthorizations", void 0);
 class RoleController {
     /* 新建Role对象 */ async create(body) {
@@ -132,44 +132,44 @@ class RoleController {
         return RoleModel.countDocuments();
     }
 }
-_ts_decorate([
+_ts_decorate$1([
     Method({
         type: "POST"
     }),
     _ts_param(0, ReqBody()),
-    _ts_metadata("design:type", Function),
-    _ts_metadata("design:paramtypes", [
+    _ts_metadata$1("design:type", Function),
+    _ts_metadata$1("design:paramtypes", [
         typeof CreateRoleDTO === "undefined" ? Object : CreateRoleDTO
     ]),
-    _ts_metadata("design:returntype", Promise)
+    _ts_metadata$1("design:returntype", Promise)
 ], RoleController.prototype, "create", null);
-_ts_decorate([
+_ts_decorate$1([
     Method({
         type: "POST"
     }),
     _ts_param(0, ReqBody()),
-    _ts_metadata("design:type", Function),
-    _ts_metadata("design:paramtypes", [
+    _ts_metadata$1("design:type", Function),
+    _ts_metadata$1("design:paramtypes", [
         typeof UpdateRoleDTO === "undefined" ? Object : UpdateRoleDTO
     ]),
-    _ts_metadata("design:returntype", Promise)
+    _ts_metadata$1("design:returntype", Promise)
 ], RoleController.prototype, "update", null);
-_ts_decorate([
+_ts_decorate$1([
     Method(),
     _ts_param(0, ReqQuery()),
-    _ts_metadata("design:type", Function),
-    _ts_metadata("design:paramtypes", [
+    _ts_metadata$1("design:type", Function),
+    _ts_metadata$1("design:paramtypes", [
         Object
     ]),
-    _ts_metadata("design:returntype", Promise)
+    _ts_metadata$1("design:returntype", Promise)
 ], RoleController.prototype, "findById", null);
-_ts_decorate([
+_ts_decorate$1([
     Method(),
-    _ts_metadata("design:type", Function),
-    _ts_metadata("design:paramtypes", []),
-    _ts_metadata("design:returntype", Promise)
+    _ts_metadata$1("design:type", Function),
+    _ts_metadata$1("design:paramtypes", []),
+    _ts_metadata$1("design:returntype", Promise)
 ], RoleController.prototype, "count", null);
-RoleController = _ts_decorate([
+RoleController = _ts_decorate$1([
     Controller({
         routePrefix: "/role"
     })
@@ -177,21 +177,65 @@ RoleController = _ts_decorate([
 
 const CONTEXT_NAME = "server-user";
 const MONGODB_URL = "mongodb://localhost:27017";
+const SERVER_USER_AXIOS = "server-user-axios";
+
+function _ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function _ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+class RoleApiProvider {
+    axios;
+    constructor(axios){
+        this.axios = axios;
+    }
+    findById(id) {
+        return this.axios.get("/role/find-by-id", {
+            params: {
+                id
+            }
+        });
+    }
+    update(data) {
+        return this.axios.post("/role/update", data);
+    }
+    create(data) {
+        return this.axios.post("/role/create", data);
+    }
+}
+RoleApiProvider = _ts_decorate([
+    Injectable({
+        singleton: true,
+        paramtypes: [
+            SERVER_USER_AXIOS
+        ]
+    }),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof AxiosInstance === "undefined" ? Object : AxiosInstance
+    ])
+], RoleApiProvider);
 
 ///<reference types="../types.d.ts"/>
-const app = await Server.create({
-    serverPlatformAdapter: createServerPlatformKoa(),
-    contextName: CONTEXT_NAME
-});
-await connect(MONGODB_URL, {
-    dbName: CONTEXT_NAME
-});
-app.log("log", `成功连接${MONGODB_URL}`);
-await checkAndInitRole();
-app.bootstrap({
-    port: 4001
-});
-/* 检查数据库中的Role对象数量，如果数据库为空则新建一个默认角色 */ async function checkAndInitRole() {
+async function bootstrap(port) {
+    const app = await Server.create({
+        serverPlatformAdapter: createServerPlatformKoa(),
+        contextName: CONTEXT_NAME
+    });
+    await connect(MONGODB_URL, {
+        dbName: CONTEXT_NAME
+    });
+    app.log("log", `成功连接${MONGODB_URL}`);
+    await checkAndInitRole(app);
+    app.bootstrap({
+        port
+    });
+}
+/* 检查数据库中的Role对象数量，如果数据库为空则新建一个默认角色 */ async function checkAndInitRole(app) {
     const controller = app.dependencyInjection.getValue(RoleController);
     const count = await controller.count();
     if (count === 0) {
@@ -202,3 +246,5 @@ app.bootstrap({
         app.log("log", "新建默认角色成功，id为" + roleId);
     }
 }
+
+export { RoleApiProvider, bootstrap };

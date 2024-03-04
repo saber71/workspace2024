@@ -8,8 +8,11 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "test": "vitest",
-    "serve:prod": "node dist/index.js",
-    "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts --tsconfig tsconfig.json"
+    "serve:prod": "node index.js",
+    "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
+  },
+  "peerDependencies": {
+    "axios": "^1.6.7"
   },
   "devDependencies": {
     "server": "workspace:*",

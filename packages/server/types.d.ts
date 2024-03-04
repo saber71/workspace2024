@@ -234,3 +234,10 @@ declare interface GuardInterface {
   /* 调用时，入参将会通过依赖注入获取，所以该方法必须用Inject装饰 */
   guard(...args: any[]): void | Promise<void>;
 }
+
+declare interface RegularResponseBody<T = undefined> {
+  code: number;
+  object: T;
+  success: boolean;
+  msg: string;
+}
