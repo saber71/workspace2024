@@ -86,6 +86,7 @@ import * as process from 'node:process';
 /* 本库所使用的依赖注入模块名 */ const MODULE_NAME = "server";
 /* Web服务器默认的监听端口 */ const DEFAULT_PORT = 4000;
 /* 环境名在依赖注入容器中的标签名，用于日志输出 */ const CONTEXT_LABEL = "ContextName";
+/* 鉴权白名单 */ const WHITE_LIST = "WhiteList";
 
 var RouteManager;
 (function(RouteManager) {
@@ -237,7 +238,7 @@ var RouteManager;
     });
 }
 
-function _ts_decorate$3(decorators, target, key, desc) {
+function _ts_decorate$4(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -265,7 +266,7 @@ class RegularParser {
         }
     }
 }
-RegularParser = _ts_decorate$3([
+RegularParser = _ts_decorate$4([
     Parser()
 ], RegularParser);
 
@@ -425,6 +426,77 @@ const validatedKey = Symbol("validated");
         }
     }
 }
+
+/* 读取/更新会话对象 */ class Session {
+    req;
+    res;
+    constructor(req, res){
+        this.req = req;
+        this.res = res;
+    }
+    /* 更新会话对象 */ set(key, value) {
+        /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */ if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
+        if (!this.res.session) this.res.session = {};
+        this.res.session[key] = value;
+        return this;
+    }
+    /* 读取会话对象 */ get(key) {
+        return this.req.session?.[key];
+    }
+    /**
+   * 读取会话对象
+   * @throws SessionKeyNotExistError 当在session上找不到key时抛出
+   */ fetch(key) {
+        if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
+        return this.req.session[key];
+    }
+    /* 判断会话上是否存在指定的key */ has(key) {
+        if (!this.req.session) return false;
+        return key in this.req.session;
+    }
+    /* 删除会话对象 */ destroy() {
+        this.res.session = null;
+    }
+}
+
+function _ts_decorate$3(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function _ts_metadata$2(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
+class AuthorizedGuard {
+    guard(session, whiteList, req) {
+        if (whiteList.length === 0 || whiteList.includes("*")) return;
+        if (whiteList.includes(req.path)) return;
+        if (!session.get("userId")) throw new UnauthorizedError("未登录或登陆信息已过期");
+    }
+}
+_ts_decorate$3([
+    Inject(),
+    _ts_param(0, ReqSession()),
+    _ts_param(1, Inject({
+        typeLabel: WHITE_LIST
+    })),
+    _ts_metadata$2("design:type", Function),
+    _ts_metadata$2("design:paramtypes", [
+        typeof Session === "undefined" ? Object : Session,
+        Array,
+        typeof ServerRequest === "undefined" ? Object : ServerRequest
+    ]),
+    _ts_metadata$2("design:returntype", Object)
+], AuthorizedGuard.prototype, "guard", null);
+AuthorizedGuard = _ts_decorate$3([
+    Guard()
+], AuthorizedGuard);
 
 function _ts_decorate$2(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -626,38 +698,6 @@ class Server {
     }
 }
 
-/* 读取/更新会话对象 */ class Session {
-    req;
-    res;
-    constructor(req, res){
-        this.req = req;
-        this.res = res;
-    }
-    /* 更新会话对象 */ set(key, value) {
-        /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */ if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
-        if (!this.res.session) this.res.session = {};
-        this.res.session[key] = value;
-        return this;
-    }
-    /* 读取会话对象 */ get(key) {
-        return this.req.session?.[key];
-    }
-    /**
-   * 读取会话对象
-   * @throws SessionKeyNotExistError 当在session上找不到key时抛出
-   */ fetch(key) {
-        if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
-        return this.req.session[key];
-    }
-    /* 判断会话上是否存在指定的key */ has(key) {
-        if (!this.req.session) return false;
-        return key in this.req.session;
-    }
-    /* 删除会话对象 */ destroy() {
-        this.res.session = null;
-    }
-}
-
 function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -714,4 +754,4 @@ RequestPipeline = _ts_decorate([
     ])
 ], RequestPipeline);
 
-export { CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, WHITE_LIST, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };

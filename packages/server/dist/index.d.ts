@@ -8,6 +8,10 @@ import type { OutgoingHttpHeaders } from 'node:http';
 import type { ParsedUrlQuery } from 'node:querystring';
 import type { URL as URL_2 } from 'node:url';
 
+export declare class AuthorizedGuard implements GuardInterface {
+    guard(session: Session<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
+}
+
 export declare function composeUrl(...items: string[]): string;
 
 export declare class ConsoleLogger implements LoggerInterface {
@@ -108,7 +112,7 @@ export declare class RequestPipeline {
 
 export declare function Res(): (clazz: any, propName: any, index?: any) => void;
 
-export declare class ResponseBody {
+export declare class ResponseBody implements RegularResponseBody {
     readonly object: any;
     readonly success: boolean;
     readonly code: number;
@@ -233,6 +237,8 @@ export declare class UnauthorizedError extends ServerError {
 export declare class ValidateFailedError extends ServerError {
     name: string;
 }
+
+export declare const WHITE_LIST = "WhiteList";
 
 
 export * from "class-validator";

@@ -6,6 +6,7 @@ export * from "./constant";
 export * from "./decorators";
 export * from "./error-handler-dispatcher";
 export * from "./errors";
+export * from "./guard";
 export * from "./logger";
 export * from "./parser";
 export * from "./pipeline";

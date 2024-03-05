@@ -235,9 +235,15 @@ declare interface GuardInterface {
   guard(...args: any[]): void | Promise<void>;
 }
 
+/* 内置的响应体格式 */
 declare interface RegularResponseBody<T = undefined> {
   code: number;
   object: T;
   success: boolean;
   msg: string;
+}
+
+/* 内置的session数据格式 */
+declare interface RegularSessionData {
+  userId: string;
 }
