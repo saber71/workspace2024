@@ -1,16 +1,20 @@
+import 'reflect-metadata';
 import { getDecoratedName, Metadata } from 'dependency-injection';
 import validator from 'validator';
 
 /// <reference types="../types.d.ts" />
 const keyPrefix = "__class-validator__";
-/* 标识字段需要进行校验，同时指定校验规则 */ function Validation(validatorType, option) {
+/* 标识字段需要进行校验，同时指定校验规则 */ function Validation(option) {
     return (target, propName)=>{
         propName = getDecoratedName(propName);
+        const type = Reflect.getMetadata("design:type", target, propName);
         const metadata = Metadata.getOrCreateMetadata(target);
         const validations = getValidations(metadata.userData, propName);
         validations.validators.push({
-            fn: validatorMap[validatorType],
-            arg: option
+            fn: validatorMap[option.validatorType],
+            arg: option.arg,
+            recursive: option.recursive ?? true,
+            type
         });
     };
 }
@@ -29,7 +33,18 @@ const keyPrefix = "__class-validator__";
             const value = instance[propName];
             let result = false;
             for(let i = 0; i < validations.validators.length; i++){
-                result = validations.validators[i].fn(value, validations.validators[i].arg);
+                const validator = validations.validators[i];
+                result = validator.fn(value, validator.arg);
+                if (result && validator.type && validator.recursive && typeEnableRecursive(validator.type)) {
+                    value.constructor = validator.type;
+                    try {
+                        const errorNames = validate(value);
+                        result = errorNames.length === 0;
+                    } catch (e) {
+                        if (e instanceof NoValidationError) result = false;
+                        else throw e;
+                    }
+                }
                 if (validations.onlyPassOne) {
                     if (result) break;
                 } else if (!result) break;
@@ -41,6 +56,20 @@ const keyPrefix = "__class-validator__";
     return errorPropNames;
 }
 /* 当实例在元数据中没有校验数据存在时抛出错误 */ class NoValidationError extends Error {
+}
+/* 检查给定类是否能够进行递归校验 */ function typeEnableRecursive(type) {
+    return ![
+        "Object",
+        "Function",
+        "Number",
+        "String",
+        "Boolean",
+        "Symbol",
+        "Array",
+        "Date",
+        "Set",
+        "Map"
+    ].includes(type.name);
 }
 function getValidations(userData, propName) {
     const key = keyPrefix + propName;

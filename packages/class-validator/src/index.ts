@@ -1,22 +1,25 @@
 /// <reference types="../types.d.ts" />
 
+import "reflect-metadata";
 import { getDecoratedName, Metadata } from "dependency-injection";
 import validator from "validator";
 
 const keyPrefix = "__class-validator__";
 
 /* 标识字段需要进行校验，同时指定校验规则 */
-export function Validation<Key extends keyof ValidationOptionMap>(
-  validatorType: Key,
-  option?: ValidationOptionMap[Key],
+export function Validation<Key extends keyof ValidationArgMap>(
+  option: ValidationOption<Key>,
 ) {
   return (target: any, propName?: any) => {
     propName = getDecoratedName(propName);
+    const type = Reflect.getMetadata("design:type", target, propName);
     const metadata = Metadata.getOrCreateMetadata(target);
     const validations = getValidations(metadata.userData, propName);
     validations.validators.push({
-      fn: validatorMap[validatorType],
-      arg: option,
+      fn: validatorMap[option.validatorType],
+      arg: option.arg,
+      recursive: option.recursive ?? true,
+      type,
     });
   };
 }
@@ -37,10 +40,23 @@ export function validate(instance: any) {
       const value = instance[propName];
       let result = false;
       for (let i = 0; i < validations.validators.length; i++) {
-        result = validations.validators[i].fn(
-          value,
-          validations.validators[i].arg,
-        );
+        const validator = validations.validators[i];
+        result = validator.fn(value, validator.arg);
+        if (
+          result &&
+          validator.type &&
+          validator.recursive &&
+          typeEnableRecursive(validator.type)
+        ) {
+          value.constructor = validator.type;
+          try {
+            const errorNames = validate(value);
+            result = errorNames.length === 0;
+          } catch (e) {
+            if (e instanceof NoValidationError) result = false;
+            else throw e;
+          }
+        }
         if (validations.onlyPassOne) {
           if (result) break;
         } else if (!result) break;
@@ -58,6 +74,22 @@ export function validate(instance: any) {
 /* 当实例在元数据中没有校验数据存在时抛出错误 */
 export class NoValidationError extends Error {}
 
+/* 检查给定类是否能够进行递归校验 */
+function typeEnableRecursive(type: Class) {
+  return ![
+    "Object",
+    "Function",
+    "Number",
+    "String",
+    "Boolean",
+    "Symbol",
+    "Array",
+    "Date",
+    "Set",
+    "Map",
+  ].includes(type.name);
+}
+
 function getValidations(userData: any, propName: string): Validators {
   const key = keyPrefix + propName;
   let result: Validators = userData[key];
@@ -70,7 +102,7 @@ function getValidations(userData: any, propName: string): Validators {
 }
 
 const typeValidationMap: Record<
-  keyof TypeValidationOptionMap,
+  keyof TypeValidationArgMap,
   (...arg: any[]) => boolean
 > = {
   isBoolean: (value: any) => typeof value === "boolean" || value === undefined,
@@ -95,7 +127,7 @@ const typeValidationMap: Record<
 };
 
 const arrayValidations: Record<
-  keyof ArrayValidatorOptionMap,
+  keyof ArrayValidatorArgMap,
   (...arg: any[]) => boolean
 > = {
   isArray: (value) => value instanceof Array || value === undefined,
@@ -126,7 +158,7 @@ const arrayValidations: Record<
 };
 
 const commonValidations: Record<
-  keyof CommonValidatorOptionMap,
+  keyof CommonValidatorArgMap,
   (...args: any[]) => boolean
 > = {
   hasKeys: (value, keys = []) =>
@@ -150,7 +182,7 @@ function getTime(date: Date | number) {
 }
 
 const dateValidations: Record<
-  keyof DateValidatorOptionMap,
+  keyof DateValidatorArgMap,
   (...args: any[]) => boolean
 > = {
   maxDate: (arg1, arg2 = new Date()) =>
@@ -160,7 +192,7 @@ const dateValidations: Record<
 };
 
 const numberValidations: Record<
-  keyof NumberValidatorOptionMap,
+  keyof NumberValidatorArgMap,
   (...args: any[]) => boolean
 > = {
   isDivisibleBy: (arg1, arg2) => validator.isDivisibleBy(arg1 + "", arg2),
@@ -171,7 +203,7 @@ const numberValidations: Record<
 };
 
 const objectValidationMap: Record<
-  keyof ObjectValidatorOptionMap,
+  keyof ObjectValidatorArgMap,
   (...args: any[]) => boolean
 > = {
   isInstanceOf: (arg1, arg2) => arg1 instanceof arg2,
@@ -179,7 +211,7 @@ const objectValidationMap: Record<
 };
 
 const stringValidationMap: Record<
-  keyof StringValidatorOptionMap,
+  keyof StringValidatorArgMap,
   (...args: any[]) => boolean
 > = {
   isMatch: validator.matches,
@@ -252,7 +284,7 @@ const stringValidationMap: Record<
   isVariableWidth: validator.isVariableWidth,
 };
 
-const validatorMap: Record<keyof ValidationOptionMap, any> = {
+const validatorMap: Record<keyof ValidationArgMap, any> = {
   ...typeValidationMap,
   ...commonValidations,
   ...dateValidations,
