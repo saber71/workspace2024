@@ -3,6 +3,24 @@ export class Metadata {
   /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */
   private static readonly _classNameMapMetadata = new Map<string, Metadata>();
 
+  /* 判断给定的类是否是js的内置类型 */
+  static isBasicType(type: Class) {
+    return !!{
+      Object: true,
+      String: true,
+      Boolean: true,
+      Number: true,
+      Symbol: true,
+      Array: true,
+      Function: true,
+      Date: true,
+      Set: true,
+      Map: true,
+      WeakSet: true,
+      WeakMap: true,
+    }[type.name];
+  }
+
   /* 获取所有的Metadata对象 */
   static getAllMetadata() {
     return this._classNameMapMetadata.values();

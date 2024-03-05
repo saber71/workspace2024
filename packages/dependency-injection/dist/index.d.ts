@@ -118,6 +118,7 @@ export declare class LoadableContainer extends Container {
 export declare class Metadata {
     readonly clazz: Class;
     private static readonly _classNameMapMetadata;
+    static isBasicType(type: Class): boolean;
     static getAllMetadata(): IterableIterator<Metadata>;
     /**
      * 获取类对应的Metadata对象，如果对象不存在就新建一个。在新建Metadata对象的时候，子类的Metadata对象会合并父类的Metadata对象

@@ -35,11 +35,14 @@ const keyPrefix = "__class-validator__";
             for(let i = 0; i < validations.validators.length; i++){
                 const validator = validations.validators[i];
                 result = validator.fn(value, validator.arg);
-                if (result && validator.type && validator.recursive && typeEnableRecursive(validator.type)) {
+                if (result && validator.type && validator.recursive && !Metadata.isBasicType(validator.type)) {
                     value.constructor = validator.type;
                     try {
                         const errorNames = validate(value);
                         result = errorNames.length === 0;
+                        if (!result) {
+                            errorPropNames.push(...errorNames.map((item)=>propName + "." + item));
+                        }
                     } catch (e) {
                         if (e instanceof NoValidationError) result = false;
                         else throw e;
@@ -56,20 +59,6 @@ const keyPrefix = "__class-validator__";
     return errorPropNames;
 }
 /* 当实例在元数据中没有校验数据存在时抛出错误 */ class NoValidationError extends Error {
-}
-/* 检查给定类是否能够进行递归校验 */ function typeEnableRecursive(type) {
-    return ![
-        "Object",
-        "Function",
-        "Number",
-        "String",
-        "Boolean",
-        "Symbol",
-        "Array",
-        "Date",
-        "Set",
-        "Map"
-    ].includes(type.name);
 }
 function getValidations(userData, propName) {
     const key = keyPrefix + propName;

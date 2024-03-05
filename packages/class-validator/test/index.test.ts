@@ -39,6 +39,10 @@ describe("Validator", () => {
       noRecursiveSub: SubTarget = {} as any;
     }
     const target = new Target();
-    expect(validate(target)).toEqual(["failedValidate", "failedSub"]);
+    expect(validate(target)).toEqual([
+      "failedValidate",
+      "failedSub.isNumber",
+      "failedSub",
+    ]);
   });
 });

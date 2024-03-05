@@ -46,12 +46,17 @@ export function validate(instance: any) {
           result &&
           validator.type &&
           validator.recursive &&
-          typeEnableRecursive(validator.type)
+          !Metadata.isBasicType(validator.type)
         ) {
           value.constructor = validator.type;
           try {
             const errorNames = validate(value);
             result = errorNames.length === 0;
+            if (!result) {
+              errorPropNames.push(
+                ...errorNames.map((item) => propName + "." + item),
+              );
+            }
           } catch (e) {
             if (e instanceof NoValidationError) result = false;
             else throw e;
@@ -73,22 +78,6 @@ export function validate(instance: any) {
 
 /* 当实例在元数据中没有校验数据存在时抛出错误 */
 export class NoValidationError extends Error {}
-
-/* 检查给定类是否能够进行递归校验 */
-function typeEnableRecursive(type: Class) {
-  return ![
-    "Object",
-    "Function",
-    "Number",
-    "String",
-    "Boolean",
-    "Symbol",
-    "Array",
-    "Date",
-    "Set",
-    "Map",
-  ].includes(type.name);
-}
 
 function getValidations(userData: any, propName: string): Validators {
   const key = keyPrefix + propName;
