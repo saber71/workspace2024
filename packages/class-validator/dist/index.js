@@ -14,7 +14,8 @@ const keyPrefix = "__class-validator__";
             fn: validatorMap[option.validatorType],
             arg: option.arg,
             recursive: option.recursive ?? true,
-            type
+            type,
+            allowUndefined: option.allowUndefined
         });
     };
 }
@@ -34,8 +35,12 @@ const keyPrefix = "__class-validator__";
             let result = false;
             for(let i = 0; i < validations.validators.length; i++){
                 const validator = validations.validators[i];
-                result = validator.fn(value, validator.arg);
-                if (result && validator.type && validator.recursive && !Metadata.isBasicType(validator.type)) {
+                if (value === undefined) {
+                    result = !!validator.allowUndefined;
+                } else {
+                    result = validator.fn(value, validator.arg);
+                }
+                if (result && validator.type && validator.recursive && value && !Metadata.isBasicType(validator.type)) {
                     value.constructor = validator.type;
                     try {
                         const errorNames = validate(value);
@@ -71,23 +76,16 @@ function getValidations(userData, propName) {
 }
 const typeValidationMap = {
     isBoolean: (value)=>typeof value === "boolean" || value === undefined,
-    isBooleanStrict: (value)=>typeof value === "boolean",
     isNumber: (value)=>typeof value === "number" || value === undefined,
-    isNumberStrict: (value)=>typeof value === "number",
     isString: (value)=>typeof value === "string" || value === undefined,
-    isStringStrict: (value)=>typeof value === "string",
     isFalsy: (value)=>!value,
     isTruthy: (value)=>!!value,
     isSymbol: (value)=>typeof value === "symbol" || value === undefined,
-    isSymbolStrict: (value)=>typeof value === "symbol",
     isFunction: (value)=>typeof value === "function" || value === undefined,
-    isFunctionStrict: (value)=>typeof value === "function",
     isNull: (value)=>value === null,
     isUndefined: (value)=>value === undefined,
     isObject: (value)=>typeof value === "object" || value === undefined,
-    isObjectStrict: (value)=>typeof value === "object",
-    isDate: (value)=>value instanceof Date || value === undefined,
-    isDateStrict: (value)=>value instanceof Date
+    isDate: (value)=>value instanceof Date || value === undefined
 };
 const arrayValidations = {
     isArray: (value)=>value instanceof Array || value === undefined,
@@ -111,8 +109,8 @@ function getTime(date) {
     return date instanceof Date ? date.getTime() : date;
 }
 const dateValidations = {
-    maxDate: (arg1, arg2 = new Date())=>typeValidationMap.isDateStrict(arg1) && arg1.getTime() <= getTime(arg2),
-    minDate: (arg1, arg2 = new Date())=>typeValidationMap.isDateStrict(arg1) && arg1.getTime() >= getTime(arg2)
+    maxDate: (arg1, arg2 = new Date())=>typeValidationMap.isDate(arg1) && arg1.getTime() <= getTime(arg2),
+    minDate: (arg1, arg2 = new Date())=>typeValidationMap.isDate(arg1) && arg1.getTime() >= getTime(arg2)
 };
 const numberValidations = {
     isDivisibleBy: (arg1, arg2)=>validator.isDivisibleBy(arg1 + "", arg2),

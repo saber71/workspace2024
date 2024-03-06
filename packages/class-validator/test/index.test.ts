@@ -12,10 +12,10 @@ describe("Validator", () => {
       @Validation({ validatorType: "isString" })
       isString = "a";
 
-      @Validation({ validatorType: "isNumber" })
+      @Validation({ validatorType: "isNumber", allowUndefined: true })
       isNumber = undefined;
 
-      @Validation({ validatorType: "isNumberStrict" })
+      @Validation({ validatorType: "isNumber" })
       isNumberStrict = 12;
 
       @Validation({ validatorType: "isNull" })
@@ -25,18 +25,21 @@ describe("Validator", () => {
       @Validation({ validatorType: "arrayUnique" })
       array = [1, 2, 3];
 
-      @Validation({ validatorType: "isObjectStrict" })
+      @Validation({ validatorType: "isObject" })
       sub: SubTarget = {
         isNumber: 12,
       };
 
-      @Validation({ validatorType: "isObjectStrict" })
+      @Validation({ validatorType: "isObject" })
       failedSub: SubTarget = {
         isNumber: "12" as any,
       };
 
-      @Validation({ validatorType: "isObjectStrict", recursive: false })
+      @Validation({ validatorType: "isObject", recursive: false })
       noRecursiveSub: SubTarget = {} as any;
+
+      @Validation({ validatorType: "isURL", arg: { require_host: false } })
+      isURL = "/server/api";
     }
     const target = new Target();
     expect(validate(target)).toEqual([

@@ -10,5 +10,6 @@ export const UserModel = model(
     email: String,
     avatar: String,
     userData: { type: Object, required: true },
+    createTime: { type: Number, default: Date.now() },
   }),
 );

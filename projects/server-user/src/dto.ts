@@ -1,0 +1,70 @@
+import { Validation } from "server";
+
+export class QueryDTO {
+  @Validation({ validatorType: "isString" })
+  id: string;
+}
+
+export class CreateRoleDTO {
+  @Validation({ validatorType: "isString" })
+  name: string;
+
+  @Validation({ validatorType: "isObject" })
+  authorizations: RoleModel["authorizations"];
+}
+
+export class UpdateRoleDTO {
+  @Validation({ validatorType: "isString" })
+  id: string;
+
+  @Validation({ validatorType: "isBoolean", allowUndefined: true })
+  toDelete?: boolean;
+
+  @Validation({ validatorType: "isString", allowUndefined: true })
+  name?: string;
+
+  @Validation({ validatorType: "isObject", allowUndefined: true })
+  putAuthorizations?: RoleModel["authorizations"];
+
+  @Validation({ validatorType: "isArray", allowUndefined: true })
+  deleteAuthorizations?: string[];
+}
+
+export class CreateUserDTO {
+  @Validation({ validatorType: "isString" })
+  name: UserModel["name"];
+
+  @Validation({ validatorType: "isString" })
+  loginName: UserModel["loginName"];
+
+  @Validation({ validatorType: "isLength", arg: { min: 1 } })
+  password: UserModel["password"];
+
+  @Validation({ validatorType: "isTruthy" })
+  @Validation({ validatorType: "isString" })
+  roleId: UserModel["roleId"];
+
+  @Validation({ validatorType: "isEmail", allowUndefined: true })
+  email?: string;
+
+  @Validation({
+    validatorType: "isURL",
+    allowUndefined: true,
+    arg: { require_host: false },
+  })
+  avatar?: string;
+
+  @Validation({ validatorType: "isObject", allowUndefined: true })
+  putUserData?: UserModel["userData"];
+}
+
+export class UpdateUserDTO extends CreateUserDTO {
+  @Validation({ validatorType: "isString" })
+  id: UserModel["_id"];
+
+  @Validation({ validatorType: "isArray", allowUndefined: true })
+  deleteUserData?: string[];
+
+  @Validation({ validatorType: "isBoolean", allowUndefined: true })
+  toDelete?: boolean;
+}

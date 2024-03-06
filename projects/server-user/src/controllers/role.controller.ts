@@ -1,37 +1,12 @@
 import {
   Controller,
-  Validation,
   Method,
-  NotFoundError,
   ReqBody,
   ReqQuery,
+  NotFoundObjectError,
 } from "server";
+import { CreateRoleDTO, QueryDTO, UpdateRoleDTO } from "../dto";
 import { RoleModel } from "../models";
-
-export class CreateRoleDTO {
-  @Validation("isStringStrict")
-  name: string;
-
-  @Validation("isObjectStrict")
-  authorizations: RoleModel["authorizations"];
-}
-
-export class UpdateRoleDTO {
-  @Validation("isStringStrict")
-  id: string;
-
-  @Validation("isBoolean")
-  toDelete?: boolean;
-
-  @Validation("isString")
-  name?: string;
-
-  @Validation("isObject")
-  putAuthorizations?: RoleModel["authorizations"];
-
-  @Validation("isArray")
-  deleteAuthorizations?: string[];
-}
 
 @Controller({ routePrefix: "/role" })
 export class RoleController {
@@ -47,12 +22,12 @@ export class RoleController {
 
   /**
    * 更新Role对象，如果toDelete为true时则删除对象不做其他更新
-   * @throws NotFoundError 当根据id找不到Role对象时抛出
+   * @throws NotFoundObjectError 当根据id找不到Role对象时抛出
    */
   @Method({ type: "POST" })
   async update(@ReqBody() body: UpdateRoleDTO) {
     const role = await RoleModel.findById(body.id);
-    if (!role) throw new NotFoundError(`找不到id为${body.id}的Role对象`);
+    if (!role) throw new NotFoundObjectError(`找不到id为${body.id}的Role对象`);
     if (body.toDelete) {
       await role.deleteOne();
       return;
@@ -71,12 +46,12 @@ export class RoleController {
 
   /**
    * 根据id查找Role对象
-   * @throws NotFoundError 当根据id找不到Role对象时抛出
+   * @throws NotFoundObjectError 当根据id找不到Role对象时抛出
    */
   @Method()
-  async findById(@ReqQuery() query: { id: string }) {
+  async findById(@ReqQuery() query: QueryDTO) {
     const role = await RoleModel.findById(query.id);
-    if (!role) throw new NotFoundError(`找不到id为${query.id}的Role对象`);
+    if (!role) throw new NotFoundObjectError(`找不到id为${query.id}的Role对象`);
     return role.toObject();
   }
 

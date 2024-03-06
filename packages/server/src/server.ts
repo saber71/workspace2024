@@ -162,7 +162,7 @@ export class Server<PlatformInstance extends object = object> {
     _: ServerRequest,
     response: ServerResponse,
   ) {
-    this.log("error", err);
+    this.log((err as any).logLevel || "error", err);
     return this._responseBodySender.send(err, response);
   }
 }

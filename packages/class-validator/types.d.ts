@@ -2,19 +2,12 @@
 
 declare interface TypeValidationArgMap {
   isNumber: void;
-  isNumberStrict: void;
   isString: void;
-  isStringStrict: void;
   isBoolean: void;
-  isBooleanStrict: void;
   isFunction: void;
-  isFunctionStrict: void;
   isSymbol: void;
-  isSymbolStrict: void;
   isObject: void;
-  isObjectStrict: void;
   isDate: void;
-  isDateStrict: void;
   isNull: void;
   isUndefined: void;
   isTruthy: void;
@@ -146,6 +139,7 @@ declare interface Validators {
     arg?: any;
     recursive: boolean;
     type?: Class;
+    allowUndefined?: boolean;
   }>;
 }
 
@@ -153,4 +147,5 @@ declare interface ValidationOption<Key extends keyof ValidationArgMap> {
   validatorType: Key;
   arg?: ValidationArgMap[Key];
   recursive?: boolean;
+  allowUndefined?: boolean;
 }

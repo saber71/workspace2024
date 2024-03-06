@@ -1,6 +1,6 @@
 ///<reference types="../types.d.ts"/>
 import { connect } from "mongoose";
-import { Server } from "server";
+import { AuthorizedGuard, Server, WHITE_LIST } from "server";
 import { createServerPlatformKoa } from "server-platform-koa";
 import "./models";
 import "./controllers";
@@ -11,7 +11,9 @@ export async function bootstrap(port: number) {
   const app = await Server.create({
     serverPlatformAdapter: createServerPlatformKoa(),
     contextName: CONTEXT_NAME,
+    guards: [AuthorizedGuard],
   });
+  app.dependencyInjection.bindValue(WHITE_LIST, ["/user/login"]);
   await connect(MONGODB_URL, { dbName: CONTEXT_NAME });
   app.log("log", `成功连接${MONGODB_URL}`);
   await checkAndInitRole(app);
@@ -31,4 +33,5 @@ async function checkAndInitRole(app: Server) {
   }
 }
 
+export * from "./dto";
 export * from "./providers";

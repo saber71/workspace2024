@@ -2,18 +2,26 @@
 export class ServerError extends Error {
   code = 500;
   name = "ServerError";
+  logLevel: LogLevel = "error";
 }
 
 /* 当请求不具备权限时抛出 */
 export class UnauthorizedError extends ServerError {
   code = 401;
   name = "UnauthorizedError";
+  logLevel = "warn";
 }
 
-/* 当找不到数据时抛出 */
+/* 当找不到路由时抛出 */
 export class NotFoundError extends ServerError {
   code = 404;
   name = "NotFoundError";
+}
+
+/* 当找不到数据时抛出 */
+export class NotFoundObjectError extends ServerError {
+  code = 200;
+  name = "NotFoundObjectError";
 }
 
 /* 当出现路由重复时抛出 */

@@ -20,6 +20,7 @@ export function Validation<Key extends keyof ValidationArgMap>(
       arg: option.arg,
       recursive: option.recursive ?? true,
       type,
+      allowUndefined: option.allowUndefined,
     });
   };
 }
@@ -41,11 +42,16 @@ export function validate(instance: any) {
       let result = false;
       for (let i = 0; i < validations.validators.length; i++) {
         const validator = validations.validators[i];
-        result = validator.fn(value, validator.arg);
+        if (value === undefined) {
+          result = !!validator.allowUndefined;
+        } else {
+          result = validator.fn(value, validator.arg);
+        }
         if (
           result &&
           validator.type &&
           validator.recursive &&
+          value &&
           !Metadata.isBasicType(validator.type)
         ) {
           value.constructor = validator.type;
@@ -95,24 +101,17 @@ const typeValidationMap: Record<
   (...arg: any[]) => boolean
 > = {
   isBoolean: (value: any) => typeof value === "boolean" || value === undefined,
-  isBooleanStrict: (value: any) => typeof value === "boolean",
   isNumber: (value: any) => typeof value === "number" || value === undefined,
-  isNumberStrict: (value: any) => typeof value === "number",
   isString: (value: any) => typeof value === "string" || value === undefined,
-  isStringStrict: (value: any) => typeof value === "string",
   isFalsy: (value: any) => !value,
   isTruthy: (value: any) => !!value,
   isSymbol: (value: any) => typeof value === "symbol" || value === undefined,
-  isSymbolStrict: (value: any) => typeof value === "symbol",
   isFunction: (value: any) =>
     typeof value === "function" || value === undefined,
-  isFunctionStrict: (value: any) => typeof value === "function",
   isNull: (value: any) => value === null,
   isUndefined: (value: any) => value === undefined,
   isObject: (value: any) => typeof value === "object" || value === undefined,
-  isObjectStrict: (value: any) => typeof value === "object",
   isDate: (value) => value instanceof Date || value === undefined,
-  isDateStrict: (value) => value instanceof Date,
 };
 
 const arrayValidations: Record<
@@ -175,9 +174,9 @@ const dateValidations: Record<
   (...args: any[]) => boolean
 > = {
   maxDate: (arg1, arg2 = new Date()) =>
-    typeValidationMap.isDateStrict(arg1) && arg1.getTime() <= getTime(arg2),
+    typeValidationMap.isDate(arg1) && arg1.getTime() <= getTime(arg2),
   minDate: (arg1, arg2 = new Date()) =>
-    typeValidationMap.isDateStrict(arg1) && arg1.getTime() >= getTime(arg2),
+    typeValidationMap.isDate(arg1) && arg1.getTime() >= getTime(arg2),
 };
 
 const numberValidations: Record<

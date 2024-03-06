@@ -8,14 +8,20 @@ import * as process from 'node:process';
 /* server自定义错误的根类型 */ class ServerError extends Error {
     code = 500;
     name = "ServerError";
+    logLevel = "error";
 }
 /* 当请求不具备权限时抛出 */ class UnauthorizedError extends ServerError {
     code = 401;
     name = "UnauthorizedError";
+    logLevel = "warn";
 }
-/* 当找不到数据时抛出 */ class NotFoundError extends ServerError {
+/* 当找不到路由时抛出 */ class NotFoundError extends ServerError {
     code = 404;
     name = "NotFoundError";
+}
+/* 当找不到数据时抛出 */ class NotFoundObjectError extends ServerError {
+    code = 200;
+    name = "NotFoundObjectError";
 }
 /* 当出现路由重复时抛出 */ class DuplicateRouteHandlerError extends ServerError {
     name = "DuplicateRouteHandlerError";
@@ -693,7 +699,7 @@ class Server {
         this._serverPlatform.useRoutes(routes);
     }
     /* 处理请求中的错误 */ _catchRequestError(err, _, response) {
-        this.log("error", err);
+        this.log(err.logLevel || "error", err);
         return this._responseBodySender.send(err, response);
     }
 }
@@ -730,7 +736,7 @@ class RequestPipeline {
             const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
             result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
         } catch (e) {
-            this.server.log("error", e);
+            this.server.log(e.logLevel || "error", e);
             result = e;
             const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(e);
             if (errorHandlerClass) {
@@ -754,4 +760,4 @@ RequestPipeline = _ts_decorate([
     ])
 ], RequestPipeline);
 
-export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, WHITE_LIST, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, WHITE_LIST, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };

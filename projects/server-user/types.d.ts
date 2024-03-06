@@ -11,6 +11,7 @@ declare interface UserModel {
   email?: string;
   avatar?: string;
   userData: Record<string, any>;
+  createTime: number;
 }
 
 declare interface RoleModel {

@@ -43,7 +43,7 @@ export class RequestPipeline {
         routeHandler.methodName,
       );
     } catch (e) {
-      this.server.log("error", e as Error);
+      this.server.log((e as any).logLevel || "error", e as Error);
       result = e;
       const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(
         e as Error,

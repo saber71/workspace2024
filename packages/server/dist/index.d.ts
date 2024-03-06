@@ -65,6 +65,11 @@ export declare class NotFoundFileError extends ServerError {
     name: string;
 }
 
+export declare class NotFoundObjectError extends ServerError {
+    code: number;
+    name: string;
+}
+
 export declare class NotFoundRouteHandlerError extends ServerError {
     code: number;
     name: string;
@@ -179,6 +184,7 @@ export declare class Server<PlatformInstance extends object = object> {
 export declare class ServerError extends Error {
     code: number;
     name: string;
+    logLevel: LogLevel;
 }
 
 export declare class ServerRequest<Original extends object = object> {
@@ -232,6 +238,7 @@ export declare class SessionKeyNotExistError extends ServerError {
 export declare class UnauthorizedError extends ServerError {
     code: number;
     name: string;
+    logLevel: string;
 }
 
 export declare class ValidateFailedError extends ServerError {
