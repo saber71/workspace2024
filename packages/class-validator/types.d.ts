@@ -148,4 +148,5 @@ declare interface ValidationOption<Key extends keyof ValidationArgMap> {
   arg?: ValidationArgMap[Key];
   recursive?: boolean;
   allowUndefined?: boolean;
+  onlyPassOne?: boolean;
 }

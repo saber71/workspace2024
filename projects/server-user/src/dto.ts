@@ -37,7 +37,7 @@ export class CreateUserDTO {
   @Validation({ validatorType: "isString" })
   loginName: UserModel["loginName"];
 
-  @Validation({ validatorType: "isLength", arg: { min: 1 } })
+  @Validation<"isLength">({ validatorType: "isLength", arg: { min: 1 } })
   password: UserModel["password"];
 
   @Validation({ validatorType: "isTruthy" })
@@ -47,7 +47,7 @@ export class CreateUserDTO {
   @Validation({ validatorType: "isEmail", allowUndefined: true })
   email?: string;
 
-  @Validation({
+  @Validation<"isURL">({
     validatorType: "isURL",
     allowUndefined: true,
     arg: { require_host: false },

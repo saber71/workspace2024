@@ -10,6 +10,7 @@ const keyPrefix = "__class-validator__";
         const type = Reflect.getMetadata("design:type", target, propName);
         const metadata = Metadata.getOrCreateMetadata(target);
         const validations = getValidations(metadata.userData, propName);
+        if (option.onlyPassOne) validations.onlyPassOne = true;
         validations.validators.push({
             fn: validatorMap[option.validatorType],
             arg: option.arg,
