@@ -15,13 +15,17 @@ export function Validation<Key extends keyof ValidationArgMap>(
     const type = Reflect.getMetadata("design:type", target, propName);
     const metadata = Metadata.getOrCreateMetadata(target);
     const validations = getValidations(metadata.userData, propName);
-    if (option.onlyPassOne) validations.onlyPassOne = true;
+    validations.validators = validations.validators.filter(
+      (item) => item.clazz === target.constructor,
+    );
     validations.validators.push({
       fn: validatorMap[option.validatorType],
       arg: option.arg,
       recursive: option.recursive ?? true,
       type,
       allowUndefined: option.allowUndefined,
+      onlyPassOnly: option.onlyPassOne,
+      clazz: target.constructor,
     });
   };
 }
@@ -39,6 +43,11 @@ export function validate(instance: any) {
       count++;
       const propName = key.replace(keyPrefix, "");
       const validations = getValidations(userData, propName);
+      const onlyPassOne = validations.validators.reduce(
+        (previousValue, currentValue) =>
+          !!(previousValue || currentValue.onlyPassOnly),
+        false,
+      );
       const value = instance[propName];
       let result = false;
       for (let i = 0; i < validations.validators.length; i++) {
@@ -69,7 +78,7 @@ export function validate(instance: any) {
             else throw e;
           }
         }
-        if (validations.onlyPassOne) {
+        if (onlyPassOne) {
           if (result) break;
         } else if (!result) break;
       }

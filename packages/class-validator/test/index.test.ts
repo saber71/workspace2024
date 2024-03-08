@@ -3,12 +3,23 @@ import { validate, Validation } from "../src";
 
 describe("Validator", () => {
   test("validate type", () => {
+    class SuperTarget {
+      @Validation({ validatorType: "isNumber" })
+      failedIsBoolean: boolean = true;
+
+      @Validation({ validatorType: "isBoolean" })
+      extendNumber = 0;
+    }
+
     class SubTarget {
       @Validation({ validatorType: "isNumber" })
       isNumber = 0;
     }
 
-    class Target {
+    class Target extends SuperTarget {
+      @Validation({ validatorType: "isNumber" })
+      extendNumber = 0;
+
       @Validation({ validatorType: "isString" })
       isString = "a";
 
@@ -43,6 +54,7 @@ describe("Validator", () => {
     }
     const target = new Target();
     expect(validate(target)).toEqual([
+      "failedIsBoolean",
       "failedValidate",
       "failedSub.isNumber",
       "failedSub",

@@ -140,6 +140,8 @@ declare interface Validators {
     recursive: boolean;
     type?: Class;
     allowUndefined?: boolean;
+    clazz: Class;
+    onlyPassOnly?: boolean;
   }>;
 }
 
