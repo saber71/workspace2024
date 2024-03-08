@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [swc.vite()],
   build: {
     rollupOptions: {
-      external: ["server", "server-platform-koa", "mongoose"],
+      external: ["server", "server-platform-koa", "mongoose", "validator"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

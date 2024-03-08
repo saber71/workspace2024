@@ -9,6 +9,11 @@ export class Session<T extends Record<string, any>> {
     readonly res: ServerResponse,
   ) {}
 
+  /* 删除session中指定的key */
+  deleteKey<Key extends keyof T>(key: Key) {
+    this.set(key, null as any);
+  }
+
   /* 更新会话对象 */
   set<Key extends keyof T>(key: Key, value: T[Key]) {
     /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */

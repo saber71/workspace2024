@@ -1,4 +1,3 @@
-/// <reference types="../types.d.ts" />
 /// <reference types="dependency-injection/types" />
 /// <reference types="node" />
 
@@ -220,6 +219,7 @@ export declare class Session<T extends Record<string, any>> {
     readonly req: ServerRequest;
     readonly res: ServerResponse;
     constructor(req: ServerRequest, res: ServerResponse);
+    deleteKey<Key extends keyof T>(key: Key): void;
     set<Key extends keyof T>(key: Key, value: T[Key]): this;
     get<Key extends keyof T>(key: Key): T[Key] | undefined;
     /**

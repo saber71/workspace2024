@@ -1,4 +1,3 @@
-///<reference types="../types.d.ts"/>
 import { connect } from "mongoose";
 import { AuthorizedGuard, Server, WHITE_LIST } from "server";
 import { createServerPlatformKoa } from "server-platform-koa";
@@ -35,3 +34,4 @@ async function checkAndInitRole(app: Server) {
 
 export * from "./dto";
 export * from "./providers";
+///<reference types="../types.d.ts"/>

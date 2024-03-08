@@ -68,3 +68,11 @@ export class UpdateUserDTO extends CreateUserDTO {
   @Validation({ validatorType: "isBoolean", allowUndefined: true })
   toDelete?: boolean;
 }
+
+export class LoginDTO {
+  @Validation({ validatorType: "isString" })
+  loginNameOrEmail: string;
+
+  @Validation({ validatorType: "isString" })
+  password: string;
+}

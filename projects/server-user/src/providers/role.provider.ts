@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 import { SERVER_USER_AXIOS } from "../constants";
-import { CreateRoleDTO, UpdateRoleDTO } from "../controllers";
+import { CreateRoleDTO, UpdateRoleDTO } from "../dto";
 import { Injectable } from "server";
 
 @Injectable({ singleton: true, paramtypes: [SERVER_USER_AXIOS] })

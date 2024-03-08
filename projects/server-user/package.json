@@ -14,11 +14,10 @@
   "peerDependencies": {
     "axios": "^1.6.7"
   },
-  "devDependencies": {
+  "dependencies": {
+    "mongoose": "8.2.0",
+    "validator": "13.11.0",
     "server": "workspace:*",
     "server-platform-koa": "workspace:*"
-  },
-  "dependencies": {
-    "mongoose": "8.2.0"
   }
 }
