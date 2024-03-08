@@ -1,18 +1,12 @@
 import swc from "unplugin-swc";
 import { defineConfig } from "vite";
 import { resolve } from "path";
-import dtsPlugin from "vite-plugin-dts";
 
 export default defineConfig({
-  plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
+  plugins: [swc.vite()],
   build: {
     rollupOptions: {
-      external: [
-        "dependency-injection",
-        "class-validator",
-        "chalk",
-        "node:process",
-      ],
+      external: ["server", "server-platform-koa", "mongoose", "validator"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

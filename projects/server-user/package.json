@@ -1,0 +1,23 @@
+{
+  "name": "server-user",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "test": "vitest",
+    "serve:prod": "node index.js",
+    "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
+  },
+  "peerDependencies": {
+    "axios": "^1.6.7"
+  },
+  "dependencies": {
+    "mongoose": "8.2.0",
+    "validator": "13.11.0",
+    "server": "workspace:*",
+    "server-platform-koa": "workspace:*"
+  }
+}

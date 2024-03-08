@@ -30,6 +30,10 @@ export class RequestPipeline {
     const responseBodySender = this.server.responseBodySender;
     let result: any;
     try {
+      for (let guardClass of this.server.guardClasses) {
+        const guard = this._container.getValue(guardClass);
+        await this._container.call(guard, "guard");
+      }
       const routeHandler = RouteManager.getRouteHandler(
         this.request.method,
         this.request.path,
@@ -39,6 +43,7 @@ export class RequestPipeline {
         routeHandler.methodName,
       );
     } catch (e) {
+      this.server.log((e as any).logLevel || "error", e as Error);
       result = e;
       const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(
         e as Error,

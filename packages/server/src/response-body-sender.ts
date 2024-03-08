@@ -2,7 +2,7 @@ import { ResponseBodySender } from "./decorators";
 import { ServerResponse } from "./response";
 
 /* 将要返回的响应体内容 */
-export class ResponseBody {
+export class ResponseBody implements RegularResponseBody {
   /* 从Error对象生成响应体内容 */
   static fromError(error: Error): ResponseBody {
     return new ResponseBody(

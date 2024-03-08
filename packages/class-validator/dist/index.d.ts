@@ -9,6 +9,6 @@ export declare class NoValidationError extends Error {
  */
 export declare function validate(instance: any): string[];
 
-export declare function Validation<Key extends keyof ValidationOptionMap>(validatorType: Key, option?: ValidationOptionMap[Key]): (target: any, propName?: any) => void;
+export declare function Validation<Key extends keyof ValidationArgMap>(option: ValidationOption<Key>): (target: any, propName?: any) => void;
 
 export { }

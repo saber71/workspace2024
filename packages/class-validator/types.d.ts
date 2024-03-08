@@ -1,27 +1,20 @@
 /// <reference types="dependency-injection/types" />
 
-declare interface TypeValidationOptionMap {
+declare interface TypeValidationArgMap {
   isNumber: void;
-  isNumberStrict: void;
   isString: void;
-  isStringStrict: void;
   isBoolean: void;
-  isBooleanStrict: void;
   isFunction: void;
-  isFunctionStrict: void;
   isSymbol: void;
-  isSymbolStrict: void;
   isObject: void;
-  isObjectStrict: void;
   isDate: void;
-  isDateStrict: void;
   isNull: void;
   isUndefined: void;
   isTruthy: void;
   isFalsy: void;
 }
 
-declare interface ArrayValidatorOptionMap {
+declare interface ArrayValidatorArgMap {
   isArray: void;
   isArrayStrict: void;
   arrayContains: any[];
@@ -32,7 +25,7 @@ declare interface ArrayValidatorOptionMap {
   arrayUnique: void;
 }
 
-declare interface CommonValidatorOptionMap {
+declare interface CommonValidatorArgMap {
   hasKeys: (string | symbol)[];
   notHasKeys: (string | symbol)[];
   equals: any;
@@ -41,12 +34,12 @@ declare interface CommonValidatorOptionMap {
   isNotInArray: any[];
 }
 
-declare interface DateValidatorOptionMap {
+declare interface DateValidatorArgMap {
   maxDate: Date | number;
   minDate: Date | number;
 }
 
-declare interface NumberValidatorOptionMap {
+declare interface NumberValidatorArgMap {
   isDivisibleBy: number;
   isNegative: void;
   isPositive: void;
@@ -54,12 +47,12 @@ declare interface NumberValidatorOptionMap {
   min: number;
 }
 
-declare interface ObjectValidatorOptionMap {
+declare interface ObjectValidatorArgMap {
   isInstanceOf: Class[];
   isNotEmptyObject: void;
 }
 
-declare interface StringValidatorOptionMap {
+declare interface StringValidatorArgMap {
   isMatch: RegExp;
   isAlphanumeric: import("validator").AlphanumericLocale;
   isAlpha: import("validator").AlphaLocale;
@@ -130,16 +123,32 @@ declare interface StringValidatorOptionMap {
   isVariableWidth: void;
 }
 
-declare interface ValidationOptionMap
-  extends TypeValidationOptionMap,
-    ArrayValidatorOptionMap,
-    CommonValidatorOptionMap,
-    DateValidatorOptionMap,
-    NumberValidatorOptionMap,
-    ObjectValidatorOptionMap,
-    StringValidatorOptionMap {}
+declare interface ValidationArgMap
+  extends TypeValidationArgMap,
+    ArrayValidatorArgMap,
+    CommonValidatorArgMap,
+    DateValidatorArgMap,
+    NumberValidatorArgMap,
+    ObjectValidatorArgMap,
+    StringValidatorArgMap {}
 
 declare interface Validators {
   onlyPassOne: boolean;
-  validators: Array<{ fn: Function; arg?: any }>;
+  validators: Array<{
+    fn: Function;
+    arg?: any;
+    recursive: boolean;
+    type?: Class;
+    allowUndefined?: boolean;
+    clazz: Class;
+    onlyPassOnly?: boolean;
+  }>;
+}
+
+declare interface ValidationOption<Key extends keyof ValidationArgMap> {
+  validatorType: Key;
+  arg?: ValidationArgMap[Key];
+  recursive?: boolean;
+  allowUndefined?: boolean;
+  onlyPassOne?: boolean;
 }

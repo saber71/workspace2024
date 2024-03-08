@@ -1,4 +1,4 @@
-import { SessionKeyNotExistError } from "./errors";
+import { ServerError, SessionKeyNotExistError } from "./errors";
 import { ServerRequest } from "./request";
 import { ServerResponse } from "./response";
 
@@ -9,8 +9,15 @@ export class Session<T extends Record<string, any>> {
     readonly res: ServerResponse,
   ) {}
 
+  /* 删除session中指定的key */
+  deleteKey<Key extends keyof T>(key: Key) {
+    this.set(key, null as any);
+  }
+
   /* 更新会话对象 */
   set<Key extends keyof T>(key: Key, value: T[Key]) {
+    /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */
+    if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
     if (!this.res.session) this.res.session = {};
     (this.res.session as any)[key] = value;
     return this;

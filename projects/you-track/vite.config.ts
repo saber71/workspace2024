@@ -1,3 +1,4 @@
+import swc from "unplugin-swc";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
@@ -17,6 +18,7 @@ export default defineConfig({
         ["@babel/plugin-transform-class-properties"],
       ],
     }),
+    swc.vite(),
   ],
   esbuild: {
     keepNames: true,

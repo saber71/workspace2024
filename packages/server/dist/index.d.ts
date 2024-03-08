@@ -1,4 +1,3 @@
-/// <reference types="../types.d.ts" />
 /// <reference types="dependency-injection/types" />
 /// <reference types="node" />
 
@@ -8,7 +7,20 @@ import type { OutgoingHttpHeaders } from 'node:http';
 import type { ParsedUrlQuery } from 'node:querystring';
 import type { URL as URL_2 } from 'node:url';
 
+export declare class AuthorizedGuard implements GuardInterface {
+    guard(session: Session<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
+}
+
 export declare function composeUrl(...items: string[]): string;
+
+export declare class ConsoleLogger implements LoggerInterface {
+    readonly contextName: string;
+    constructor(contextName: string);
+    private readonly logLevelColorMap;
+    log(level: LogLevel, message: string | Error): void;
+}
+
+export declare const CONTEXT_LABEL = "ContextName";
 
 export declare function Controller(option?: {
     routePrefix?: string;
@@ -17,6 +29,7 @@ export declare function Controller(option?: {
 export declare const DEFAULT_PORT = 4000;
 
 export declare class DuplicateRouteHandlerError extends ServerError {
+    name: string;
 }
 
 export declare function ErrorHandler<T extends Error>(errorClass: Class<T>): (clazz: Class, _?: any) => void;
@@ -32,21 +45,37 @@ export declare function getOrCreateControllerMethod(target: any, methodName: str
 
 export declare function getOrCreateMetadataUserData(obj: any): MetadataServerUserData;
 
+export declare function Guard(): (clazz: Class, _?: any) => void;
+
 export declare class ImproperDecoratorError extends ServerError {
+    name: string;
 }
 
 export declare function Method(option?: Partial<Pick<ControllerMethod, "route" | "routePrefix" | "type">> & MethodParameterOption): (target: any, methodName?: any) => void;
 
 export declare const MODULE_NAME = "server";
 
+export declare class NotFoundError extends ServerError {
+    code: number;
+    name: string;
+}
+
 export declare class NotFoundFileError extends ServerError {
+    name: string;
+}
+
+export declare class NotFoundObjectError extends ServerError {
+    code: number;
+    name: string;
 }
 
 export declare class NotFoundRouteHandlerError extends ServerError {
     code: number;
+    name: string;
 }
 
 export declare class NotFoundValidatorError extends ServerError {
+    name: string;
 }
 
 export declare function Parser(): (clazz: Class, _?: any) => void;
@@ -87,7 +116,7 @@ export declare class RequestPipeline {
 
 export declare function Res(): (clazz: any, propName: any, index?: any) => void;
 
-export declare class ResponseBody {
+export declare class ResponseBody implements RegularResponseBody {
     readonly object: any;
     readonly success: boolean;
     readonly code: number;
@@ -124,6 +153,7 @@ export declare class Server<PlatformInstance extends object = object> {
     static create(options: ServerCreateOption): Promise<Server<object>>;
     private constructor();
     private readonly _dependencyInjection;
+    get dependencyInjection(): Container;
     private _requestPipelineClass;
     private _platformInstance;
     get platformInstance(): PlatformInstance;
@@ -131,6 +161,10 @@ export declare class Server<PlatformInstance extends object = object> {
     get errorHandlerDispatcher(): ErrorHandlerDispatcher;
     private _responseBodySender;
     get responseBodySender(): ResponseBodySenderInterface;
+    private readonly _loggerClasses;
+    private readonly _guardClasses;
+    get guardClasses(): ReadonlyArray<Class<GuardInterface>>;
+    log(logLevel: LogLevel, message: string | Error): void;
     createContainer(): Container;
     bootstrap(option?: ServerBootstrapOption): void;
     /**
@@ -148,6 +182,8 @@ export declare class Server<PlatformInstance extends object = object> {
 
 export declare class ServerError extends Error {
     code: number;
+    name: string;
+    logLevel: LogLevel;
 }
 
 export declare class ServerRequest<Original extends object = object> {
@@ -183,6 +219,7 @@ export declare class Session<T extends Record<string, any>> {
     readonly req: ServerRequest;
     readonly res: ServerResponse;
     constructor(req: ServerRequest, res: ServerResponse);
+    deleteKey<Key extends keyof T>(key: Key): void;
     set<Key extends keyof T>(key: Key, value: T[Key]): this;
     get<Key extends keyof T>(key: Key): T[Key] | undefined;
     /**
@@ -195,12 +232,23 @@ export declare class Session<T extends Record<string, any>> {
 }
 
 export declare class SessionKeyNotExistError extends ServerError {
+    name: string;
+}
+
+export declare class UnauthorizedError extends ServerError {
+    code: number;
+    name: string;
+    logLevel: string;
 }
 
 export declare class ValidateFailedError extends ServerError {
+    name: string;
 }
 
+export declare const WHITE_LIST = "WhiteList";
 
+
+export * from "class-validator";
 export * from "dependency-injection";
 
 export { }

@@ -1,16 +1,24 @@
+import 'reflect-metadata';
 import { getDecoratedName, Metadata } from 'dependency-injection';
 import validator from 'validator';
 
 /// <reference types="../types.d.ts" />
 const keyPrefix = "__class-validator__";
-/* 标识字段需要进行校验，同时指定校验规则 */ function Validation(validatorType, option) {
+/* 标识字段需要进行校验，同时指定校验规则 */ function Validation(option) {
     return (target, propName)=>{
         propName = getDecoratedName(propName);
+        const type = Reflect.getMetadata("design:type", target, propName);
         const metadata = Metadata.getOrCreateMetadata(target);
         const validations = getValidations(metadata.userData, propName);
+        validations.validators = validations.validators.filter((item)=>item.clazz === target.constructor);
         validations.validators.push({
-            fn: validatorMap[validatorType],
-            arg: option
+            fn: validatorMap[option.validatorType],
+            arg: option.arg,
+            recursive: option.recursive ?? true,
+            type,
+            allowUndefined: option.allowUndefined,
+            onlyPassOnly: option.onlyPassOne,
+            clazz: target.constructor
         });
     };
 }
@@ -26,11 +34,30 @@ const keyPrefix = "__class-validator__";
             count++;
             const propName = key.replace(keyPrefix, "");
             const validations = getValidations(userData, propName);
+            const onlyPassOne = validations.validators.reduce((previousValue, currentValue)=>!!(previousValue || currentValue.onlyPassOnly), false);
             const value = instance[propName];
             let result = false;
             for(let i = 0; i < validations.validators.length; i++){
-                result = validations.validators[i].fn(value, validations.validators[i].arg);
-                if (validations.onlyPassOne) {
+                const validator = validations.validators[i];
+                if (value === undefined) {
+                    result = !!validator.allowUndefined;
+                } else {
+                    result = validator.fn(value, validator.arg);
+                }
+                if (result && validator.type && validator.recursive && value && !Metadata.isBasicType(validator.type)) {
+                    value.constructor = validator.type;
+                    try {
+                        const errorNames = validate(value);
+                        result = errorNames.length === 0;
+                        if (!result) {
+                            errorPropNames.push(...errorNames.map((item)=>propName + "." + item));
+                        }
+                    } catch (e) {
+                        if (e instanceof NoValidationError) result = false;
+                        else throw e;
+                    }
+                }
+                if (onlyPassOne) {
                     if (result) break;
                 } else if (!result) break;
             }
@@ -53,23 +80,16 @@ function getValidations(userData, propName) {
 }
 const typeValidationMap = {
     isBoolean: (value)=>typeof value === "boolean" || value === undefined,
-    isBooleanStrict: (value)=>typeof value === "boolean",
     isNumber: (value)=>typeof value === "number" || value === undefined,
-    isNumberStrict: (value)=>typeof value === "number",
     isString: (value)=>typeof value === "string" || value === undefined,
-    isStringStrict: (value)=>typeof value === "string",
     isFalsy: (value)=>!value,
     isTruthy: (value)=>!!value,
     isSymbol: (value)=>typeof value === "symbol" || value === undefined,
-    isSymbolStrict: (value)=>typeof value === "symbol",
     isFunction: (value)=>typeof value === "function" || value === undefined,
-    isFunctionStrict: (value)=>typeof value === "function",
     isNull: (value)=>value === null,
     isUndefined: (value)=>value === undefined,
     isObject: (value)=>typeof value === "object" || value === undefined,
-    isObjectStrict: (value)=>typeof value === "object",
-    isDate: (value)=>value instanceof Date || value === undefined,
-    isDateStrict: (value)=>value instanceof Date
+    isDate: (value)=>value instanceof Date || value === undefined
 };
 const arrayValidations = {
     isArray: (value)=>value instanceof Array || value === undefined,
@@ -93,8 +113,8 @@ function getTime(date) {
     return date instanceof Date ? date.getTime() : date;
 }
 const dateValidations = {
-    maxDate: (arg1, arg2 = new Date())=>typeValidationMap.isDateStrict(arg1) && arg1.getTime() <= getTime(arg2),
-    minDate: (arg1, arg2 = new Date())=>typeValidationMap.isDateStrict(arg1) && arg1.getTime() >= getTime(arg2)
+    maxDate: (arg1, arg2 = new Date())=>typeValidationMap.isDate(arg1) && arg1.getTime() <= getTime(arg2),
+    minDate: (arg1, arg2 = new Date())=>typeValidationMap.isDate(arg1) && arg1.getTime() >= getTime(arg2)
 };
 const numberValidations = {
     isDivisibleBy: (arg1, arg2)=>validator.isDivisibleBy(arg1 + "", arg2),

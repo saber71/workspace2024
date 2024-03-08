@@ -2,6 +2,7 @@ import { InjectService } from "@/services";
 import type { KeyValueService } from "@/services/key-value.service.ts";
 import type { UserService } from "@/services/user.service.ts";
 import { useGlobalStore } from "@/store.ts";
+import DashboardHomeView from "@/views/dashboard.home.view.tsx";
 import LoginView from "@/views/logo-form/login.view.tsx";
 import RegisterUserView from "@/views/logo-form/register-user.view.tsx";
 import ResetPasswordView from "@/views/logo-form/reset-password.view.tsx";
@@ -22,6 +23,7 @@ export class CheckAuthGuard extends VueRouterGuard {
     RegisterUserView.name,
     ResetPasswordView.name,
     SystemInitView.name,
+    DashboardHomeView.name,
   ];
 
   async beforeEach(
