@@ -1,5 +1,5 @@
 import { LoadableContainer } from "dependency-injection";
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { isRef } from "vue";
 import {
   Computed,
@@ -7,7 +7,6 @@ import {
   Mut,
   Readonly,
   Service,
-  VueClass,
   VueComponent,
   Watcher,
 } from "../src";
@@ -36,16 +35,17 @@ class A {
   }
 }
 
-const container = new LoadableContainer();
-container.load({ moduleName: ModuleName });
+describe("vue-class", () => {
+  test("Service", () => {
+    const container = new LoadableContainer();
+    container.load({ moduleName: ModuleName });
+    const a = container.getValue(A);
+    a.a++;
+    a.obj.a = 0;
 
-test("vue-class:Service", () => {
-  const a = VueClass.getInstance(A);
-  a.a++;
-  a.obj.a = 0;
-
-  expect(a.b).toEqual(2);
-  expect(a.c === a.b).toEqual(true);
-  expect(a.obj.a).toEqual(12);
-  expect(isRef(a[Symbol.for("a")])).toEqual(true);
+    expect(a.b).toEqual(2);
+    expect(a.c === a.b).toEqual(true);
+    expect(a.obj.a).toEqual(12);
+    expect(isRef(a[Symbol.for("a")])).toEqual(true);
+  });
 });

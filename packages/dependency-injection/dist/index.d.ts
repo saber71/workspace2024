@@ -91,6 +91,7 @@ export declare function Injectable(option?: {
     singleton?: boolean;
     createImmediately?: boolean;
     overrideConstructor?: boolean;
+    onCreate?: (instance: object) => void;
 } & MethodParameterOption): (clazz: Class, ctx?: any) => void;
 
 export declare class InjectNotFoundTypeError extends Error {
@@ -131,6 +132,7 @@ export declare class Metadata {
     singleton?: boolean;
     createImmediately?: boolean;
     copiedConstructorParams: boolean;
+    onCreate?: (instance: object) => void;
     readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes>;
     private _fieldTypes;
     get fieldTypes(): Record<string, FieldType>;

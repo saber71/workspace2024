@@ -75,6 +75,9 @@ export class Metadata {
   /* 标记该类的构造函数入参类型是否是从父类复制的 */
   copiedConstructorParams = false;
 
+  /* 当Injectable装饰的类生成实例时调用 */
+  onCreate?: (instance: object) => void;
+
   /* 保存方法的入参类型。方法名为key */
   readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes> =
     {};

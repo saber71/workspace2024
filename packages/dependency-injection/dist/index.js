@@ -63,6 +63,7 @@ import EventEmitter from 'eventemitter3';
     /* 类是否是单例的 */ singleton;
     /* 类是否立即实例化 */ createImmediately;
     copiedConstructorParams;
+    /* 当Injectable装饰的类生成实例时调用 */ onCreate;
     /* 保存方法的入参类型。方法名为key */ methodNameMapParameterTypes;
     /* 字段名映射其类型名 */ _fieldTypes;
     get fieldTypes() {
@@ -139,6 +140,7 @@ import EventEmitter from 'eventemitter3';
         metadata.moduleName = option?.moduleName;
         metadata.singleton = option?.singleton;
         metadata.createImmediately = option?.createImmediately;
+        metadata.onCreate = option?.onCreate;
         const parameterTypes = metadata.getMethodParameterTypes();
         const designParameterTypes = Reflect.getMetadata("design:paramtypes", clazz);
         const overrideConstructor = option?.overrideConstructor ?? true;
@@ -367,6 +369,7 @@ import EventEmitter from 'eventemitter3';
                         instance[propName] = this._getFieldValue(fieldTypes[propName]);
                     }
                     creating.delete(member.name);
+                    metadata.onCreate(instance);
                     return instance;
                 };
                 if (metadata.createImmediately) createImmediately.push(member);

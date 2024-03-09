@@ -53,6 +53,7 @@ export function Injectable(
     singleton?: boolean;
     createImmediately?: boolean;
     overrideConstructor?: boolean;
+    onCreate?: (instance: object) => void;
   } & MethodParameterOption,
 ) {
   return (clazz: Class, ctx?: any) => {
@@ -61,6 +62,7 @@ export function Injectable(
     metadata.moduleName = option?.moduleName;
     metadata.singleton = option?.singleton;
     metadata.createImmediately = option?.createImmediately;
+    metadata.onCreate = option?.onCreate;
     const parameterTypes = metadata.getMethodParameterTypes();
     const designParameterTypes = Reflect.getMetadata(
       "design:paramtypes",
