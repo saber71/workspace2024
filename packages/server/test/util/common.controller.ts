@@ -16,10 +16,10 @@ import {
 import FormData from "form-data";
 
 class QueryForTest {
-  @Validation("isNumberStrict")
+  @Validation({ validatorType: "isNumber" })
   id: number;
 
-  @Validation("isLength", { min: 1 })
+  @Validation({ validatorType: "isLength", arg: { min: 1 } })
   name: string;
 }
 
