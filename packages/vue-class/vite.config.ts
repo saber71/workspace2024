@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [vue(), vueJsx(), dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["vue", "ioc", "vue-router"],
+      external: ["vue", "dependency-injection", "vue-router"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

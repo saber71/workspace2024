@@ -1,6 +1,6 @@
+export * from "dependency-injection";
 export * from "./constants";
 export * from "./decorators";
-export * from "./metadata";
 export * from "./types";
 export * from "./vue-class";
 export * from "./vue-component";

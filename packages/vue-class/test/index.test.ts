@@ -1,4 +1,4 @@
-import { IoC } from "ioc";
+import { LoadableContainer } from "dependency-injection";
 import { expect, test } from "vitest";
 import { isRef } from "vue";
 import {
@@ -36,7 +36,8 @@ class A {
   }
 }
 
-IoC.load(ModuleName);
+const container = new LoadableContainer();
+container.load({ moduleName: ModuleName });
 
 test("vue-class:Service", () => {
   const a = VueClass.getInstance(A);
