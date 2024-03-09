@@ -1,4 +1,3 @@
-import { IoC } from "ioc";
 import {
   defineComponent,
   getCurrentInstance,
@@ -6,9 +5,9 @@ import {
   type EmitsOptions,
   type HTMLAttributes,
 } from "vue";
-import { ModuleName } from "./constants";
 import { applyMetadata } from "./metadata";
 import type { ComponentProps, VueComponentClass, WithSlotTypes } from "./types";
+import { VueClass } from "./vue-class";
 
 export interface VueComponentBaseProps extends Partial<HTMLAttributes> {
   inst?: string;
@@ -54,7 +53,7 @@ export function toNative<
 >(componentClass: VueComponentClass<Props, Emit>) {
   return defineComponent<Props, Emit>(
     () => {
-      const instance = IoC.getInstance(componentClass, ModuleName);
+      const instance = VueClass.getInstance(componentClass);
 
       applyMetadata(componentClass, instance);
 

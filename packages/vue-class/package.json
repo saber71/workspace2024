@@ -8,10 +8,8 @@
     "build": "vite build",
     "watch": "vite build --watch"
   },
-  "dependencies": {
-    "ioc": "workspace:*"
-  },
   "peerDependencies": {
+    "dependency-injection": "workspace:^",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
   }

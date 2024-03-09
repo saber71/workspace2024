@@ -1,4 +1,4 @@
-import { IoC } from "ioc";
+import { Injectable } from "dependency-injection";
 import { type WatchOptions } from "vue";
 import { ModuleName } from "./constants";
 import {
@@ -32,7 +32,7 @@ export type HookType =
 export function Component<Props extends VueComponentBaseProps>(
   option?: ComponentOption,
 ) {
-  const fn = IoC.Injectable({ moduleName: ModuleName });
+  const fn = Injectable({ moduleName: ModuleName });
   return (clazz: VueComponentClass<Props>, ctx?: ClassDecoratorContext) => {
     fn(clazz, ctx);
     const metadata = getOrCreateMetadata(clazz, ctx);
@@ -42,8 +42,8 @@ export function Component<Props extends VueComponentBaseProps>(
 }
 
 /* 适用于类 */
-export function Service(option?: Parameters<typeof IoC.Injectable>[0]) {
-  const fn = IoC.Injectable(
+export function Service(option?: Parameters<typeof Injectable>[0]) {
+  const fn = Injectable(
     Object.assign(
       {
         moduleName: ModuleName,
@@ -61,7 +61,7 @@ export function Service(option?: Parameters<typeof IoC.Injectable>[0]) {
 
 /* 适用于类 */
 export function RouterGuard(option?: { matchTo?: RegExp; matchFrom?: RegExp }) {
-  const fn = IoC.Injectable(
+  const fn = Injectable(
     Object.assign(
       {
         moduleName: ModuleName,
@@ -83,7 +83,7 @@ export function RouterGuard(option?: { matchTo?: RegExp; matchFrom?: RegExp }) {
 
 /* 适用于类 */
 export function Directive(name?: string) {
-  const fn = IoC.Injectable({ moduleName: ModuleName });
+  const fn = Injectable({ moduleName: ModuleName });
   return (clazz: Class<VueDirective>, ctx?: any) => {
     fn(clazz, ctx);
     const metadata = getOrCreateMetadata(clazz, ctx);

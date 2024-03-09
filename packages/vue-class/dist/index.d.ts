@@ -5,7 +5,8 @@ import type { DirectiveBinding } from 'vue';
 import { EmitsOptions } from 'vue';
 import { getCurrentInstance } from 'vue';
 import { HTMLAttributes } from 'vue';
-import { IoC } from 'ioc';
+import { Injectable } from 'dependency-injection';
+import { LoadableContainer } from 'dependency-injection';
 import { NavigationGuardNext } from 'vue-router';
 import { ObjectEmitsOptions } from 'vue';
 import { Prop } from 'vue';
@@ -24,17 +25,16 @@ export declare type AllowedComponentProps = {
     [name: string]: any;
 };
 
-export declare function applyMetadata(clazz: any, instance: VueComponent | object): void;
-
 export declare function BindThis(): (target: object, arg: any) => void;
 
-export declare type Class<T = any> = {
+declare type Class_2<T = any> = {
     new (...args: any[]): T;
 };
+export { Class_2 as Class }
 
 export declare function Component<Props extends VueComponentBaseProps>(option?: ComponentOption): (clazz: VueComponentClass<Props>, ctx?: ClassDecoratorContext) => void;
 
-export declare interface ComponentOption {
+declare interface ComponentOption {
     provideThis?: string | boolean;
 }
 
@@ -56,22 +56,13 @@ declare type DefaultSlots = {
 
 export declare type DefineEmits<Emit extends EmitsOptions> = Array<keyof Emit>;
 
-export declare function Directive(name?: string): (clazz: Class<VueDirective>, ctx?: any) => void;
+export declare function Directive(name?: string): (clazz: Class_2<VueDirective>, ctx?: any) => void;
 
 export declare type DistributiveOmit<T, K extends keyof any> = T extends T ? Omit<T, K> : never;
 
 declare type DistributiveVModel<T extends {}> = T extends T ? WithVModel<T> : never;
 
 declare type DistributiveVSlots<T extends {}> = T extends T ? WithVSlots<T> : never;
-
-export declare function getAllMetadata(): [Class, Metadata][];
-
-export declare function getMetadata(clazz: any): Metadata;
-
-export declare function getOrCreateMetadata(clazz: Class | object | any, ctx?: ClassDecoratorContext | {
-    kind: string;
-    metadata: Record<string, any>;
-} | string): Metadata;
 
 export declare function Hook(type: HookType): (target: object, arg: any) => void;
 
@@ -84,60 +75,6 @@ export declare function Link(option?: {
     isDirective?: boolean;
     directiveName?: string;
 }): (target: VueComponent, arg: any) => void;
-
-export declare class Metadata {
-    isComponent: boolean;
-    componentOption?: ComponentOption;
-    isService: boolean;
-    isDirective: boolean;
-    isRouterGuard: boolean;
-    directiveName: string;
-    routerGuardMatchTo?: RegExp;
-    routerGuardMatchFrom?: RegExp;
-    readonly mutts: {
-        propName: string;
-        shallow?: boolean;
-    }[];
-    readonly readonlys: {
-        propName: string;
-        shallow?: boolean;
-    }[];
-    readonly links: {
-        refName?: string;
-        propName: string;
-        isDirective?: boolean;
-        directiveName?: string;
-    }[];
-    readonly vueInject: Array<{
-        propName: string;
-        provideKey: any;
-    }>;
-    readonly bindThis: string[];
-    readonly hooks: {
-        methodName: string;
-        type: HookType;
-    }[];
-    readonly watchers: {
-        methodName: string;
-        source?: WatcherTarget | WatcherTarget[];
-        option?: WatchOptions;
-    }[];
-    readonly propsWatchers: {
-        methodName: string;
-        option?: WatchOptions;
-    }[];
-    readonly computers: string[];
-    handleComponentOption(instance: VueComponent): void;
-    handleBindThis(instance: object): void;
-    handleWatchers(instance: object): void;
-    handlePropsWatchers(instance: VueComponent): void;
-    handleHook(instance: VueComponent): void;
-    handleVueInject(instance: any): void;
-    handleMut(instance: object): void;
-    handleReadonly(instance: object): void;
-    handleLink(instance: VueComponent): void;
-    handleComputer(instance: object): void;
-}
 
 declare type MixDefaultSlots<T extends {}> = "default" extends keyof T ? {} : DefaultSlots;
 
@@ -159,9 +96,9 @@ export { Readonly_2 as Readonly }
 export declare function RouterGuard(option?: {
     matchTo?: RegExp;
     matchFrom?: RegExp;
-}): (clazz: Class<VueRouterGuard>, ctx?: any) => void;
+}): (clazz: Class_2<VueRouterGuard>, ctx?: any) => void;
 
-export declare function Service(option?: Parameters<typeof IoC.Injectable>[0]): (clazz: Class, ctx?: any) => void;
+export declare function Service(option?: Parameters<typeof Injectable>[0]): (clazz: Class_2, ctx?: any) => void;
 
 export declare function toNative<Props extends VueComponentBaseProps, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>): (props: Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K_1 in `on${Capitalize<string & keyof Emit>}`]?: (K_1 extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {})) => any;
 
@@ -170,9 +107,9 @@ export declare type TransformModelValue<T extends {}> = "v-model:modelValue" ext
 } : T;
 
 export declare class VueClass {
-    static getInstance<T>(clazz: Class<T>): T;
-    static install(app: App, router: Router, imports: Record<string, () => Promise<any>> | any): Promise<void>;
-    static bindConstantValue(label: string, value: any): typeof VueClass;
+    static readonly dependencyInjection: LoadableContainer;
+    static getInstance<T>(clazz: Class_2<T>): T;
+    static install(app: App, router: Router): Promise<void>;
 }
 
 export declare class VueComponent<Props extends VueComponentBaseProps = VueComponentBaseProps, Emit extends EmitsOptions = {}> {
@@ -204,7 +141,7 @@ export declare class VueDirective<El extends HTMLElement | ComponentPublicInstan
     private static readonly _elMapVueDirective;
     private static readonly _directiveNameMapVueDirective;
     static install(app: App): void;
-    static getInstance<T extends VueDirective>(el: any, directiveName: string, clazz?: Class<T>): T;
+    static getInstance<T extends VueDirective>(el: any, directiveName: string, clazz?: Class_2<T>): T;
     constructor(el: El, name: string);
     mountedAndUpdated(binding: DirectiveBinding<Value>): void;
     created(binding: DirectiveBinding<Value>): void;
@@ -249,5 +186,8 @@ export declare type WithVSlots<T extends Record<string, any>> = {
         default(): VNodeChild;
     }>;
 };
+
+
+export * from "dependency-injection";
 
 export { }
