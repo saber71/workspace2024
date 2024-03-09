@@ -1,3 +1,5 @@
+///<reference types="dependency-injection/types"/>
+
 export * from "dependency-injection";
 export * from "./constants";
 export * from "./decorators";
