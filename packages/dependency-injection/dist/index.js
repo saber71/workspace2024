@@ -202,6 +202,7 @@ import EventEmitter from 'eventemitter3';
    * 会继承父容器中的可依赖注入对象，并将生成实例时的上下文环境替换成此实例
    * 在取消继承时删除之
    */ extend(parent) {
+        if (this._extend === parent) return this;
         if (this._extend) {
             this._extend.off("loadClass", this._onLoadClass, this);
             Array.from(this._memberMap.values()).filter((member)=>member.isExtend).forEach((member)=>{

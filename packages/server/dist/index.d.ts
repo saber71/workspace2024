@@ -17,7 +17,7 @@ export declare class ConsoleLogger implements LoggerInterface {
     readonly contextName: string;
     constructor(contextName: string);
     private readonly logLevelColorMap;
-    log(level: LogLevel, message: string | Error): void;
+    log(level: LogLevel, message: string | Error | ServerRequest): void;
 }
 
 export declare const CONTEXT_LABEL = "ContextName";
@@ -164,7 +164,7 @@ export declare class Server<PlatformInstance extends object = object> {
     private readonly _loggerClasses;
     private readonly _guardClasses;
     get guardClasses(): ReadonlyArray<Class<GuardInterface>>;
-    log(logLevel: LogLevel, message: string | Error): void;
+    log(logLevel: LogLevel, message: string | Error | ServerRequest): void;
     createContainer(): Container;
     bootstrap(option?: ServerBootstrapOption): void;
     /**
@@ -188,6 +188,7 @@ export declare class ServerError extends Error {
 
 export declare class ServerRequest<Original extends object = object> {
     readonly original: Original;
+    readonly id: string;
     readonly session: Readonly<Record<string, any>> | null;
     readonly headers: IncomingHttpHeaders;
     readonly body: any;
@@ -207,6 +208,7 @@ export declare class ServerRequest<Original extends object = object> {
 
 export declare class ServerResponse<Original extends object = object> {
     readonly original: Original;
+    readonly id: string;
     readonly headers: OutgoingHttpHeaders;
     session: Record<string, any> | null;
     statusCode: number;

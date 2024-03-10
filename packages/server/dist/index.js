@@ -221,6 +221,7 @@ var RouteManager;
 
 /* 本库封装的请求对象，抹除不同框架的请求对象的不同 */ class ServerRequest {
     /* Web框架的原请求对象 */ original;
+    /* 请求id */ id;
     /* 读取session内容 */ session;
     /* 请求头 */ headers;
     /* 请求体内容 */ body;
@@ -385,6 +386,7 @@ const validatedKey = Symbol("validated");
 
 /* 本库封装的响应对象，抹除不同框架的响应对象的不同 */ class ServerResponse {
     /* Web框架的原响应对象 */ original;
+    /* 响应对象id */ id;
     /* 响应头 */ headers;
     /* 更新session内容 */ session;
     /* 状态码 */ statusCode;
@@ -541,6 +543,7 @@ class ConsoleLogger {
     log(level, message) {
         const colorize = this.logLevelColorMap[level] ?? this.logLevelColorMap.log;
         if (message instanceof Error) message = colorize(message);
+        else if (typeof message === "object") message = `[${message.method}] ${message.url}`;
         const output = `[${this.contextName}] ${colorize(process.pid)} - ${dateTimeFormatter.format(Date.now())} ${colorize(level.toUpperCase())} ${message}\n`;
         process.stdout.write(output);
     }
@@ -665,8 +668,8 @@ class Server {
         return this;
     }
     /* 处理请求 */ async handleRequest(request, response) {
-        this.log("log", `[${request.method}] ${request.url}`);
-        const container = this.createContainer().extend(this._dependencyInjection);
+        this.log("log", request);
+        const container = this.createContainer();
         container.bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response);
         const pipeline = container.getValue(this._requestPipelineClass);
         await pipeline.start();

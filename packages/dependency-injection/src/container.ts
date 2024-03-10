@@ -18,6 +18,7 @@ export class Container extends EventEmitter<{
    * 在取消继承时删除之
    */
   extend(parent?: Container) {
+    if (this._extend === parent) return this;
     if (this._extend) {
       this._extend.off("loadClass", this._onLoadClass, this);
       Array.from(this._memberMap.values())

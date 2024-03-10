@@ -58,7 +58,7 @@ export class Server<PlatformInstance extends object = object> {
   }
 
   /* 输出日志 */
-  log(logLevel: LogLevel, message: string | Error) {
+  log(logLevel: LogLevel, message: string | Error | ServerRequest) {
     for (let loggerClass of this._loggerClasses) {
       const logger = this._dependencyInjection.getValue(loggerClass);
       logger.log(logLevel, message);
@@ -95,8 +95,8 @@ export class Server<PlatformInstance extends object = object> {
 
   /* 处理请求 */
   async handleRequest(request: ServerRequest, response: ServerResponse) {
-    this.log("log", `[${request.method}] ${request.url}`);
-    const container = this.createContainer().extend(this._dependencyInjection);
+    this.log("log", request);
+    const container = this.createContainer();
     container
       .bindValue(ServerRequest.name, request)
       .bindValue(ServerResponse.name, response);

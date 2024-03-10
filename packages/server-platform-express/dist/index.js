@@ -5,6 +5,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import { URL } from 'node:url';
 import * as qs from 'node:querystring';
 import * as path from 'node:path';
+import { v4 } from 'uuid';
 
 function createServerPlatformExpress() {
     const app = express();
@@ -72,8 +73,9 @@ function createServerPlatformExpress() {
 }
 function getRouteHandler(object) {
     return async (req, res, next)=>{
-        const request = createServerRequest(req);
-        const response = createServerResponse(req, res);
+        const id = v4();
+        const request = createServerRequest(req, id);
+        const response = createServerResponse(req, res, id);
         try {
             await object.handle(request, response);
         } catch (e) {
@@ -82,8 +84,8 @@ function getRouteHandler(object) {
         next();
     };
 }
-function createServerRequest(req) {
-    const url = new URL("http://" + req.headers.host + req.url);
+function createServerRequest(req, id) {
+    const url = new URL(req.protocol + "://" + req.headers.host + req.url);
     const querystring = url.search.substring(1);
     let body = req.body;
     if (req.fields) {
@@ -118,10 +120,13 @@ function createServerRequest(req) {
         origin: req.originalUrl,
         body,
         session: req.session,
-        files: req.files
+        files: req.files,
+        get id () {
+            return id;
+        }
     };
 }
-function createServerResponse(req, res) {
+function createServerResponse(req, res, id) {
     const headers = new Proxy({}, {
         set (_, p, newValue) {
             res.setHeader(p, newValue);
@@ -143,6 +148,9 @@ function createServerResponse(req, res) {
         },
         get session () {
             return req.session;
+        },
+        get id () {
+            return id;
         },
         original: res,
         headers,

@@ -226,7 +226,10 @@ declare type LogLevel =
 
 /* 处理日志相关 */
 declare interface LoggerInterface {
-  log(level: LogLevel, message: string | Error): void;
+  log(
+    level: LogLevel,
+    message: string | Error | import("src").ServerRequest,
+  ): void;
 }
 
 /* 在执行路由对应的方法前执行，如果请求不合法可以抛出错误打断请求流程 */

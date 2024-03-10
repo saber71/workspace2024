@@ -2,6 +2,7 @@ import chalk from "chalk";
 import { Injectable } from "dependency-injection";
 import * as process from "node:process";
 import { CONTEXT_LABEL, MODULE_NAME } from "./constant";
+import { ServerRequest } from "./request";
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   year: "numeric",
@@ -33,9 +34,11 @@ export class ConsoleLogger implements LoggerInterface {
     log: chalk.green,
   };
 
-  log(level: LogLevel, message: string | Error): void {
+  log(level: LogLevel, message: string | Error | ServerRequest): void {
     const colorize = this.logLevelColorMap[level] ?? this.logLevelColorMap.log;
     if (message instanceof Error) message = colorize(message);
+    else if (typeof message === "object")
+      message = `[${message.method}] ${message.url}`;
     const output = `[${this.contextName}] ${colorize(process.pid)} - ${dateTimeFormatter.format(Date.now())} ${colorize(level.toUpperCase())} ${message}\n`;
     process.stdout.write(output);
   }

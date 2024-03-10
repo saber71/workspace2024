@@ -1,4 +1,4 @@
-/// <reference types="../types" />
+/// <reference types="server/types" />
 
 import { Express as Express_2 } from 'express';
 import { Request as Request_2 } from 'express';
@@ -8,8 +8,8 @@ import type { ServerResponse } from 'server';
 
 export declare function createServerPlatformExpress(): ServerPlatformAdapter<Express_2>;
 
-export declare function createServerRequest(req: Request_2): ServerRequest<Request_2>;
+export declare function createServerRequest(req: Request_2, id: string): ServerRequest<Request_2>;
 
-export declare function createServerResponse(req: Request_2, res: Response_2): ServerResponse<Response_2>;
+export declare function createServerResponse(req: Request_2, res: Response_2, id: string): ServerResponse<Response_2>;
 
 export { }
