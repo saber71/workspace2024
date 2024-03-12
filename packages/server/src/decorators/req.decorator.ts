@@ -5,5 +5,9 @@ import { ServerRequest } from "../request";
 export function Req() {
   return Inject({
     typeValueGetter: (container) => container.getValue(ServerRequest),
+    afterExecute: (metadata, ...args) =>
+      (metadata.userData[args.join(".")] = {
+        isReq: true,
+      }),
   });
 }

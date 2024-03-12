@@ -221,7 +221,7 @@ var RouteManager;
 
 /* 本库封装的请求对象，抹除不同框架的请求对象的不同 */ class ServerRequest {
     /* Web框架的原请求对象 */ original;
-    /* 请求id */ id;
+    /* 本次请求的id */ id;
     /* 读取session内容 */ session;
     /* 请求头 */ headers;
     /* 请求体内容 */ body;
@@ -241,7 +241,10 @@ var RouteManager;
 
 /* 属性/参数装饰器。为被装饰者注入ServerRequest实例 */ function Req() {
     return Inject({
-        typeValueGetter: (container)=>container.getValue(ServerRequest)
+        typeValueGetter: (container)=>container.getValue(ServerRequest),
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isReq: true
+            }
     });
 }
 
@@ -299,7 +302,8 @@ const validatedKey = Symbol("validated");
                 validate(container, targetObject, targetMethodName, targetIndex, value);
             }
             return value;
-        }
+        },
+        afterExecute: option.afterExecute
     });
     return (target, methodName, index)=>{
         inject(target, methodName, index);
@@ -341,7 +345,10 @@ const validatedKey = Symbol("validated");
 /* 属性/参数装饰器。为被装饰者注入请求体 */ function ReqBody(option) {
     return ParserAndValidate({
         ...option,
-        typeValueGetter: (container)=>container.getValue(ServerRequest).body
+        typeValueGetter: (container)=>container.getValue(ServerRequest).body,
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isBody: true
+            }
     });
 }
 
@@ -349,12 +356,15 @@ const validatedKey = Symbol("validated");
     return Inject({
         typeValueGetter: (container)=>{
             const request = container.getValue(ServerRequest);
-            if (!request.files) throw new NotFoundFileError();
+            if (!request.files) throw new NotFoundFileError("未找到上传文件");
             const files = request.files[fieldName];
             if (!files) throw new NotFoundFileError(`字段${fieldName}的文件不存在`);
             if (files instanceof Array) throw new ImproperDecoratorError("指定字段的文件不止一个，请使用ReqFiles装饰器");
             return files;
-        }
+        },
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isFile: fieldName
+            }
     });
 }
 
@@ -362,31 +372,40 @@ const validatedKey = Symbol("validated");
     return Inject({
         typeValueGetter: (container)=>{
             const request = container.getValue(ServerRequest);
-            if (!request.files) throw new NotFoundFileError();
+            if (!request.files) throw new NotFoundFileError("未找到上传文件");
             const files = request.files[fieldName];
             if (!files) throw new NotFoundFileError(`字段${fieldName}的文件不存在`);
             if (files instanceof Array) return files;
             throw new ImproperDecoratorError("指定字段的文件只有一个，请使用ReqFile装饰器");
-        }
+        },
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isFiles: fieldName
+            }
     });
 }
 
 /* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
     return ParserAndValidate({
         ...option,
-        typeValueGetter: (container)=>container.getValue(ServerRequest).query
+        typeValueGetter: (container)=>container.getValue(ServerRequest).query,
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isQuery: true
+            }
     });
 }
 
 /* 属性/参数装饰器。为被装饰者注入session对象 */ function ReqSession() {
     return Inject({
-        typeValueGetter: (container)=>container.getValue(ServerRequest).session
+        typeValueGetter: (container)=>container.getValue(ServerRequest).session,
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isSession: true
+            }
     });
 }
 
 /* 本库封装的响应对象，抹除不同框架的响应对象的不同 */ class ServerResponse {
     /* Web框架的原响应对象 */ original;
-    /* 响应对象id */ id;
+    /* 响应对象id，与ServerRequest对象的id一致 */ id;
     /* 响应头 */ headers;
     /* 更新session内容 */ session;
     /* 状态码 */ statusCode;
@@ -399,7 +418,10 @@ const validatedKey = Symbol("validated");
 
 /* 属性/参数装饰器。为被装饰者注入ServerResponse实例 */ function Res() {
     return Inject({
-        typeValueGetter: (container)=>container.getValue(ServerResponse)
+        typeValueGetter: (container)=>container.getValue(ServerResponse),
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isRes: true
+            }
     });
 }
 

@@ -5,7 +5,7 @@ import {
   ReqQuery,
   Session,
 } from "server";
-import { isEmail } from "validator";
+import validator from "validator";
 import { CreateUserDTO, LoginDTO, QueryDTO } from "../dto";
 import { RoleModel, UserModel } from "../models";
 
@@ -48,7 +48,7 @@ export class UserController {
    */
   @Method({ type: "POST" })
   async login(data: LoginDTO, session: Session<RegularSessionData>) {
-    const is_email = isEmail(data.loginNameOrEmail);
+    const is_email = validator.isEmail(data.loginNameOrEmail);
     let user;
     if (is_email) {
       user = await UserModel.findOne({

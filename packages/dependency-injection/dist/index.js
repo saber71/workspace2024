@@ -174,6 +174,7 @@ import EventEmitter from 'eventemitter3';
             }
             if (typeLabel) methodParameterTypes.types[index] = typeLabel;
             if (typeValueGetter) methodParameterTypes.getters[index] = typeValueGetter;
+            option?.afterExecute?.(metadata, metadata.clazz.name, propName, index);
         } else {
             /* 属性或方法装饰器 */ const metadata = Metadata.getOrCreateMetadata(clazz);
             const types = Reflect.getMetadata("design:paramtypes", clazz, propName);
@@ -188,6 +189,7 @@ import EventEmitter from 'eventemitter3';
                     getter: typeValueGetter
                 };
             }
+            option?.afterExecute?.(metadata, metadata.clazz.name, propName);
         }
     };
 }
@@ -370,7 +372,7 @@ import EventEmitter from 'eventemitter3';
                         instance[propName] = this._getFieldValue(fieldTypes[propName]);
                     }
                     creating.delete(member.name);
-                    metadata.onCreate(instance);
+                    metadata.onCreate?.(instance);
                     return instance;
                 };
                 if (metadata.createImmediately) createImmediately.push(member);

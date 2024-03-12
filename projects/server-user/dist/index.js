@@ -1,7 +1,7 @@
 import { model, Schema, connect } from 'mongoose';
 import { Validation, Method, ReqBody, ReqQuery, Controller, NotFoundObjectError, Session, Injectable, Server, AuthorizedGuard, WHITE_LIST } from 'server';
 import { createServerPlatformKoa } from 'server-platform-koa';
-import { isEmail } from 'validator';
+import validator from 'validator';
 
 const RoleModel = model("Role", new Schema({
     name: {
@@ -364,7 +364,7 @@ class UserController {
    * 登陆，设置用户id进session中
    * @throws Error 当找不到用户或密码错误时抛出
    */ async login(data, session) {
-        const is_email = isEmail(data.loginNameOrEmail);
+        const is_email = validator.isEmail(data.loginNameOrEmail);
         let user;
         if (is_email) {
             user = await UserModel.findOne({
@@ -486,7 +486,7 @@ function _ts_decorate(decorators, target, key, desc) {
 function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
-class UserProvider {
+class UserApiProvider {
     axios;
     constructor(axios){
         this.axios = axios;
@@ -508,7 +508,7 @@ class UserProvider {
         return this.axios.post("/user/logout");
     }
 }
-UserProvider = _ts_decorate([
+UserApiProvider = _ts_decorate([
     Injectable({
         singleton: true,
         paramtypes: [
@@ -519,7 +519,7 @@ UserProvider = _ts_decorate([
     _ts_metadata("design:paramtypes", [
         typeof AxiosInstance === "undefined" ? Object : AxiosInstance
     ])
-], UserProvider);
+], UserApiProvider);
 
 async function bootstrap(port) {
     const app = await Server.create({
@@ -553,4 +553,4 @@ async function bootstrap(port) {
     }
 }
 
-export { CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleApiProvider, UpdateRoleDTO, UpdateUserDTO, UserProvider, bootstrap };
+export { CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleApiProvider, UpdateRoleDTO, UpdateUserDTO, UserApiProvider, bootstrap };

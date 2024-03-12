@@ -6,5 +6,9 @@ export function ReqBody(option?: ParserAndValidator) {
   return ParserAndValidate({
     ...option,
     typeValueGetter: (container) => container.getValue(ServerRequest).body,
+    afterExecute: (metadata, ...args) =>
+      (metadata.userData[args.join(".")] = {
+        isBody: true,
+      }),
   });
 }

@@ -250,3 +250,25 @@ declare interface RegularResponseBody<T = undefined> {
 declare interface RegularSessionData {
   userId: string;
 }
+
+/* 用于生成Provider的元数据 */
+declare interface ProviderMetadata {
+  [controllerClassName: string]: {
+    [methodName: string]: {
+      type: MethodType;
+      url: string;
+      parameters: Array<
+        | undefined
+        | {
+            isQuery?: boolean;
+            isBody?: boolean;
+            isFile?: boolean;
+            isFiles?: boolean;
+            isSession?: boolean;
+            isReq?: boolean;
+            isRes?: boolean;
+          }
+      >;
+    };
+  };
+}

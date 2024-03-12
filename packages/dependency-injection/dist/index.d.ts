@@ -76,6 +76,7 @@ export declare function getDecoratedName(ctx?: string | ClassMemberDecoratorCont
 export declare function Inject(option?: {
     typeLabel?: string;
     typeValueGetter?: TypeValueGetter;
+    afterExecute?: (metadata: Metadata, ...args: Array<string | number>) => void;
 } & MethodParameterOption): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: any) => void;
 
 /**

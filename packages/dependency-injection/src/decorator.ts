@@ -95,6 +95,10 @@ export function Inject(
   option?: {
     typeLabel?: string;
     typeValueGetter?: TypeValueGetter;
+    afterExecute?: (
+      metadata: Metadata,
+      ...args: Array<string | number>
+    ) => void;
   } & MethodParameterOption,
 ) {
   return (
@@ -120,6 +124,8 @@ export function Inject(
       if (typeLabel) methodParameterTypes.types[index] = typeLabel;
       if (typeValueGetter)
         methodParameterTypes.getters[index] = typeValueGetter;
+
+      option?.afterExecute?.(metadata, metadata.clazz.name, propName, index);
     } else {
       /* 属性或方法装饰器 */
       const metadata = Metadata.getOrCreateMetadata(clazz);
@@ -139,6 +145,7 @@ export function Inject(
           );
         metadata.fieldTypes[propName] = { type, getter: typeValueGetter };
       }
+      option?.afterExecute?.(metadata, metadata.clazz.name, propName);
     }
   };
 }

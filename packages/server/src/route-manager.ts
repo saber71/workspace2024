@@ -53,7 +53,10 @@ export namespace RouteManager {
    * 查找路由url对应的控制器方法
    * @throws NotFoundRouteHandlerError 当找不到路由对应的控制器方法时抛出
    */
-  export function getRouteHandler(methodType: MethodType, url: string) {
+  export function getRouteHandler(
+    methodType: MethodType,
+    url: string,
+  ): RouteHandler {
     const handler = urlMapRouteHandlerSet.get(url)?.[methodType];
     if (!handler)
       throw new NotFoundRouteHandlerError(

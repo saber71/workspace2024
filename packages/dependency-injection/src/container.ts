@@ -256,7 +256,7 @@ export class LoadableContainer extends Container {
             instance[propName] = this._getFieldValue(fieldTypes[propName]);
           }
           creating.delete(member.name);
-          metadata.onCreate(instance);
+          metadata.onCreate?.(instance);
           return instance;
         };
         if (metadata.createImmediately) createImmediately.push(member);

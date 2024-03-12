@@ -5,5 +5,9 @@ import { ServerResponse } from "../response";
 export function Res() {
   return Inject({
     typeValueGetter: (container) => container.getValue(ServerResponse),
+    afterExecute: (metadata, ...args) =>
+      (metadata.userData[args.join(".")] = {
+        isRes: true,
+      }),
   });
 }
