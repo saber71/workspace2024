@@ -16,7 +16,7 @@ export class UserController {
    * @throws NotFoundObjectError 当根据id找不到User对象时抛出
    */
   @Method()
-  async findById(@ReqQuery() query: QueryDTO) {
+  async findById(@ReqQuery() query: QueryDTO): Promise<UserModel> {
     const user = await UserModel.findById(query.id);
     if (!user) throw new NotFoundObjectError(`找不到id为${query.id}的Role对象`);
     return user.toObject();
@@ -39,7 +39,7 @@ export class UserController {
       userData,
     });
     await user.save();
-    return user.id;
+    return user.id as string;
   }
 
   /**

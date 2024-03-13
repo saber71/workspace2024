@@ -262,8 +262,8 @@ declare interface ProviderMetadata {
         | {
             isQuery?: boolean;
             isBody?: boolean;
-            isFile?: boolean;
-            isFiles?: boolean;
+            isFile?: string;
+            isFiles?: string;
             isSession?: boolean;
             isReq?: boolean;
             isRes?: boolean;

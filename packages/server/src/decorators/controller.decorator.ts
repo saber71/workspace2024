@@ -1,5 +1,6 @@
 import { Injectable } from "dependency-injection";
-import { composeUrl, getOrCreateMetadataUserData } from "../common";
+import { getOrCreateMetadataUserData } from "../common";
+import { composeUrl } from "common";
 import { MODULE_NAME } from "../constant";
 import { RouteManager } from "../route-manager";
 

@@ -2,11 +2,12 @@
 
 import * as path from "node:path";
 import * as fs from "node:fs";
+import { composeUrl } from "common";
 
 Promise.all([
   import("../dist/index.js"),
   import(path.resolve(".", "./dist/index.js")),
-]).then(([{ Metadata, composeUrl }]) => {
+]).then(([{ Metadata }]) => {
   const metadataArray = Array.from(Metadata.getAllMetadata()).filter(
     (item) => item.userData.__server__classType === "controller",
   );
