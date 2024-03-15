@@ -14,10 +14,10 @@ export declare class NotFoundMethodError extends Error {
 }
 
 export declare class ServerApiProvider {
-    readonly axiosInstance: AxiosInstance;
     readonly providerMetadata: ProviderMetadata;
-    constructor(axiosInstance: AxiosInstance, providerMetadata: ProviderMetadata);
-    request<T extends Record<string, () => any>, MethodName extends keyof T>(key: ControllerKey<T>, methodName: MethodName, parameters: Parameters<T[MethodName]>, option?: AxiosRequestConfig): Promise<RegularResponseBody<ExtractPromiseGenericType<ReturnType<T[MethodName]>>>>;
+    readonly axiosInstance: AxiosInstance;
+    constructor(providerMetadata: ProviderMetadata, axiosInstance?: AxiosInstance);
+    request<T extends Record<string, any>, MethodName extends keyof T, Args extends Parameters<T[MethodName]>>(key: ControllerKey<T>, methodName: MethodName, parameters: Partial<Args>, option?: AxiosRequestConfig): Promise<RegularResponseBody<ExtractPromiseGenericType<ReturnType<T[MethodName]>>>>;
 }
 
 export { }

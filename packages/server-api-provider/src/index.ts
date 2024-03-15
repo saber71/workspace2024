@@ -10,17 +10,18 @@ export function controllerKey<T>(name: string): ControllerKey<T> {
 
 export class ServerApiProvider {
   constructor(
-    readonly axiosInstance: AxiosInstance = axios,
     readonly providerMetadata: ProviderMetadata,
+    readonly axiosInstance: AxiosInstance = axios,
   ) {}
 
   async request<
-    T extends Record<string, () => any>,
+    T extends Record<string, any>,
     MethodName extends keyof T,
+    Args extends Parameters<T[MethodName]>,
   >(
     key: ControllerKey<T>,
     methodName: MethodName,
-    parameters: Parameters<T[MethodName]>,
+    parameters: Partial<Args>,
     option?: AxiosRequestConfig,
   ): Promise<
     RegularResponseBody<ExtractPromiseGenericType<ReturnType<T[MethodName]>>>
@@ -41,7 +42,11 @@ export class ServerApiProvider {
     for (let i = 0; i < parameters.length; i++) {
       const parameter = parameters[i];
       const typeInfo = method.parameters[i];
-      if (!typeInfo) continue;
+      if (!typeInfo) {
+        if (method.type === "GET") params = parameter;
+        else data = parameters;
+        continue;
+      }
       const fileFieldName = typeInfo.isFiles || typeInfo.isFile;
       if (fileFieldName) {
         const formData = new FormData();
@@ -50,10 +55,7 @@ export class ServerApiProvider {
       } else if (typeInfo.isQuery) params = parameter;
       else if (typeInfo.isBody) data = parameter;
       else if (typeInfo.isSession || typeInfo.isReq || typeInfo.isRes) continue;
-      else {
-        if (method.type === "GET") params = parameter;
-        else data = parameters;
-      }
+      else throw new Error("unknown typeInfo " + JSON.stringify(typeInfo));
     }
 
     const res = await this.axiosInstance.request({

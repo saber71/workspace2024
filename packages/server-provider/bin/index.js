@@ -5,7 +5,7 @@ import * as fs from "node:fs";
 import { composeUrl } from "common";
 
 Promise.all([
-  import("../dist/index.js"),
+  import("server"),
   import(path.resolve(".", "./dist/index.js")),
 ]).then(([{ Metadata }]) => {
   const metadataArray = Array.from(Metadata.getAllMetadata()).filter(

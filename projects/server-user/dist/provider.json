@@ -1,0 +1,62 @@
+{
+  "RoleController": {
+    "create": {
+      "type": "POST",
+      "url": "/role/create",
+      "parameters": [
+        {
+          "isBody": true
+        }
+      ]
+    },
+    "update": {
+      "type": "POST",
+      "url": "/role/update",
+      "parameters": [
+        {
+          "isBody": true
+        }
+      ]
+    },
+    "findById": {
+      "type": "GET",
+      "url": "/role/find-by-id",
+      "parameters": [
+        {
+          "isQuery": true
+        }
+      ]
+    },
+    "count": {
+      "type": "GET",
+      "url": "/role/count",
+      "parameters": []
+    }
+  },
+  "UserController": {
+    "findById": {
+      "type": "GET",
+      "url": "/user/find-by-id",
+      "parameters": [
+        {
+          "isQuery": true
+        }
+      ]
+    },
+    "create": {
+      "type": "POST",
+      "url": "/user/create",
+      "parameters": [0]
+    },
+    "login": {
+      "type": "POST",
+      "url": "/user/login",
+      "parameters": [0, 0]
+    },
+    "logout": {
+      "type": "POST",
+      "url": "/user/logout",
+      "parameters": [0]
+    }
+  }
+}

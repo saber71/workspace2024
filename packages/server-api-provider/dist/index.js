@@ -15,11 +15,11 @@ function controllerKey(name) {
     return Symbol(name);
 }
 class ServerApiProvider {
-    axiosInstance;
     providerMetadata;
-    constructor(axiosInstance = axios, providerMetadata){
-        this.axiosInstance = axiosInstance;
+    axiosInstance;
+    constructor(providerMetadata, axiosInstance = axios){
         this.providerMetadata = providerMetadata;
+        this.axiosInstance = axiosInstance;
     }
     async request(key, methodName, parameters, option) {
         const methodSet = this.providerMetadata[key.description];
@@ -31,7 +31,11 @@ class ServerApiProvider {
         for(let i = 0; i < parameters.length; i++){
             const parameter = parameters[i];
             const typeInfo = method.parameters[i];
-            if (!typeInfo) continue;
+            if (!typeInfo) {
+                if (method.type === "GET") params = parameter;
+                else data = parameters;
+                continue;
+            }
             const fileFieldName = typeInfo.isFiles || typeInfo.isFile;
             if (fileFieldName) {
                 const formData = new FormData();
@@ -40,10 +44,7 @@ class ServerApiProvider {
             } else if (typeInfo.isQuery) params = parameter;
             else if (typeInfo.isBody) data = parameter;
             else if (typeInfo.isSession || typeInfo.isReq || typeInfo.isRes) continue;
-            else {
-                if (method.type === "GET") params = parameter;
-                else data = parameters;
-            }
+            else throw new Error("unknown typeInfo " + JSON.stringify(typeInfo));
         }
         const res = await this.axiosInstance.request({
             method: method.type,
