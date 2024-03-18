@@ -1,15 +1,5 @@
 import axios from 'axios';
 
-function getDefaultExportFromCjs (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
-/* eslint-env browser */
-
-var browser = typeof self == 'object' ? self.FormData : window.FormData;
-
-const FormData = /*@__PURE__*/getDefaultExportFromCjs(browser);
-
 ///<reference types="../types.d.ts"/>
 function controllerKey(name) {
     return Symbol(name);

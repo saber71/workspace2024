@@ -2,7 +2,6 @@
 
 import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import axios from "axios";
-import FormData from "form-data";
 
 export function controllerKey<T>(name: string): ControllerKey<T> {
   return Symbol(name);
@@ -50,7 +49,7 @@ export class ServerApiProvider {
       const fileFieldName = typeInfo.isFiles || typeInfo.isFile;
       if (fileFieldName) {
         const formData = new FormData();
-        formData.append(fileFieldName, parameter);
+        formData.append(fileFieldName, parameter as any);
         data = formData;
       } else if (typeInfo.isQuery) params = parameter;
       else if (typeInfo.isBody) data = parameter;

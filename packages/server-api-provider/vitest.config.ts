@@ -7,5 +7,6 @@ export default defineConfig({
       tsconfig: "./tsconfig.json",
     },
   },
+  //@ts-ignore
   plugins: [swc.vite()],
 });
