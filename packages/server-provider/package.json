@@ -1,0 +1,15 @@
+{
+  "name": "server-provider",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {},
+  "dependencies": {
+    "common": "workspace:*",
+    "server": "workspace:*"
+  },
+  "bin": {
+    "server-provider-metadata": "bin/index.js"
+  }
+}

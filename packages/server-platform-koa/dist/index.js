@@ -7,6 +7,7 @@ import session from 'koa-session';
 import staticServe from 'koa-static';
 import path from 'node:path';
 import proxy from 'koa-proxies';
+import { v4 } from 'uuid';
 
 /// <reference types="../types" />
 function createServerPlatformKoa() {
@@ -50,8 +51,9 @@ function createServerPlatformKoa() {
             }
             function getHandler(object) {
                 return async (ctx, next)=>{
-                    const req = createServerRequest(ctx);
-                    const res = createServerResponse(ctx);
+                    const id = v4();
+                    const req = createServerRequest(ctx, id);
+                    const res = createServerResponse(ctx, id);
                     try {
                         await object.handle(req, res);
                     } catch (e) {
@@ -76,7 +78,7 @@ function createServerPlatformKoa() {
         }
     };
 }
-function createServerRequest(ctx) {
+function createServerRequest(ctx, id) {
     return {
         original: ctx.request,
         origin: ctx.origin,
@@ -93,13 +95,19 @@ function createServerRequest(ctx) {
         URL: ctx.URL,
         body: ctx.request.body,
         files: ctx.request.files,
-        session: ctx.session
+        session: ctx.session,
+        get id () {
+            return id;
+        }
     };
 }
-function createServerResponse(ctx) {
+function createServerResponse(ctx, id) {
     return {
         original: ctx.response,
         headers: ctx.response.headers,
+        get id () {
+            return id;
+        },
         get session () {
             return ctx.session;
         },

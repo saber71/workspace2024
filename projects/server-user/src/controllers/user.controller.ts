@@ -5,7 +5,7 @@ import {
   ReqQuery,
   Session,
 } from "server";
-import { isEmail } from "validator";
+import validator from "validator";
 import { CreateUserDTO, LoginDTO, QueryDTO } from "../dto";
 import { RoleModel, UserModel } from "../models";
 
@@ -16,7 +16,7 @@ export class UserController {
    * @throws NotFoundObjectError 当根据id找不到User对象时抛出
    */
   @Method()
-  async findById(@ReqQuery() query: QueryDTO) {
+  async findById(@ReqQuery() query: QueryDTO): Promise<UserModel> {
     const user = await UserModel.findById(query.id);
     if (!user) throw new NotFoundObjectError(`找不到id为${query.id}的Role对象`);
     return user.toObject();
@@ -39,7 +39,7 @@ export class UserController {
       userData,
     });
     await user.save();
-    return user.id;
+    return user.id as string;
   }
 
   /**
@@ -48,7 +48,7 @@ export class UserController {
    */
   @Method({ type: "POST" })
   async login(data: LoginDTO, session: Session<RegularSessionData>) {
-    const is_email = isEmail(data.loginNameOrEmail);
+    const is_email = validator.isEmail(data.loginNameOrEmail);
     let user;
     if (is_email) {
       user = await UserModel.findOne({

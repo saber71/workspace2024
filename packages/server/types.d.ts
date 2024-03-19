@@ -226,7 +226,10 @@ declare type LogLevel =
 
 /* 处理日志相关 */
 declare interface LoggerInterface {
-  log(level: LogLevel, message: string | Error): void;
+  log(
+    level: LogLevel,
+    message: string | Error | import("src").ServerRequest,
+  ): void;
 }
 
 /* 在执行路由对应的方法前执行，如果请求不合法可以抛出错误打断请求流程 */
@@ -246,4 +249,26 @@ declare interface RegularResponseBody<T = undefined> {
 /* 内置的session数据格式 */
 declare interface RegularSessionData {
   userId: string;
+}
+
+/* 用于生成Provider的元数据 */
+declare interface ProviderMetadata {
+  [controllerClassName: string]: {
+    [methodName: string]: {
+      type: MethodType;
+      url: string;
+      parameters: Array<
+        | undefined
+        | {
+            isQuery?: boolean;
+            isBody?: boolean;
+            isFile?: string;
+            isFiles?: string;
+            isSession?: boolean;
+            isReq?: boolean;
+            isRes?: boolean;
+          }
+      >;
+    };
+  };
 }

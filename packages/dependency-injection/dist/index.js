@@ -174,6 +174,7 @@ import EventEmitter from 'eventemitter3';
             }
             if (typeLabel) methodParameterTypes.types[index] = typeLabel;
             if (typeValueGetter) methodParameterTypes.getters[index] = typeValueGetter;
+            option?.afterExecute?.(metadata, metadata.clazz.name, propName, index);
         } else {
             /* 属性或方法装饰器 */ const metadata = Metadata.getOrCreateMetadata(clazz);
             const types = Reflect.getMetadata("design:paramtypes", clazz, propName);
@@ -188,6 +189,7 @@ import EventEmitter from 'eventemitter3';
                     getter: typeValueGetter
                 };
             }
+            option?.afterExecute?.(metadata, metadata.clazz.name, propName);
         }
     };
 }
@@ -202,6 +204,7 @@ import EventEmitter from 'eventemitter3';
    * 会继承父容器中的可依赖注入对象，并将生成实例时的上下文环境替换成此实例
    * 在取消继承时删除之
    */ extend(parent) {
+        if (this._extend === parent) return this;
         if (this._extend) {
             this._extend.off("loadClass", this._onLoadClass, this);
             Array.from(this._memberMap.values()).filter((member)=>member.isExtend).forEach((member)=>{
@@ -369,7 +372,7 @@ import EventEmitter from 'eventemitter3';
                         instance[propName] = this._getFieldValue(fieldTypes[propName]);
                     }
                     creating.delete(member.name);
-                    metadata.onCreate(instance);
+                    metadata.onCreate?.(instance);
                     return instance;
                 };
                 if (metadata.createImmediately) createImmediately.push(member);

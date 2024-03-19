@@ -1,4 +1,4 @@
-import { LoadableContainer } from "dependency-injection";
+import { LoadableContainer, Metadata } from "dependency-injection";
 import { describe, expect, test } from "vitest";
 import { NotFoundRouteHandlerError, RouteManager } from "../src";
 import { UserController } from "./util/user.controller";
@@ -15,12 +15,19 @@ describe("route-manager", () => {
   });
 
   test("getRouteHandler", () => {
-    expect(RouteManager.getRouteHandler("GET", "/user/api/find-by-id")).toEqual(
-      {
-        controllerClass: UserController,
-        methodName: "findById",
-      },
-    );
+    const handler = RouteManager.getRouteHandler("GET", "/user/api/find-by-id");
+    expect(handler).toEqual({
+      controllerClass: UserController,
+      methodName: "findById",
+    });
+
+    const metadata = Metadata.getOrCreateMetadata(handler.controllerClass);
+    expect(
+      metadata.userData[
+        handler.controllerClass.name + "." + handler.methodName + ".0"
+      ],
+    ).toEqual({ isQuery: true });
+
     expect(RouteManager.getRouteHandler("POST", "/user/post/postData")).toEqual(
       {
         controllerClass: UserController,

@@ -16,6 +16,7 @@ export default defineConfig({
         "node:url",
         "node:path",
         "http-proxy-middleware",
+        "uuid",
       ],
     },
     lib: {

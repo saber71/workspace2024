@@ -7,7 +7,7 @@ export function ReqFile(fieldName: string) {
   return Inject({
     typeValueGetter: (container: Container) => {
       const request = container.getValue(ServerRequest);
-      if (!request.files) throw new NotFoundFileError();
+      if (!request.files) throw new NotFoundFileError("未找到上传文件");
       const files = request.files[fieldName];
       if (!files) throw new NotFoundFileError(`字段${fieldName}的文件不存在`);
       if (files instanceof Array)
@@ -16,5 +16,9 @@ export function ReqFile(fieldName: string) {
         );
       return files;
     },
+    afterExecute: (metadata, ...args) =>
+      (metadata.userData[args.join(".")] = {
+        isFile: fieldName,
+      }),
   });
 }

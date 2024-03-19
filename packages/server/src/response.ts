@@ -5,6 +5,9 @@ export class ServerResponse<Original extends object = object> {
   /* Web框架的原响应对象 */
   readonly original: Original;
 
+  /* 响应对象id，与ServerRequest对象的id一致 */
+  readonly id: string;
+
   /* 响应头 */
   readonly headers: OutgoingHttpHeaders;
 

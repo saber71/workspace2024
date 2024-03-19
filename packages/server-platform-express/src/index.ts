@@ -6,12 +6,12 @@ import express, {
 } from "express";
 import session from "express-session";
 import formidableMiddleware from "express-formidable";
-import * as fs from "fs";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { URL } from "node:url";
 import * as qs from "node:querystring";
 import * as path from "node:path";
 import type { ServerRequest, ServerResponse } from "server";
+import { v4 } from "uuid";
 
 export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
   const app = express();
@@ -87,8 +87,9 @@ export function createServerPlatformExpress(): ServerPlatformAdapter<Express> {
 
 function getRouteHandler(object: RouteHandlerObject) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const request = createServerRequest(req);
-    const response = createServerResponse(req, res);
+    const id = v4();
+    const request = createServerRequest(req, id);
+    const response = createServerResponse(req, res, id);
     try {
       await object.handle(request, response);
     } catch (e) {
@@ -98,8 +99,11 @@ function getRouteHandler(object: RouteHandlerObject) {
   };
 }
 
-export function createServerRequest(req: Request): ServerRequest<Request> {
-  const url = new URL("http://" + req.headers.host + req.url);
+export function createServerRequest(
+  req: Request,
+  id: string,
+): ServerRequest<Request> {
+  const url = new URL(req.protocol + "://" + req.headers.host + req.url);
   const querystring = url.search.substring(1);
 
   let body: any = req.body;
@@ -141,12 +145,16 @@ export function createServerRequest(req: Request): ServerRequest<Request> {
     body,
     session: req.session,
     files: req.files,
+    get id() {
+      return id;
+    },
   };
 }
 
 export function createServerResponse(
   req: Request,
   res: Response,
+  id: string,
 ): ServerResponse<Response> {
   const headers = new Proxy(
     {},
@@ -174,6 +182,9 @@ export function createServerResponse(
     },
     get session() {
       return req.session;
+    },
+    get id() {
+      return id;
     },
 
     original: res,

@@ -16,6 +16,10 @@ const validatedKey = Symbol("validated");
 export function ParserAndValidate(
   option: ParserAndValidator & {
     typeValueGetter: (container: Container) => any;
+    afterExecute?: (
+      metadata: Metadata,
+      ...args: Array<string | number>
+    ) => void;
   },
 ) {
   let targetObject: any,
@@ -40,6 +44,7 @@ export function ParserAndValidate(
       }
       return value;
     },
+    afterExecute: option.afterExecute,
   });
   return (target: any, methodName?: any, index?: any) => {
     inject(target, methodName, index);

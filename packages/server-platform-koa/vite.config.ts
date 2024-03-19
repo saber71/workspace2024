@@ -18,6 +18,7 @@ export default defineConfig({
         "koa-session",
         "node:path",
         "koa-proxies",
+        "uuid",
       ],
     },
     lib: {

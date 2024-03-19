@@ -5,5 +5,9 @@ import { ServerRequest } from "../request";
 export function ReqSession() {
   return Inject({
     typeValueGetter: (container) => container.getValue(ServerRequest).session,
+    afterExecute: (metadata, ...args) =>
+      (metadata.userData[args.join(".")] = {
+        isSession: true,
+      }),
   });
 }

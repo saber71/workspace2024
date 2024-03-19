@@ -6,5 +6,9 @@ export function ReqQuery(option?: ParserAndValidator) {
   return ParserAndValidate({
     ...option,
     typeValueGetter: (container) => container.getValue(ServerRequest).query,
+    afterExecute: (metadata, ...args) =>
+      (metadata.userData[args.join(".")] = {
+        isQuery: true,
+      }),
   });
 }

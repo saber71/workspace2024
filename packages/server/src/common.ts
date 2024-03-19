@@ -1,24 +1,6 @@
 import { Metadata } from "dependency-injection";
 import { ServerError } from "./errors";
 
-/* 组装url */
-export function composeUrl(...items: string[]) {
-  return (
-    "/" +
-    items
-      .map(removeHeadTailSlash)
-      .filter((str) => str.length > 0)
-      .join("/")
-  );
-}
-
-/* 删除头尾的斜线 */
-export function removeHeadTailSlash(str: string) {
-  while (str[0] === "/") str = str.slice(1);
-  while (str[str.length - 1] === "/") str = str.slice(0, str.length - 1);
-  return str;
-}
-
 /* 得到或新建专给server库使用的userData */
 export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
   const metadata = Metadata.getOrCreateMetadata(obj);

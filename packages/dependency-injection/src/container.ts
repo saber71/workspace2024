@@ -18,6 +18,7 @@ export class Container extends EventEmitter<{
    * 在取消继承时删除之
    */
   extend(parent?: Container) {
+    if (this._extend === parent) return this;
     if (this._extend) {
       this._extend.off("loadClass", this._onLoadClass, this);
       Array.from(this._memberMap.values())
@@ -255,7 +256,7 @@ export class LoadableContainer extends Container {
             instance[propName] = this._getFieldValue(fieldTypes[propName]);
           }
           creating.delete(member.name);
-          metadata.onCreate(instance);
+          metadata.onCreate?.(instance);
           return instance;
         };
         if (metadata.createImmediately) createImmediately.push(member);

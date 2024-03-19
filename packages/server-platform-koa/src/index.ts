@@ -9,6 +9,7 @@ import staticServe from "koa-static";
 import path from "node:path";
 import type { ServerRequest, ServerResponse } from "server";
 import proxy from "koa-proxies";
+import { v4 } from "uuid";
 
 export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
   const app = new Koa();
@@ -61,8 +62,9 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
 
       function getHandler(object: RouteHandlerObject) {
         return async (ctx: Koa.ParameterizedContext, next: () => void) => {
-          const req = createServerRequest(ctx);
-          const res = createServerResponse(ctx);
+          const id = v4();
+          const req = createServerRequest(ctx, id);
+          const res = createServerResponse(ctx, id);
           try {
             await object.handle(req, res);
           } catch (e) {
@@ -94,6 +96,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
 
 export function createServerRequest(
   ctx: Koa.ParameterizedContext,
+  id: string,
 ): ServerRequest<Koa.Request> {
   return {
     original: ctx.request,
@@ -112,16 +115,23 @@ export function createServerRequest(
     body: ctx.request.body,
     files: ctx.request.files,
     session: ctx.session,
+    get id() {
+      return id;
+    },
   };
 }
 
 export function createServerResponse(
   ctx: ParameterizedContext,
+  id: string,
 ): ServerResponse<Koa.Response> {
   return {
     original: ctx.response,
     headers: ctx.response.headers,
 
+    get id() {
+      return id;
+    },
     get session() {
       return ctx.session;
     },

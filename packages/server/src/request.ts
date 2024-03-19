@@ -7,6 +7,9 @@ export class ServerRequest<Original extends object = object> {
   /* Web框架的原请求对象 */
   readonly original: Original;
 
+  /* 本次请求的id */
+  readonly id: string;
+
   /* 读取session内容 */
   readonly session: Readonly<Record<string, any>> | null;
 

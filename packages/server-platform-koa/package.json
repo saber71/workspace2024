@@ -17,6 +17,7 @@
     "koa-session": "^6.4.0",
     "koa-proxies": "^0.12.4",
     "koa-static": "^5.0.0",
-    "server": "workspace:^"
+    "server": "workspace:^",
+    "uuid": "^9.0.1"
   }
 }

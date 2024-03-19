@@ -78,7 +78,7 @@ export class Metadata {
   /* 当Injectable装饰的类生成实例时调用 */
   onCreate?: (instance: object) => void;
 
-  /* 保存方法的入参类型。方法名为key */
+  /* 保存方法的入参类型。key为方法名 */
   readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes> =
     {};
 
