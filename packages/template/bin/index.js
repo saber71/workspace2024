@@ -75,6 +75,7 @@ function setupTypesAndSrc() {
         isDir: true,
     }, {
         path: path.resolve(projectPath, "src", "index.ts"),
+        content: `///<reference types="../types.d.ts"/>\n`,
     }, {
         path: path.resolve(projectPath, "types.d.ts"),
     });
