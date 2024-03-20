@@ -45,7 +45,7 @@ const waitWriteContents: Array<{
 const workspaceRoot = enterWorkspaceRoot("workspace2024");
 const templateBinDir = path.join(workspaceRoot, "packages", "template", "bin");
 
-axios.defaults.baseURL = getNpmRegistry();
+const npmRegistry = getNpmRegistry();
 
 const chosenType = await chooseType([
   ProjectType.Packages,
@@ -68,6 +68,7 @@ if (chosenType === ProjectType.Packages) {
 }
 
 setupTsConfig();
+setupPackageJson();
 outputFile();
 process.exit();
 
@@ -212,6 +213,37 @@ export default defineConfig({
   }
 }
 
+function setupPackageJson() {
+  waitWriteContents.push({
+    path: path.resolve(projectPath, "package.json"),
+    content() {
+      if (isBin) {
+        const dependenciesContent = dependencies.map(
+          (item) => `    "${item.name}": "${item.version || "workspace:*"}"`,
+        );
+        let template = fs.readFileSync(
+          path.resolve(templateBinDir, "package-json.bin.template"),
+          "utf8",
+        );
+        template = template
+          .replace("$NAME$", projectName)
+          .replace("$BIN_NAME$", binName);
+        if (dependenciesContent.length)
+          template = template.replace(
+            "$SLOT$",
+            `,
+  "dependencies": {
+${dependenciesContent.join(",\n")}
+  }`,
+          );
+        else template = template.replace("$SLOT$", "");
+        return template;
+      }
+      return "";
+    },
+  });
+}
+
 function outputFile() {
   try {
     fs.mkdirSync(projectPath);
@@ -225,8 +257,9 @@ function outputFile() {
         fs.writeFileSync(waitWriteContent.path, content || "");
       }
     }
+    term.green("\ndone!\n");
   } catch (e) {
-    fs.rmdirSync(projectPath);
+    fs.rmSync(projectPath, { recursive: true, force: true });
     throw e;
   }
 }
@@ -327,9 +360,10 @@ async function inputDependencies() {
   function input() {
     return new Promise<Dependency | undefined>((resolve, reject) => {
       br();
-      term.cyan("请输入需要的依赖名（esc或直接按enter跳过）：");
+      term.cyan("请输入需要的依赖名（esc或直接enter跳过）：");
       term.inputField(
         {
+          autoCompleteMenu: true,
           autoComplete: async (inputString: string) => {
             const builtin = workspaceDependencies.filter((item) =>
               item.includes(inputString),
@@ -339,6 +373,7 @@ async function inputDependencies() {
                 params: { q: inputString },
               })
               .catch(() => ({ data: [] }));
+            // .catch(() => ({ data: [] }));
             if (data instanceof Array) {
               data.forEach((item) => (versionMap[item.name] = item.version));
               data = data.map((item: any) => item.name);
@@ -356,7 +391,7 @@ async function inputDependencies() {
             if (res in versionMap)
               resolve({ name: res, version: versionMap[res] });
             else {
-              const { data } = await axios.get("/" + res + "/latest");
+              const { data } = await axios.get(npmRegistry + res + "/latest");
               if (data?.version) {
                 resolve({
                   name: res,
