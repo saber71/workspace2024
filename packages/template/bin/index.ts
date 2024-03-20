@@ -1,5 +1,5 @@
+#!/usr/bin/env node
 import axios from "axios";
-import { remove } from "common";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as process from "node:process";
@@ -32,6 +32,7 @@ let isBin = false;
 let binName = "";
 let isBrowser = false;
 let useVite = false;
+let useVitest = false;
 let useVue = false;
 let useVueJsx = false;
 let useDecorator = false;
@@ -60,17 +61,51 @@ if (chosenType === ProjectType.Packages) {
     await addDependencies();
   } else {
     await useViteOrNot();
-    await useVueOrNot();
-    if (useVue) await useVueJsxOrNot();
+    if (useVite) {
+      await useVueOrNot();
+      if (useVue) await useVueJsxOrNot();
+      await useVitestOrNot();
+    }
+    await addPeerDependencies();
+    setupTypesAndSrc();
   }
 } else {
-  await isBrowserOrNot();
+  term.red("\nNot support projects yet\n");
+  process.exit();
+  // await isBrowserOrNot();
 }
 
 setupTsConfig();
 setupPackageJson();
 outputFile();
+
 process.exit();
+
+function setupTypesAndSrc() {
+  waitWriteContents.push(
+    {
+      path: path.resolve(projectPath, "src"),
+      isDir: true,
+    },
+    {
+      path: path.resolve(projectPath, "src", "index.ts"),
+    },
+    {
+      path: path.resolve(projectPath, "types.d.ts"),
+    },
+  );
+}
+
+async function addPeerDependencies() {
+  const result = await inputDependencies();
+  peerDependencies.push(
+    ...result.map((item) => ({
+      name: item.name,
+      version: item.version ? "^" + item.version : "workspace:^",
+    })),
+  );
+  externalDependencies.push(...peerDependencies.map((item) => item.name));
+}
 
 async function addDependencies() {
   const result = await inputDependencies();
@@ -80,6 +115,7 @@ async function addDependencies() {
       version: item.version || "workspace:*",
     })),
   );
+  externalDependencies.push(...dependencies.map((item) => item.name));
 }
 
 function inputBinName() {
@@ -127,6 +163,7 @@ async function isBinOrNot() {
       },
       {
         path: path.join(projectPath, "bin", "index.ts"),
+        content: `#!/usr/bin/env node\n`,
       },
     );
   }
@@ -153,6 +190,19 @@ function setupTsConfig() {
         );
     },
   });
+}
+
+async function useVitestOrNot() {
+  useVitest = await yesOrNot("是否使用Vitest？", true);
+  if (useVitest) {
+    waitWriteContents.push({
+      path: path.resolve(projectPath, "vitest.config.ts"),
+      content: fs.readFileSync(
+        path.resolve(templateBinDir, "vitest.config.template"),
+        "utf8",
+      ),
+    });
+  }
 }
 
 async function useViteOrNot() {
@@ -219,7 +269,7 @@ function setupPackageJson() {
     content() {
       if (isBin) {
         const dependenciesContent = dependencies.map(
-          (item) => `    "${item.name}": "${item.version || "workspace:*"}"`,
+          (item) => `    "${item.name}": "${item.version}"`,
         );
         let template = fs.readFileSync(
           path.resolve(templateBinDir, "package-json.bin.template"),
@@ -237,6 +287,31 @@ ${dependenciesContent.join(",\n")}
   }`,
           );
         else template = template.replace("$SLOT$", "");
+        return template;
+      } else if (chosenType === ProjectType.Packages) {
+        const peerDependenciesContent = peerDependencies.map(
+          (item) => `    "${item.name}": "${item.version}"`,
+        );
+        let template = fs.readFileSync(
+          path.resolve(templateBinDir, "package-json.package.template"),
+          "utf8",
+        );
+        template = template.replace("$NAME$", projectName);
+        if (peerDependenciesContent.length)
+          template = template.replace(
+            "$SLOT$",
+            `,
+  "peerDependencies": {
+${peerDependenciesContent.join(",\n")}
+  }`,
+          );
+        else template = template.replace("$SLOT$", "");
+        if (useVitest)
+          template = template.replace(
+            "$SCRIPT_SLOT$",
+            ',\n    "test": "vitest"',
+          );
+        else template = template.replace("$SCRIPT_SLOT$", "");
         return template;
       }
       return "";
@@ -257,7 +332,7 @@ function outputFile() {
         fs.writeFileSync(waitWriteContent.path, content || "");
       }
     }
-    term.green("\ndone!\n");
+    term.green("\nDone!\n");
   } catch (e) {
     fs.rmSync(projectPath, { recursive: true, force: true });
     throw e;

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import axios from "axios";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -28,6 +29,7 @@ let isBin = false;
 let binName = "";
 let isBrowser = false;
 let useVite = false;
+let useVitest = false;
 let useVue = false;
 let useVueJsx = false;
 let useDecorator = false;
@@ -48,24 +50,50 @@ if (chosenType === ProjectType.Packages) {
     }
     else {
         await useViteOrNot();
-        await useVueOrNot();
-        if (useVue)
-            await useVueJsxOrNot();
+        if (useVite) {
+            await useVueOrNot();
+            if (useVue)
+                await useVueJsxOrNot();
+            await useVitestOrNot();
+        }
+        await addPeerDependencies();
+        setupTypesAndSrc();
     }
 }
 else {
-    await isBrowserOrNot();
+    term.red("\nNot support projects yet\n");
+    process.exit();
+    // await isBrowserOrNot();
 }
 setupTsConfig();
 setupPackageJson();
 outputFile();
 process.exit();
+function setupTypesAndSrc() {
+    waitWriteContents.push({
+        path: path.resolve(projectPath, "src"),
+        isDir: true,
+    }, {
+        path: path.resolve(projectPath, "src", "index.ts"),
+    }, {
+        path: path.resolve(projectPath, "types.d.ts"),
+    });
+}
+async function addPeerDependencies() {
+    const result = await inputDependencies();
+    peerDependencies.push(...result.map((item) => ({
+        name: item.name,
+        version: item.version ? "^" + item.version : "workspace:^",
+    })));
+    externalDependencies.push(...peerDependencies.map((item) => item.name));
+}
 async function addDependencies() {
     const result = await inputDependencies();
     dependencies.push(...result.map((item) => ({
         name: item.name,
         version: item.version || "workspace:*",
     })));
+    externalDependencies.push(...dependencies.map((item) => item.name));
 }
 function inputBinName() {
     return new Promise((resolve, reject) => {
@@ -109,6 +137,7 @@ async function isBinOrNot() {
             isDir: true,
         }, {
             path: path.join(projectPath, "bin", "index.ts"),
+            content: `#!/usr/bin/env node\n`,
         });
     }
 }
@@ -124,6 +153,15 @@ function setupTsConfig() {
                 return fs.readFileSync(path.join(templateBinDir, "tsconfig.projects.json"), "utf8");
         },
     });
+}
+async function useVitestOrNot() {
+    useVitest = await yesOrNot("是否使用Vitest？", true);
+    if (useVitest) {
+        waitWriteContents.push({
+            path: path.resolve(projectPath, "vitest.config.ts"),
+            content: fs.readFileSync(path.resolve(templateBinDir, "vitest.config.template"), "utf8"),
+        });
+    }
 }
 async function useViteOrNot() {
     useVite = await yesOrNot("是否使用Vite？", true);
@@ -186,7 +224,7 @@ function setupPackageJson() {
         path: path.resolve(projectPath, "package.json"),
         content() {
             if (isBin) {
-                const dependenciesContent = dependencies.map((item) => `    "${item.name}": "${item.version || "workspace:*"}"`);
+                const dependenciesContent = dependencies.map((item) => `    "${item.name}": "${item.version}"`);
                 let template = fs.readFileSync(path.resolve(templateBinDir, "package-json.bin.template"), "utf8");
                 template = template
                     .replace("$NAME$", projectName)
@@ -198,6 +236,23 @@ ${dependenciesContent.join(",\n")}
   }`);
                 else
                     template = template.replace("$SLOT$", "");
+                return template;
+            }
+            else if (chosenType === ProjectType.Packages) {
+                const peerDependenciesContent = peerDependencies.map((item) => `    "${item.name}": "${item.version}"`);
+                let template = fs.readFileSync(path.resolve(templateBinDir, "package-json.package.template"), "utf8");
+                template = template.replace("$NAME$", projectName);
+                if (peerDependenciesContent.length)
+                    template = template.replace("$SLOT$", `,
+  "peerDependencies": {
+${peerDependenciesContent.join(",\n")}
+  }`);
+                else
+                    template = template.replace("$SLOT$", "");
+                if (useVitest)
+                    template = template.replace("$SCRIPT_SLOT$", ',\n    "test": "vitest"');
+                else
+                    template = template.replace("$SCRIPT_SLOT$", "");
                 return template;
             }
             return "";
@@ -217,7 +272,7 @@ function outputFile() {
                 fs.writeFileSync(waitWriteContent.path, content || "");
             }
         }
-        term.green("\ndone!\n");
+        term.green("\nDone!\n");
     }
     catch (e) {
         fs.rmSync(projectPath, { recursive: true, force: true });
