@@ -16,6 +16,7 @@
     "dependency-injection": "workspace:^"
   },
   "devDependencies": {
+    "form-data": "4.0.0",
     "http-test": "workspace:*",
     "server-platform-express": "workspace:*",
     "server-platform-koa": "workspace:*"
