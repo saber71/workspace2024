@@ -5,18 +5,6 @@ import * as path from "node:path";
 import * as process from "node:process";
 import terminal from "terminal-kit";
 const term = terminal.terminal;
-const workspaceDependencies = [
-    "class-validator",
-    "common",
-    "dependency-injection",
-    "http-test",
-    "server",
-    "server-api-provider",
-    "server-platform-express",
-    "server-platform-koa",
-    "vue-auto-route",
-    "vue-class",
-];
 var ProjectType;
 (function (ProjectType) {
     ProjectType["Packages"] = "packages";
@@ -35,6 +23,7 @@ let useVueJsx = false;
 let useDecorator = false;
 const waitWriteContents = [];
 const workspaceRoot = enterWorkspaceRoot("workspace2024");
+const workspacePackages = fs.readdirSync(path.join(workspaceRoot, "packages"));
 const templateBinDir = path.join(workspaceRoot, "packages", "template", "bin");
 const npmRegistry = getNpmRegistry();
 const chosenType = await chooseType([
@@ -363,7 +352,7 @@ function yesOrNot(prompt, defaultYes) {
 }
 async function inputDependencies() {
     const versionMap = {};
-    workspaceDependencies.forEach((item) => (versionMap[item] = ""));
+    workspacePackages.forEach((item) => (versionMap[item] = ""));
     const result = [];
     while (true) {
         const dep = await input();
@@ -379,7 +368,7 @@ async function inputDependencies() {
             term.inputField({
                 autoCompleteMenu: true,
                 autoComplete: async (inputString) => {
-                    const builtin = workspaceDependencies.filter((item) => item.includes(inputString));
+                    const builtin = workspacePackages.filter((item) => item.includes(inputString));
                     let { data } = await axios
                         .get("https://www.npmjs.com/search/suggestions", {
                         params: { q: inputString },

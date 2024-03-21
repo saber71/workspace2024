@@ -7,19 +7,6 @@ import terminal from "terminal-kit";
 
 const term = terminal.terminal;
 
-const workspaceDependencies = [
-  "class-validator",
-  "common",
-  "dependency-injection",
-  "http-test",
-  "server",
-  "server-api-provider",
-  "server-platform-express",
-  "server-platform-koa",
-  "vue-auto-route",
-  "vue-class",
-];
-
 enum ProjectType {
   Packages = "packages",
   Projects = "projects",
@@ -44,6 +31,10 @@ const waitWriteContents: Array<{
 }> = [];
 
 const workspaceRoot = enterWorkspaceRoot("workspace2024");
+const workspacePackages: string[] = fs.readdirSync(
+  path.join(workspaceRoot, "packages"),
+);
+
 const templateBinDir = path.join(workspaceRoot, "packages", "template", "bin");
 
 const npmRegistry = getNpmRegistry();
@@ -424,7 +415,7 @@ function yesOrNot(prompt: string, defaultYes: boolean) {
 
 async function inputDependencies() {
   const versionMap: Record<string, string> = {};
-  workspaceDependencies.forEach((item) => (versionMap[item] = ""));
+  workspacePackages.forEach((item) => (versionMap[item] = ""));
   const result: Dependency[] = [];
   while (true) {
     const dep = await input();
@@ -441,7 +432,7 @@ async function inputDependencies() {
         {
           autoCompleteMenu: true,
           autoComplete: async (inputString: string) => {
-            const builtin = workspaceDependencies.filter((item) =>
+            const builtin = workspacePackages.filter((item) =>
               item.includes(inputString),
             );
             let { data } = await axios
