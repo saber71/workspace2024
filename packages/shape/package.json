@@ -1,0 +1,18 @@
+{
+  "name": "shape",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "test": "vitest"
+  },
+  "peerDependencies": {
+    "d3-shape": "^3.2.0",
+    "eventemitter3": "^5.0.1",
+    "svg-intersections": "^0.4.0",
+    "transform": "workspace:^"
+  }
+}
