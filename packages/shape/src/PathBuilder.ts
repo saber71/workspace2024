@@ -41,11 +41,39 @@ export class PathBuilder {
     return this;
   }
 
-  addPoints(points: ReadonlyArray<Vec2>): this {
+  addPoints(
+    points: ReadonlyArray<Vec2>,
+    option: { cornerRadius?: number; close?: boolean } = {},
+  ): this {
     if (points.length === 0) return this;
-    this.moveTo(points[0][0], points[0][1]);
-    for (let i = 1; i < points.length; i++) {
-      this.lineTo(points[i][0], points[i][1]);
+    let { cornerRadius = 0, close = false } = option;
+    if (points.length <= 2) {
+      close = false;
+      cornerRadius = 0;
+    }
+    if (!close || cornerRadius === 0) {
+      if (!this._d) this.moveTo(points[0][0], points[0][1]);
+    }
+    if (cornerRadius === 0) {
+      for (let i = 1; i < points.length; i++) {
+        this.lineTo(points[i][0], points[i][1]);
+      }
+      if (close) this.closePath();
+    } else {
+      if (close) {
+        const ps = points.slice();
+        ps.unshift(points.at(-1)!);
+        ps.push(points[0]);
+        points = ps;
+      }
+      for (let i = 1; i < points.length - 1; i++) {
+        this.roundCorner(points[i - 1], points[i], points[i + 1], cornerRadius);
+      }
+      if (close) this.closePath();
+      else {
+        const last = points.at(-1)!;
+        this.lineTo(last[0], last[1]);
+      }
     }
     return this;
   }
@@ -275,7 +303,7 @@ export class PathBuilder {
     y: number,
     width: number,
     height: number,
-    corner?: Partial<Corner>,
+    corner?: Partial<Corner> | number,
   ): this {
     const cornerRadius: Corner = {
       leftTop: 0,
@@ -283,7 +311,14 @@ export class PathBuilder {
       leftBottom: 0,
       rightBottom: 0,
     };
-    if (corner) Object.assign(cornerRadius, corner);
+    if (typeof corner === "object" && corner)
+      Object.assign(cornerRadius, corner);
+    else if (typeof corner === "number")
+      cornerRadius.leftTop =
+        cornerRadius.leftBottom =
+        cornerRadius.rightBottom =
+        cornerRadius.rightTop =
+          corner;
     this.moveTo(x + cornerRadius.leftTop, y);
     this.lineTo(x + width - cornerRadius.rightTop, y);
     this.quadraticCurveTo(x + width, y, x + width, y + cornerRadius.rightTop);
@@ -305,4 +340,42 @@ export class PathBuilder {
     this.quadraticCurveTo(x, y, x + cornerRadius.leftTop, y);
     return this;
   }
+
+  roundCorner(
+    prevP: Vec2,
+    curP: Vec2,
+    nextP: Vec2,
+    radius: number,
+  ): CornerStartEnd | undefined {
+    if (radius === 0) this.lineTo(curP[0], curP[1]);
+    else {
+      vec2.subtract(direction1, prevP, curP);
+      vec2.subtract(direction2, nextP, curP);
+      vec2.normalize(direction1, direction1);
+      vec2.normalize(direction2, direction2);
+      const p1 = [
+        curP[0] + radius * direction1[0],
+        curP[1] + radius * direction1[1],
+      ];
+      const p2 = [
+        curP[0] + radius * direction2[0],
+        curP[1] + radius * direction2[1],
+      ];
+      if (!this._d) this.moveTo(p1[0], p1[1]);
+      else this.lineTo(p1[0], p1[1]);
+      this.quadraticCurveTo(curP[0], curP[1], p2[0], p2[1]);
+      return {
+        start: p1,
+        end: p2,
+      };
+    }
+  }
+}
+
+const direction1 = vec2.create();
+const direction2 = vec2.create();
+
+interface CornerStartEnd {
+  start: Vec2;
+  end: Vec2;
 }

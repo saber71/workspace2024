@@ -1,4 +1,4 @@
-import { vec2 } from "transform";
+import { PathBuilder } from "./PathBuilder";
 import { Shape } from "./Shape";
 
 export class Rect extends Shape<{
@@ -6,17 +6,16 @@ export class Rect extends Shape<{
   height: number;
   x: number;
   y: number;
+  radius?: number | Corner;
 }> {
   protected _onPropsChanged(): void {
     const { x = 0, y = 0, width = 0, height = 0 } = this.props;
-    if (width <= 0 || height <= 0) this.setPoints([]);
+    if (width <= 0 || height <= 0) this.update("");
     else
-      this.setPoints([
-        vec2.fromValues(x, y),
-        vec2.fromValues(x + width, y),
-        vec2.fromValues(x + width, y + height),
-        vec2.fromValues(x, y + height),
-        vec2.fromValues(x, y),
-      ]);
+      this.update(
+        new PathBuilder()
+          .roundRect(x, y, width, height, this.props.radius)
+          .toString(),
+      );
   }
 }

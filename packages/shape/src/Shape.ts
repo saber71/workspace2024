@@ -1,6 +1,6 @@
 import { type Transform, vec2 } from "transform";
 import { intersect, shape, Shape as SvgShape } from "svg-intersections";
-import { PathBuilder } from "./path-builder";
+import { PathBuilder } from "./PathBuilder";
 
 let pathEl: SVGPathElement | undefined;
 
@@ -13,6 +13,7 @@ export abstract class Shape<Props = any> {
   }
 
   static getPoints(svgPath: string) {
+    if (!svgPath) return [];
     if (!pathEl) {
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       document.body.append(svg);
@@ -49,6 +50,11 @@ export abstract class Shape<Props = any> {
 
   private _svgPath: string = "";
   get svgPath(): string {
+    if (!this._svgPath) {
+      if (this._points)
+        this._svgPath = new PathBuilder().addPoints(this._points).toString();
+      else throw new ShapeError("No svg path provided");
+    }
     return this._svgPath;
   }
 
@@ -69,8 +75,9 @@ export abstract class Shape<Props = any> {
   intersect(other: Shape) {
     const result = this.intersectPoint(other);
     return (
-      result.points.length ||
+      !!result.points.length ||
       result.status === "Inside" ||
+      result.status === "Outside" ||
       result.status === "Coincident"
     );
   }
@@ -79,15 +86,15 @@ export abstract class Shape<Props = any> {
     return intersect(this.svgShape, other.svgShape);
   }
 
-  update(points: string | Vec2[]) {
-    if (typeof points === "string") {
-      if (this._svgPath === points) return;
-      this._svgPath = points;
+  update(arg: string | Vec2[]) {
+    if (typeof arg === "string") {
+      if (this._svgPath === arg) return;
+      this._svgPath = arg;
       this._points = undefined;
     } else {
-      if (points.length === 0 && this._points?.length === 0) return;
-      this._points = points;
-      this._svgPath = new PathBuilder().addPoints(points).toString();
+      if (arg.length === 0 && this._points?.length === 0) return;
+      this._points = arg;
+      this._svgPath = "";
     }
     this._svgShape = undefined;
     //@ts-ignore
@@ -110,3 +117,5 @@ export abstract class Shape<Props = any> {
 
   protected abstract _onPropsChanged(): void;
 }
+
+export class ShapeError extends Error {}

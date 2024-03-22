@@ -10,7 +10,6 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "d3-path": "^3.1.0",
     "d3-shape": "^3.2.0",
     "eventemitter3": "^5.0.1",
     "svg-intersections": "^0.4.0",

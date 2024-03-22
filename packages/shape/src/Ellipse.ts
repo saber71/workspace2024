@@ -1,4 +1,4 @@
-import { PathBuilder } from "./path-builder";
+import { PathBuilder } from "./PathBuilder";
 import { Shape } from "./Shape";
 
 export class Ellipse extends Shape<{
@@ -9,10 +9,7 @@ export class Ellipse extends Shape<{
 }> {
   protected _onPropsChanged(): void {
     const { cx = 0, cy = 0, rx = 0, ry = 0 } = this.props;
-    if (rx === 0 || ry === 0) this.setPoints([]);
-    else
-      this.setPoints(
-        Shape.getPoints(new PathBuilder().ellipse(cx, cy, rx, ry).toString()),
-      );
+    if (rx === 0 || ry === 0) this.update("");
+    else this.update(new PathBuilder().ellipse(cx, cy, rx, ry).toString());
   }
 }
