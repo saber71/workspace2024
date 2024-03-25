@@ -1,5 +1,7 @@
 ///<reference types="../types.d.ts"/>
 
+import { Inject } from "dependency-injection";
+
 export class ServerStore {
   private constructor(readonly adapter: StoreAdapter) {}
 
@@ -80,4 +82,20 @@ export class StoreCollection<T extends StoreItem> {
     }
     return data as T;
   }
+}
+
+export function Store(label: string = ServerStore.name) {
+  return Inject({
+    typeValueGetter: (container) => container.getValue(label),
+  });
+}
+
+export function Collection(
+  name: string,
+  storeLabel: string = ServerStore.name,
+) {
+  return Inject({
+    typeValueGetter: (container) =>
+      container.getValue<ServerStore>(storeLabel).collection(name),
+  });
 }

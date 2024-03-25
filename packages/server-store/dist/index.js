@@ -1,3 +1,5 @@
+import { Inject } from 'dependency-injection';
+
 ///<reference types="../types.d.ts"/>
 class ServerStore {
     adapter;
@@ -58,5 +60,15 @@ class StoreCollection {
         return data;
     }
 }
+function Store(label = ServerStore.name) {
+    return Inject({
+        typeValueGetter: (container)=>container.getValue(label)
+    });
+}
+function Collection(name, storeLabel = ServerStore.name) {
+    return Inject({
+        typeValueGetter: (container)=>container.getValue(storeLabel).collection(name)
+    });
+}
 
-export { ServerStore, StoreCollection };
+export { Collection, ServerStore, Store, StoreCollection };

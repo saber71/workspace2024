@@ -1,5 +1,7 @@
 /// <reference types="../types.d.ts" />
 
+export declare function Collection(name: string, storeLabel?: string): (clazz: any, propName: any, index?: any) => void;
+
 export declare class ServerStore {
     readonly adapter: StoreAdapter;
     private constructor();
@@ -7,6 +9,8 @@ export declare class ServerStore {
     static create(adapter: StoreAdapter): Promise<ServerStore>;
     collection<T extends StoreItem>(name: string): StoreCollection<T>;
 }
+
+export declare function Store(label?: string): (clazz: any, propName: any, index?: any) => void;
 
 export declare class StoreCollection<T extends StoreItem> {
     readonly adapter: StoreAdapter;

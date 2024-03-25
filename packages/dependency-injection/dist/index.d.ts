@@ -15,6 +15,7 @@ export declare class Container extends EventEmitter<{
     extend(parent?: Container): this;
     private _onLoadClass;
     private _extendMember;
+    bindInstance<T extends object>(instance: T): this;
     /**
      * 给指定的标识符绑定值
      * @param label 标识符

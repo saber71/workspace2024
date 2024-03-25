@@ -64,7 +64,7 @@ import EventEmitter from 'eventemitter3';
     /* 类是否立即实例化 */ createImmediately;
     copiedConstructorParams;
     /* 当Injectable装饰的类生成实例时调用 */ onCreate;
-    /* 保存方法的入参类型。方法名为key */ methodNameMapParameterTypes;
+    /* 保存方法的入参类型。key为方法名 */ methodNameMapParameterTypes;
     /* 字段名映射其类型名 */ _fieldTypes;
     get fieldTypes() {
         return this._fieldTypes;
@@ -232,6 +232,9 @@ import EventEmitter from 'eventemitter3';
                 isExtend: true
             });
         }
+    }
+    /* 给定的类实例，以类名为标识符绑定至容器中 */ bindInstance(instance) {
+        return this.bindValue(instance.constructor.name, instance);
     }
     /**
    * 给指定的标识符绑定值
