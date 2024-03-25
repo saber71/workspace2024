@@ -4,6 +4,8 @@
 /* 保存数据的基础类型 */
 declare interface StoreItem {
   _id: string;
+
+  [key: string]: any;
 }
 
 /* 分页查询结果 */
@@ -17,52 +19,68 @@ declare interface PaginationResult<T extends StoreItem> {
 /* 存储器的适配器，由子类实现具体的存储逻辑，以及查询逻辑 */
 declare interface StoreAdapter<T extends StoreItem = StoreItem> {
   /* 新增数据 */
-  add(...items: T[]): string[];
+  add(
+    collectionName: string,
+    ...items: (T & { _id?: string })[]
+  ): Promise<string[]>;
 
   /* 更新数据 */
-  update(...items: T[]): void;
+  update(collectionName: string, ...items: T[]): Promise<void>;
 
   /* 查询数据。查询条件为空返回所有数据 */
-  search(condition?: FilterCondition<T>): T[];
+  search(
+    collectionName: string,
+    condition?: FilterCondition<T>,
+    sortOrders?: SortOrders,
+  ): Promise<T[]>;
 
   /* 分页查询。查询条件为空则查询所有数据 */
   paginationSearch(
+    collectionName: string,
     condition: FilterCondition<T> | undefined | null,
     curPage: number,
     pageSize: number,
-  ): PaginationResult<T>;
+    sortOrders?: SortOrders,
+  ): Promise<PaginationResult<T>>;
 
   /* 删除数据，返回被删除数据的id。查询条件为空删除所有数据 */
-  delete(condition?: FilterCondition<T>): string[];
+  delete(
+    collectionName: string,
+    condition?: FilterCondition<T>,
+  ): Promise<string[]>;
+
+  init(): Promise<void>;
 }
 
 declare interface Condition<Value> {
-  less?: Value;
-  lessEqual?: Value;
-  greater?: Value;
-  greaterEqual?: Value;
-  not?: Value;
-  dateBefore?: Date | number;
-  dateAfter?: Date | number;
+  $less?: Value;
+  $lessEqual?: Value;
+  $greater?: Value;
+  $greaterEqual?: Value;
+  $not?: Value;
+  $dateBefore?: Date | number;
+  $dateAfter?: Date | number;
   /* 数据满足任一条件即可 */
-  or?: Condition<Value>[];
-  /* or取反 */
-  nor?: Condition<Value>[];
+  $or?: Partial<Condition<Value>>[];
+  /* or取反, 条件都不满足时即可 */
+  $nor?: Partial<Condition<Value>>[];
   /* 值是否在集合中 */
-  in?: Value[];
+  $in?: Value[];
   /* 值是否不在集合中 */
-  notIn?: Value[];
+  $notIn?: Value[];
   /* 适用于数组或字符串。数组或字符串是否包含指定的集合或字符串 */
-  contains: Value[] | Value;
+  $contains: Value[] | Value;
   /* 适用于数组或字符串。数组或字符串是否不包含指定的集合或字符串 */
-  notContains: Value[] | Value;
+  $notContains: Value[] | Value;
+  $match: RegExp | string;
 }
 
-declare type FilterCondition<TSchema extends StoreItem> =
-  | {
-      [P in keyof TSchema]?: TSchema[P] | Condition<TSchema[P]>;
-    }
-  | {
-      or?: FilterCondition<TSchema>;
-      nor?: FilterCondition<TSchema>;
-    };
+declare type FilterCondition<TSchema extends StoreItem> = Partial<{
+  [P in keyof TSchema]?: TSchema[P] | Partial<Condition<TSchema[P]>>;
+}> &
+  Partial<{
+    $or: FilterCondition<TSchema>[];
+    $nor: FilterCondition<TSchema>[];
+  }>;
+
+declare type SortOrders = Array<{ order: "asc" | "desc"; field: string }>;
