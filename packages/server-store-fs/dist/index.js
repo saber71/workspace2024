@@ -16,7 +16,8 @@ function createServerStoreFS(basePath = path.resolve(".")) {
             const ids = [];
             for (let item of items){
                 item._id = item._id ?? v4();
-                collection.data[item._id] = item;
+                if (item._id in collection.data) throw new Error("Failed to insert data: Duplicate id");
+                collection.data[item._id] = Object.assign({}, item);
                 ids.push(item._id);
             }
             return Promise.resolve(ids);
@@ -56,11 +57,15 @@ function createServerStoreFS(basePath = path.resolve(".")) {
     };
     function initCollections() {
         const collections = new Map();
-        const dirs = fs.readdirSync(basePath);
-        for (let dirName of dirs){
-            const filePath = path.join(basePath, dirName);
+        const subNames = fs.readdirSync(basePath);
+        for (let sub of subNames){
+            const filePath = path.join(basePath, sub);
+            if (fs.lstatSync(filePath).isDirectory()) continue;
             const content = fs.readFileSync(filePath, "utf8");
-            collections.set(dirName, JSON.parse(content));
+            collections.set(sub, {
+                path: filePath,
+                data: JSON.parse(content)
+            });
         }
         return collections;
     }

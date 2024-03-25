@@ -12,5 +12,8 @@
   "peerDependencies": {
     "dependency-injection": "workspace:^",
     "server": "workspace:^"
+  },
+  "devDependencies": {
+    "server-store-fs": "workspace:*"
   }
 }

@@ -5,8 +5,13 @@
 declare interface StoreItem {
   _id: string;
 
-  [key: string]: any;
+  [key: string | symbol]: any;
 }
+
+declare type PartialStoreItem<T extends StoreItem> = Omit<T, "_id"> &
+  Partial<{
+    _id: string;
+  }>;
 
 /* 分页查询结果 */
 declare interface PaginationResult<T extends StoreItem> {
@@ -17,34 +22,37 @@ declare interface PaginationResult<T extends StoreItem> {
 }
 
 /* 存储器的适配器，由子类实现具体的存储逻辑，以及查询逻辑 */
-declare interface StoreAdapter<T extends StoreItem = StoreItem> {
+declare interface StoreAdapter {
   /* 新增数据 */
-  add(
+  add<T extends StoreItem = StoreItem>(
     collectionName: string,
-    ...items: (T & { _id?: string })[]
+    ...items: PartialStoreItem<T>[]
   ): Promise<string[]>;
 
   /* 更新数据 */
-  update(collectionName: string, ...items: T[]): Promise<void>;
+  update<T extends StoreItem = StoreItem>(
+    collectionName: string,
+    ...items: T[]
+  ): Promise<void>;
 
   /* 查询数据。查询条件为空返回所有数据 */
-  search(
+  search<T extends StoreItem = StoreItem>(
     collectionName: string,
     condition?: FilterCondition<T>,
-    sortOrders?: SortOrders,
+    sortOrders?: SortOrders<T>,
   ): Promise<T[]>;
 
   /* 分页查询。查询条件为空则查询所有数据 */
-  paginationSearch(
+  paginationSearch<T extends StoreItem = StoreItem>(
     collectionName: string,
     condition: FilterCondition<T> | undefined | null,
     curPage: number,
     pageSize: number,
-    sortOrders?: SortOrders,
+    sortOrders?: SortOrders<T>,
   ): Promise<PaginationResult<T>>;
 
   /* 删除数据，返回被删除数据的id。查询条件为空删除所有数据 */
-  delete(
+  delete<T extends StoreItem = StoreItem>(
     collectionName: string,
     condition?: FilterCondition<T>,
   ): Promise<string[]>;
@@ -76,11 +84,14 @@ declare interface Condition<Value> {
 }
 
 declare type FilterCondition<TSchema extends StoreItem> = Partial<{
-  [P in keyof TSchema]?: TSchema[P] | Partial<Condition<TSchema[P]>>;
+  [P in keyof TSchema]: TSchema[P] | Partial<Condition<TSchema[P]>>;
 }> &
   Partial<{
     $or: FilterCondition<TSchema>[];
     $nor: FilterCondition<TSchema>[];
   }>;
 
-declare type SortOrders = Array<{ order: "asc" | "desc"; field: string }>;
+declare type SortOrders<T extends StoreItem = any> = Array<{
+  order: "asc" | "desc";
+  field: keyof T;
+}>;

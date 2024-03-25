@@ -15,21 +15,26 @@ export function createServerStoreFS(
     init(): Promise<void> {
       return Promise.resolve();
     },
-    add(collectionName: string, ...items): Promise<string[]> {
+    add<T extends StoreItem>(
+      collectionName: string,
+      ...items: Array<PartialStoreItem<T>>
+    ): Promise<string[]> {
       const collection = getCollection(collectionName);
       const ids: string[] = [];
       for (let item of items) {
         item._id = item._id ?? v4();
-        collection.data[item._id] = item;
+        if (item._id in collection.data)
+          throw new Error("Failed to insert data: Duplicate id");
+        collection.data[item._id] = Object.assign({}, item) as T;
         ids.push(item._id);
       }
       return Promise.resolve(ids);
     },
-    async search(
+    async search<T extends StoreItem>(
       collectionName: string,
-      condition?: FilterCondition<StoreItem>,
-      sortOrders?: SortOrders,
-    ): Promise<StoreItem[]> {
+      condition?: FilterCondition<T>,
+      sortOrders?: SortOrders<T>,
+    ): Promise<T[]> {
       const collection = getCollection(collectionName);
       return query(collection, condition, sortOrders);
     },
@@ -42,13 +47,13 @@ export function createServerStoreFS(
         else Object.assign(collection.data[item._id], item);
       }
     },
-    async paginationSearch(
+    async paginationSearch<T extends StoreItem>(
       collectionName: string,
-      condition: FilterCondition<StoreItem> | undefined | null,
+      condition: FilterCondition<T> | undefined | null,
       curPage: number,
       pageSize: number,
       sortOrders?: SortOrders,
-    ): Promise<PaginationResult<StoreItem>> {
+    ): Promise<PaginationResult<T>> {
       const collection = getCollection(collectionName);
       const result = query(collection, condition, sortOrders);
       return {
@@ -75,11 +80,15 @@ export function createServerStoreFS(
 
   function initCollections() {
     const collections = new Map<string, Collection>();
-    const dirs = fs.readdirSync(basePath);
-    for (let dirName of dirs) {
-      const filePath = path.join(basePath, dirName);
+    const subNames = fs.readdirSync(basePath);
+    for (let sub of subNames) {
+      const filePath = path.join(basePath, sub);
+      if (fs.lstatSync(filePath).isDirectory()) continue;
       const content = fs.readFileSync(filePath, "utf8");
-      collections.set(dirName, JSON.parse(content));
+      collections.set(sub, {
+        path: filePath,
+        data: JSON.parse(content),
+      });
     }
     return collections;
   }
@@ -105,11 +114,11 @@ export function createServerStoreFS(
     return collection;
   }
 
-  function query(
+  function query<T extends StoreItem>(
     collection: Collection,
-    condition?: FilterCondition<StoreItem> | null,
+    condition?: FilterCondition<T> | null,
     sortOrders?: SortOrders,
-  ): StoreItem[] {
+  ): T[] {
     const filterPredicates = parseFilterCondition(condition);
     const allData = Object.values(collection.data);
     const result = filterPredicates.length
@@ -130,7 +139,7 @@ export function createServerStoreFS(
         return 0;
       });
     }
-    return result;
+    return result as T[];
   }
 }
 
