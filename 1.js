@@ -10,9 +10,23 @@
 //   console.log(hex.q, hex.r, hex.row, hex.col, hex.corners);
 // });
 
-import * as fs from "fs";
 import path from "node:path";
+import { ServerStore } from "./packages/server-store/dist/index.js";
+import { createServerStoreFS } from "./packages/server-store-fs/dist/index.js";
 
-process.on("exit", () => {
-  fs.writeFileSync(path.resolve(".", "a.txt"), "123");
-});
+const store = await ServerStore.create(
+  createServerStoreFS(path.resolve(".", "store"), true),
+);
+const collection = store.collection("user");
+await collection.add(
+  {
+    name: "user",
+    password: "password",
+    age: 20,
+  },
+  {
+    name: "user1",
+    password: "password",
+    age: 200,
+  },
+);

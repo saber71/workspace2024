@@ -9,6 +9,7 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
+    "common": "workspace:^",
     "server-store": "workspace:^",
     "uuid": "^9.0.1"
   }

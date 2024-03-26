@@ -1,14 +1,15 @@
 ///<reference types="../types.d.ts"/>
 
+import { deepAssign, deepClone } from "common";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as process from "node:process";
 import { v4 } from "uuid";
 
 export function createServerStoreFS(
   basePath: string = path.resolve("."),
+  saveOnExit = true,
 ): StoreAdapter {
-  process.on("exit", onExit);
+  process.on("exit", saveDataToFile);
   const collections = initCollections();
 
   return {
@@ -22,11 +23,12 @@ export function createServerStoreFS(
       const collection = getCollection(collectionName);
       const ids: string[] = [];
       for (let item of items) {
-        item._id = item._id ?? v4();
-        if (item._id in collection.data)
+        const id = (item._id = item._id ?? v4());
+        item = deepClone(item);
+        if (id in collection.data)
           throw new Error("Failed to insert data: Duplicate id");
-        collection.data[item._id] = Object.assign({}, item) as T;
-        ids.push(item._id);
+        collection.data[id] = item as T;
+        ids.push(id);
       }
       return Promise.resolve(ids);
     },
@@ -41,10 +43,10 @@ export function createServerStoreFS(
     async update(collectionName: string, ...items): Promise<void> {
       const collection = getCollection(collectionName);
       for (let item of items) {
-        item._id = item._id ?? v4();
-        if (!collection.data[item._id])
-          collection.data[item._id] = Object.assign({}, item);
-        else Object.assign(collection.data[item._id], item);
+        const id = (item._id = item._id ?? v4());
+        item = deepClone(item);
+        if (!collection.data[id]) collection.data[id] = item as any;
+        else deepAssign(collection.data[id], item);
       }
     },
     async paginationSearch<T extends StoreItem>(
@@ -63,40 +65,51 @@ export function createServerStoreFS(
         data: result.slice((curPage - 1) * pageSize, curPage * pageSize),
       };
     },
-    async delete(
+    async delete<T extends StoreItem>(
       collectionName: string,
       condition?: FilterCondition<StoreItem>,
-    ): Promise<string[]> {
+    ): Promise<T[]> {
       const collection = getCollection(collectionName);
       const result = query(collection, condition);
-      const ids: string[] = [];
+      const deleted: T[] = [];
       for (let item of result) {
-        ids.push(item._id);
+        deleted.push(item as T);
         delete collection.data[item._id];
       }
-      return ids;
+      return deleted;
     },
   };
 
   function initCollections() {
     const collections = new Map<string, Collection>();
-    const subNames = fs.readdirSync(basePath);
-    for (let sub of subNames) {
-      const filePath = path.join(basePath, sub);
-      if (fs.lstatSync(filePath).isDirectory()) continue;
-      const content = fs.readFileSync(filePath, "utf8");
-      collections.set(sub, {
-        path: filePath,
-        data: JSON.parse(content),
-      });
+    if (fs.existsSync(basePath)) {
+      const subNames = fs.readdirSync(basePath);
+      for (let sub of subNames) {
+        const filePath = path.join(basePath, sub);
+        if (fs.lstatSync(filePath).isDirectory()) continue;
+        const content = fs.readFileSync(filePath, "utf8");
+        const arr = JSON.parse(content);
+        const data: any = {};
+        for (let item of arr) {
+          data[item._id] = item;
+        }
+        collections.set(sub, {
+          path: filePath,
+          data,
+        });
+      }
     }
     return collections;
   }
 
-  function onExit() {
-    if (!collections) return;
+  function saveDataToFile() {
+    if (!collections || !saveOnExit) return;
+    if (!fs.existsSync(basePath)) fs.mkdirSync(basePath);
     for (let collection of collections.values()) {
-      fs.writeFileSync(collection.path, JSON.stringify(collection.data));
+      fs.writeFileSync(
+        collection.path,
+        JSON.stringify(Object.values(collection.data)),
+      );
     }
   }
 
@@ -139,7 +152,7 @@ export function createServerStoreFS(
         return 0;
       });
     }
-    return result as T[];
+    return result.map((value) => deepClone(value)) as T[];
   }
 }
 

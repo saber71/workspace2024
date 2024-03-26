@@ -1,6 +1,13 @@
 ///<reference types="dependency-injection/types.d.ts"/>
 ///<reference types="server/types.d.ts"/>
 
+declare type TransactionRecord =
+  | {
+      type: "add" | "delete";
+      value: any;
+    }
+  | { type: "update"; oldValue: any };
+
 /* 保存数据的基础类型 */
 declare interface StoreItem {
   _id: string;
@@ -32,7 +39,7 @@ declare interface StoreAdapter {
   /* 更新数据 */
   update<T extends StoreItem = StoreItem>(
     collectionName: string,
-    ...items: T[]
+    ...items: Partial<T>[]
   ): Promise<void>;
 
   /* 查询数据。查询条件为空返回所有数据 */
@@ -55,7 +62,7 @@ declare interface StoreAdapter {
   delete<T extends StoreItem = StoreItem>(
     collectionName: string,
     condition?: FilterCondition<T>,
-  ): Promise<string[]>;
+  ): Promise<T[]>;
 
   init(): Promise<void>;
 }

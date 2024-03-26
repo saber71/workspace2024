@@ -12,6 +12,7 @@ export default defineConfig({
         "node:fs",
         "node:process",
         "node:path",
+        "common",
       ],
     },
     lib: {

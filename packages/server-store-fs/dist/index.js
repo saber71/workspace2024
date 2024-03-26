@@ -1,11 +1,11 @@
+import { deepClone, deepAssign } from 'common';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as process from 'node:process';
 import { v4 } from 'uuid';
 
 ///<reference types="../types.d.ts"/>
-function createServerStoreFS(basePath = path.resolve(".")) {
-    process.on("exit", onExit);
+function createServerStoreFS(basePath = path.resolve("."), saveOnExit = true) {
+    process.on("exit", saveDataToFile);
     const collections = initCollections();
     return {
         init () {
@@ -15,10 +15,11 @@ function createServerStoreFS(basePath = path.resolve(".")) {
             const collection = getCollection(collectionName);
             const ids = [];
             for (let item of items){
-                item._id = item._id ?? v4();
-                if (item._id in collection.data) throw new Error("Failed to insert data: Duplicate id");
-                collection.data[item._id] = Object.assign({}, item);
-                ids.push(item._id);
+                const id = item._id = item._id ?? v4();
+                item = deepClone(item);
+                if (id in collection.data) throw new Error("Failed to insert data: Duplicate id");
+                collection.data[id] = item;
+                ids.push(id);
             }
             return Promise.resolve(ids);
         },
@@ -29,9 +30,10 @@ function createServerStoreFS(basePath = path.resolve(".")) {
         async update (collectionName, ...items) {
             const collection = getCollection(collectionName);
             for (let item of items){
-                item._id = item._id ?? v4();
-                if (!collection.data[item._id]) collection.data[item._id] = Object.assign({}, item);
-                else Object.assign(collection.data[item._id], item);
+                const id = item._id = item._id ?? v4();
+                item = deepClone(item);
+                if (!collection.data[id]) collection.data[id] = item;
+                else deepAssign(collection.data[id], item);
             }
         },
         async paginationSearch (collectionName, condition, curPage, pageSize, sortOrders) {
@@ -47,32 +49,40 @@ function createServerStoreFS(basePath = path.resolve(".")) {
         async delete (collectionName, condition) {
             const collection = getCollection(collectionName);
             const result = query(collection, condition);
-            const ids = [];
+            const deleted = [];
             for (let item of result){
-                ids.push(item._id);
+                deleted.push(item);
                 delete collection.data[item._id];
             }
-            return ids;
+            return deleted;
         }
     };
     function initCollections() {
         const collections = new Map();
-        const subNames = fs.readdirSync(basePath);
-        for (let sub of subNames){
-            const filePath = path.join(basePath, sub);
-            if (fs.lstatSync(filePath).isDirectory()) continue;
-            const content = fs.readFileSync(filePath, "utf8");
-            collections.set(sub, {
-                path: filePath,
-                data: JSON.parse(content)
-            });
+        if (fs.existsSync(basePath)) {
+            const subNames = fs.readdirSync(basePath);
+            for (let sub of subNames){
+                const filePath = path.join(basePath, sub);
+                if (fs.lstatSync(filePath).isDirectory()) continue;
+                const content = fs.readFileSync(filePath, "utf8");
+                const arr = JSON.parse(content);
+                const data = {};
+                for (let item of arr){
+                    data[item._id] = item;
+                }
+                collections.set(sub, {
+                    path: filePath,
+                    data
+                });
+            }
         }
         return collections;
     }
-    function onExit() {
-        if (!collections) return;
+    function saveDataToFile() {
+        if (!collections || !saveOnExit) return;
+        if (!fs.existsSync(basePath)) fs.mkdirSync(basePath);
         for (let collection of collections.values()){
-            fs.writeFileSync(collection.path, JSON.stringify(collection.data));
+            fs.writeFileSync(collection.path, JSON.stringify(Object.values(collection.data)));
         }
     }
     function getCollection(name) {
@@ -102,7 +112,7 @@ function createServerStoreFS(basePath = path.resolve(".")) {
                 return 0;
             });
         }
-        return result;
+        return result.map((value)=>deepClone(value));
     }
 }
 function matchFilterCondition(data, condition) {
