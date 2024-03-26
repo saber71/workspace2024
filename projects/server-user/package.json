@@ -12,10 +12,10 @@
     "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
   },
   "peerDependencies": {
-    "axios": "^1.6.7",
-    "mongoose": "^8.2.1",
-    "validator": "^13.11.0",
     "server": "workspace:^",
-    "server-platform-koa": "workspace:^"
+    "server-platform-koa": "workspace:^",
+    "server-store": "workspace:^",
+    "server-store-fs": "workspace:^",
+    "validator": "^13.11.0"
   }
 }

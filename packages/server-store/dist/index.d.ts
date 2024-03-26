@@ -26,6 +26,7 @@ export declare class StoreCollection<T extends StoreItem> {
     search(condition?: FilterCondition<T>, sortOrders?: SortOrders<T>): Promise<T[]>;
     paginationSearch(condition: FilterCondition<T> | undefined | null, curPage: number, pageSize: number, sortOrders?: SortOrders<T>): Promise<PaginationResult<T>>;
     delete(condition?: FilterCondition<T>): Promise<T[]>;
+    searchOne(condition: FilterCondition<T>): Promise<T | undefined>;
     getById(id: string): Promise<T | undefined>;
     getAll(): Promise<T[]>;
     save(data: PartialStoreItem<T>): Promise<T>;

@@ -89,6 +89,10 @@ class StoreCollection {
         }
         return deleted;
     }
+    async searchOne(condition) {
+        const result = await this.search(condition);
+        return result[0];
+    }
     async getById(id) {
         const result = await this.search({
             _id: id

@@ -101,6 +101,11 @@ export class StoreCollection<T extends StoreItem> {
     return deleted;
   }
 
+  async searchOne(condition: FilterCondition<T>): Promise<T | undefined> {
+    const result = await this.search(condition);
+    return result[0];
+  }
+
   async getById(id: string): Promise<T | undefined> {
     const result = await this.search({ _id: id } as FilterCondition<T>);
     return result[0] as T;

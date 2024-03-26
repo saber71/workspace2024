@@ -7,7 +7,13 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["server", "server-platform-koa", "mongoose", "validator"],
+      external: [
+        "server",
+        "server-platform-koa",
+        "validator",
+        "server-store",
+        "server-store-fs",
+      ],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
