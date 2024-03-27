@@ -17,5 +17,8 @@
     "server-store": "workspace:^",
     "server-store-fs": "workspace:^",
     "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "http-test": "workspace:^"
   }
 }

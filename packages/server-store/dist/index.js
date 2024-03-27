@@ -112,13 +112,17 @@ class StoreCollection {
         }
         return data;
     }
+    async count(condition) {
+        const result = await this.search(condition);
+        return result.length;
+    }
 }
-function Store(label = ServerStore.name) {
+/* 参数装饰器 */ function Store(label = ServerStore.name) {
     return Inject({
         typeValueGetter: (container)=>container.getValue(label)
     });
 }
-function Collection(name, storeLabel = ServerStore.name) {
+/* 参数装饰器 */ function Collection(name, storeLabel = ServerStore.name) {
     return Inject({
         typeValueGetter: (container)=>container.getValue(storeLabel).collection(name)
     });

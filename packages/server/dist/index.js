@@ -395,19 +395,6 @@ const validatedKey = Symbol("validated");
     });
 }
 
-/* 本库封装的响应对象，抹除不同框架的响应对象的不同 */ class ServerResponse {
-    /* Web框架的原响应对象 */ original;
-    /* 响应对象id，与ServerRequest对象的id一致 */ id;
-    /* 响应头 */ headers;
-    /* 更新session内容 */ session;
-    /* 状态码 */ statusCode;
-    /* 发送响应体 */ body(value) {}
-    /* 发送文件 */ sendFile(filePath) {
-        return Promise.resolve();
-    }
-    /* 重定向 */ redirect(url) {}
-}
-
 /* 读取/更新会话对象 */ class Session {
     req;
     res;
@@ -445,11 +432,24 @@ const validatedKey = Symbol("validated");
 
 /* 属性/参数装饰器。为被装饰者注入session对象 */ function ReqSession() {
     return Inject({
-        typeValueGetter: (container)=>new Session(container.getValue(ServerRequest), container.getValue(ServerResponse)),
+        typeValueGetter: (container)=>container.getValue(Session),
         afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
                 isSession: true
             }
     });
+}
+
+/* 本库封装的响应对象，抹除不同框架的响应对象的不同 */ class ServerResponse {
+    /* Web框架的原响应对象 */ original;
+    /* 响应对象id，与ServerRequest对象的id一致 */ id;
+    /* 响应头 */ headers;
+    /* 更新session内容 */ session;
+    /* 状态码 */ statusCode;
+    /* 发送响应体 */ body(value) {}
+    /* 发送文件 */ sendFile(filePath) {
+        return Promise.resolve();
+    }
+    /* 重定向 */ redirect(url) {}
 }
 
 /* 属性/参数装饰器。为被装饰者注入ServerResponse实例 */ function Res() {

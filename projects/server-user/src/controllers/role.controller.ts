@@ -68,12 +68,4 @@ export class RoleController {
     if (!role) throw new NotFoundObjectError(`找不到id为${query.id}的Role对象`);
     return role;
   }
-
-  /* 返回数据库中的Role对象数量 */
-  @Method()
-  async count(
-    @Collection(COLLECTION_ROLE) collection: StoreCollection<RoleModel>,
-  ) {
-    return (await collection.getAll()).length;
-  }
 }

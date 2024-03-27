@@ -19,6 +19,7 @@
     "@types/node": "20.11.30",
     "@types/svg-intersections": "0.4.4",
     "@types/terminal-kit": "2.5.6",
+    "@types/tough-cookie": "4.0.5",
     "@types/uuid": "9.0.8",
     "@types/validator": "13.11.9",
     "@vitejs/plugin-vue": "5.0.4",

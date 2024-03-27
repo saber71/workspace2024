@@ -125,14 +125,21 @@ export class StoreCollection<T extends StoreItem> {
     }
     return data as T;
   }
+
+  async count(condition?: FilterCondition<T>) {
+    const result = await this.search(condition);
+    return result.length;
+  }
 }
 
+/* 参数装饰器 */
 export function Store(label: string = ServerStore.name) {
   return Inject({
     typeValueGetter: (container) => container.getValue(label),
   });
 }
 
+/* 参数装饰器 */
 export function Collection(
   name: string,
   storeLabel: string = ServerStore.name,

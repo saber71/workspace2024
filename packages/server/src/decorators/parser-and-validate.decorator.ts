@@ -22,7 +22,7 @@ export function ParserAndValidate(
     ) => void;
   },
 ) {
-  let targetObject: any,
+  let target: any,
     targetMethodName = "",
     targetIndex = 0;
   const inject = Inject({
@@ -31,16 +31,16 @@ export function ParserAndValidate(
       let value: any;
       if (typeof prevValue === "object") {
         if (!prevValue[parsedKey]) {
-          value = parse(container, option.parsers, prevValue);
+          value = parse(container, option.parsers, prevValue, target);
           prevValue[parsedKey] = true;
         }
       } else {
-        value = parse(container, option.parsers, prevValue);
+        value = parse(container, option.parsers, prevValue, target);
       }
       if (option.validator === false || typeof value !== "object") return value;
       if (!value[validatedKey]) {
         value[validatedKey] = true;
-        validate(container, targetObject, targetMethodName, targetIndex, value);
+        validate(container, target, targetMethodName, targetIndex, value);
       }
       return value;
     },
@@ -48,7 +48,7 @@ export function ParserAndValidate(
   });
   return (target: any, methodName?: any, index?: any) => {
     inject(target, methodName, index);
-    targetObject = target;
+    target = target;
     targetMethodName = getDecoratedName(methodName) as string;
     targetIndex = index;
   };
@@ -99,13 +99,15 @@ function parse(
   container: Container,
   parsers: Class<ParserInterface> | Class<ParserInterface>[] | null | undefined,
   value: any,
+  clazz: any,
 ) {
   if (!parsers && parsers === undefined) parsers = [RegularParser];
   if (parsers && !(parsers instanceof Array)) parsers = [parsers];
   if (!parsers) return value;
+  if (typeof clazz === "object") clazz = clazz.constructor;
   return parsers.reduce(
     (value, parserClass) =>
-      container.getValue<ParserInterface>(parserClass).parse(value),
+      container.getValue<ParserInterface>(parserClass).parse(value, clazz),
     value,
   );
 }

@@ -31,6 +31,9 @@ export class UpdateRoleDTO {
 }
 
 export class CreateUserDTO {
+  @Validation({ validatorType: "isString", allowUndefined: true })
+  _id: UserModel["_id"];
+
   @Validation({ validatorType: "isString" })
   name: UserModel["name"];
 

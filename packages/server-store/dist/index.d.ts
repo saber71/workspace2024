@@ -30,6 +30,7 @@ export declare class StoreCollection<T extends StoreItem> {
     getById(id: string): Promise<T | undefined>;
     getAll(): Promise<T[]>;
     save(data: PartialStoreItem<T>): Promise<T>;
+    count(condition?: FilterCondition<T>): Promise<number>;
 }
 
 export { }

@@ -59,3 +59,8 @@ export class NotFoundValidatorError extends ServerError {
 export class ValidateFailedError extends ServerError {
   name = "ValidateFailedError";
 }
+
+/* 当数据转换失败时抛出 */
+export class ParseFailedError extends ServerError {
+  name = "ParseFailedError";
+}

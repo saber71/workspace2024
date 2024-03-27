@@ -6,9 +6,10 @@ import * as path from "node:path";
 import { v4 } from "uuid";
 
 export function createServerStoreFS(
-  basePath: string = path.resolve("."),
+  basePath: string = ".",
   saveOnExit = true,
 ): StoreAdapter {
+  basePath = path.resolve(basePath);
   process.on("exit", saveDataToFile);
   const collections = initCollections();
 
