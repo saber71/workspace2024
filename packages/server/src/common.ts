@@ -11,6 +11,7 @@ export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {
     userData.__server__controllerRoutePrefix = "";
     userData.__server__controllerMethods = {};
     userData.__server__handle_error_type = ServerError;
+    userData.__server__propParseToType = {};
   }
   return userData;
 }

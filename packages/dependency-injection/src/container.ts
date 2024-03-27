@@ -56,6 +56,11 @@ export class Container extends EventEmitter<{
     }
   }
 
+  /* 给定的类实例，以类名为标识符绑定至容器中 */
+  bindInstance<T extends object>(instance: T) {
+    return this.bindValue(instance.constructor.name, instance);
+  }
+
   /**
    * 给指定的标识符绑定值
    * @param label 标识符

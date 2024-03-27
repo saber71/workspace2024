@@ -1,5 +1,11 @@
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { expect } from "vitest";
+import axiosCookieJarSupport from "axios-cookiejar-support";
+import { CookieJar } from "tough-cookie";
+
+axiosCookieJarSupport.wrapper(axios);
+
+const cookieJar = new CookieJar();
 
 /* 调用axios发起请求，返回准备对Response内容进行测试的对象 */
 export function httpTest<Data = any>(
@@ -10,6 +16,8 @@ export function httpTest<Data = any>(
     axios
       .request({
         baseURL: "http://localhost:4000/",
+        withCredentials: true,
+        jar: cookieJar,
         validateStatus: () => true,
         ...config,
       })

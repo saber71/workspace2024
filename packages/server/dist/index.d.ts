@@ -11,8 +11,6 @@ export declare class AuthorizedGuard implements GuardInterface {
     guard(session: Session<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
 }
 
-export declare function composeUrl(...items: string[]): string;
-
 export declare class ConsoleLogger implements LoggerInterface {
     readonly contextName: string;
     constructor(contextName: string);
@@ -89,8 +87,6 @@ export declare class RegularParser implements ParserInterface {
 export declare class RegularResponseBodySender implements ResponseBodySenderInterface {
     send(value: any, res: ServerResponse): Promise<void> | undefined;
 }
-
-export declare function removeHeadTailSlash(str: string): string;
 
 export declare function Req(): (clazz: any, propName: any, index?: any) => void;
 

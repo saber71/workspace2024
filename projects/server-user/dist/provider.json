@@ -6,7 +6,8 @@
       "parameters": [
         {
           "isBody": true
-        }
+        },
+        0
       ]
     },
     "update": {
@@ -15,7 +16,8 @@
       "parameters": [
         {
           "isBody": true
-        }
+        },
+        0
       ]
     },
     "findById": {
@@ -24,13 +26,14 @@
       "parameters": [
         {
           "isQuery": true
-        }
+        },
+        0
       ]
     },
     "count": {
       "type": "GET",
       "url": "/role/count",
-      "parameters": []
+      "parameters": [0]
     }
   },
   "UserController": {
@@ -40,23 +43,42 @@
       "parameters": [
         {
           "isQuery": true
-        }
+        },
+        0
       ]
     },
     "create": {
       "type": "POST",
       "url": "/user/create",
-      "parameters": [0]
+      "parameters": [
+        {
+          "isBody": true
+        },
+        0,
+        0
+      ]
     },
     "login": {
       "type": "POST",
       "url": "/user/login",
-      "parameters": [0, 0]
+      "parameters": [
+        {
+          "isBody": true
+        },
+        {
+          "isSession": true
+        },
+        0
+      ]
     },
     "logout": {
       "type": "POST",
       "url": "/user/logout",
-      "parameters": [0]
+      "parameters": [
+        {
+          "isSession": true
+        }
+      ]
     }
   }
 }

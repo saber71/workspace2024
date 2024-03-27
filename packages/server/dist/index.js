@@ -46,14 +46,6 @@ import * as process from 'node:process';
     name = "ValidateFailedError";
 }
 
-/* 组装url */ function composeUrl(...items) {
-    return "/" + items.map(removeHeadTailSlash).filter((str)=>str.length > 0).join("/");
-}
-/* 删除头尾的斜线 */ function removeHeadTailSlash(str) {
-    while(str[0] === "/")str = str.slice(1);
-    while(str[str.length - 1] === "/")str = str.slice(0, str.length - 1);
-    return str;
-}
 /* 得到或新建专给server库使用的userData */ function getOrCreateMetadataUserData(obj) {
     const metadata = Metadata.getOrCreateMetadata(obj);
     const userData = metadata.userData;
@@ -93,6 +85,15 @@ import * as process from 'node:process';
 /* Web服务器默认的监听端口 */ const DEFAULT_PORT = 4000;
 /* 环境名在依赖注入容器中的标签名，用于日志输出 */ const CONTEXT_LABEL = "ContextName";
 /* 鉴权白名单 */ const WHITE_LIST = "WhiteList";
+
+function removeHeadTailChar(str, char) {
+    while(str[0] === char)str = str.slice(1);
+    while(str[str.length - 1] === char)str = str.slice(0, str.length - 1);
+    return str;
+}
+/* 组装url */ function composeUrl(...items) {
+    return "/" + items.map((str)=>removeHeadTailChar(str, "/")).filter((str)=>str.length > 0).join("/");
+}
 
 var RouteManager;
 (function(RouteManager) {
@@ -394,9 +395,44 @@ const validatedKey = Symbol("validated");
     });
 }
 
+/* 读取/更新会话对象 */ class Session {
+    req;
+    res;
+    constructor(req, res){
+        this.req = req;
+        this.res = res;
+    }
+    /* 删除session中指定的key */ deleteKey(key) {
+        this.set(key, null);
+    }
+    /* 更新会话对象 */ set(key, value) {
+        /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */ if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
+        if (!this.res.session) this.res.session = {};
+        this.res.session[key] = value;
+        return this;
+    }
+    /* 读取会话对象 */ get(key) {
+        return this.req.session?.[key];
+    }
+    /**
+   * 读取会话对象
+   * @throws SessionKeyNotExistError 当在session上找不到key时抛出
+   */ fetch(key) {
+        if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
+        return this.req.session[key];
+    }
+    /* 判断会话上是否存在指定的key */ has(key) {
+        if (!this.req.session) return false;
+        return key in this.req.session;
+    }
+    /* 删除会话对象 */ destroy() {
+        this.res.session = null;
+    }
+}
+
 /* 属性/参数装饰器。为被装饰者注入session对象 */ function ReqSession() {
     return Inject({
-        typeValueGetter: (container)=>container.getValue(ServerRequest).session,
+        typeValueGetter: (container)=>container.getValue(Session),
         afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
                 isSession: true
             }
@@ -454,41 +490,6 @@ const validatedKey = Symbol("validated");
             const userData = getOrCreateMetadataUserData(errorHandlerClass);
             if (userData.__server__classType !== "error-handler") throw new ServerError(errorHandlerClass.name + "未装饰ErrorHandler");
         }
-    }
-}
-
-/* 读取/更新会话对象 */ class Session {
-    req;
-    res;
-    constructor(req, res){
-        this.req = req;
-        this.res = res;
-    }
-    /* 删除session中指定的key */ deleteKey(key) {
-        this.set(key, null);
-    }
-    /* 更新会话对象 */ set(key, value) {
-        /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */ if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
-        if (!this.res.session) this.res.session = {};
-        this.res.session[key] = value;
-        return this;
-    }
-    /* 读取会话对象 */ get(key) {
-        return this.req.session?.[key];
-    }
-    /**
-   * 读取会话对象
-   * @throws SessionKeyNotExistError 当在session上找不到key时抛出
-   */ fetch(key) {
-        if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
-        return this.req.session[key];
-    }
-    /* 判断会话上是否存在指定的key */ has(key) {
-        if (!this.req.session) return false;
-        return key in this.req.session;
-    }
-    /* 删除会话对象 */ destroy() {
-        this.res.session = null;
     }
 }
 
@@ -788,4 +789,4 @@ RequestPipeline = _ts_decorate([
     ])
 ], RequestPipeline);
 
-export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, WHITE_LIST, composeUrl, getOrCreateControllerMethod, getOrCreateMetadataUserData, removeHeadTailSlash };
+export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };

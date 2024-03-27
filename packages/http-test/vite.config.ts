@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["axios", "vitest"],
+      external: ["axios", "vitest", "axios-cookiejar-support", "tough-cookie"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

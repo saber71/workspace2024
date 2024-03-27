@@ -170,6 +170,8 @@ declare interface MetadataServerUserData {
 
   /* 错误处理器所能处理的错误类型 */
   __server__handle_error_type: Class<Error>;
+
+  __server__propParseToType: Record<string, Array<Class | undefined | null>>;
 }
 
 /* 请求类型 */
@@ -205,7 +207,7 @@ declare interface ResponseBodySenderInterface {
 
 /* 用来转化数据，如将对象中的字符串转为number/boolean或反过来 */
 declare interface ParserInterface {
-  parse(value: any): any;
+  parse(value: any, ...clazz: Array<Class | undefined | null>): any;
 }
 
 /* 配置转化器和验证器 */
