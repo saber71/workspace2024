@@ -42,20 +42,8 @@ export function fillInMethodParameterTypes(
 /**
  * 类装饰器。获取类的构造函数的入参类型，标记该类可以被依赖注入
  * 如果父类没有用Injectable装饰，那么子类就必须要声明构造函数，否则的话无法通过元数据得到子类正确的构造函数入参类型
- * @param option.moduleName 可选。指定类所属的模块名
- * @param option.singleton 可选。指定类是否是单例的
- * @param option.createImmediately 可选。类是否立即实例化
- * @param option.overrideConstructor 默认true。是否可以用子类的元数据中的入参类型覆盖从父类继承来的类型信息。当子类没有改变父类的构造函数入参类型时，就应该将该字段设为false
  */
-export function Injectable(
-  option?: {
-    moduleName?: string;
-    singleton?: boolean;
-    createImmediately?: boolean;
-    overrideConstructor?: boolean;
-    onCreate?: (instance: object) => void;
-  } & MethodParameterOption,
-) {
+export function Injectable(option?: InjectableOptions) {
   return (clazz: Class, ctx?: any) => {
     const metadata = Metadata.getOrCreateMetadata(clazz);
     metadata.injectable = true;
@@ -91,16 +79,7 @@ export function Injectable(
  * @param option.typeValueGetter 指定被装饰的字段或入参的自定义getter。当被装饰的是类的字段或入参时才生效
  * @throws InjectNotFoundTypeError 在无法确定被装饰者的类型时抛出
  */
-export function Inject(
-  option?: {
-    typeLabel?: string;
-    typeValueGetter?: TypeValueGetter;
-    afterExecute?: (
-      metadata: Metadata,
-      ...args: Array<string | number>
-    ) => void;
-  } & MethodParameterOption,
-) {
+export function Inject(option?: InjectOptions) {
   return (
     clazz: any,
     propName: ClassFieldDecoratorContext | any,
@@ -134,6 +113,10 @@ export function Inject(
         /* 方法装饰器 */
         const methodParameterTypes = metadata.getMethodParameterTypes(propName);
         fillInMethodParameterTypes(methodParameterTypes, option, types);
+        if (option?.beforeCallMethod)
+          methodParameterTypes.beforeCallMethods.push(option.beforeCallMethod);
+        if (option?.afterCallMethod)
+          methodParameterTypes.afterCallMethods.push(option.afterCallMethod);
       } else {
         /* 属性装饰器 */
         const type =
@@ -147,6 +130,24 @@ export function Inject(
       }
       option?.afterExecute?.(metadata, metadata.clazz.name, propName);
     }
+  };
+}
+
+export function BeforeCallMethod(cb: InjectOptions["beforeCallMethod"]) {
+  return (target: any, methodName: any) => {
+    methodName = getDecoratedName(methodName);
+    const metadata = Metadata.getOrCreateMetadata(target);
+    const methodParameterTypes = metadata.getMethodParameterTypes(methodName);
+    methodParameterTypes.beforeCallMethods.push(cb);
+  };
+}
+
+export function AfterCallMethod(cb: InjectOptions["afterCallMethod"]) {
+  return (target: any, methodName: any) => {
+    methodName = getDecoratedName(methodName);
+    const metadata = Metadata.getOrCreateMetadata(target);
+    const methodParameterTypes = metadata.getMethodParameterTypes(methodName);
+    methodParameterTypes.afterCallMethods.push(cb);
   };
 }
 

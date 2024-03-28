@@ -1,11 +1,5 @@
-import { validate as classValidate } from "class-validator";
-import {
-  Container,
-  getDecoratedName,
-  Inject,
-  Metadata,
-  NotExistLabelError,
-} from "dependency-injection";
+import { NoValidationError, validate as classValidate } from "class-validator";
+import { Container, Inject, NotExistLabelError } from "dependency-injection";
 import { NotFoundValidatorError, ValidateFailedError } from "../errors";
 import { RegularParser } from "../parser";
 
@@ -13,44 +7,35 @@ const parsedKey = Symbol("parsed");
 const validatedKey = Symbol("validated");
 
 /* 对输入进行转化和校验 */
-export function ParserAndValidate(
-  option: ParserAndValidator & {
-    typeValueGetter: (container: Container) => any;
-    afterExecute?: (
-      metadata: Metadata,
-      ...args: Array<string | number>
-    ) => void;
-  },
-) {
-  let target: any,
-    targetMethodName = "",
-    targetIndex = 0;
+export function MethodParameter(option: MethodParameterOptions) {
+  let classType: any;
   const inject = Inject({
     typeValueGetter: (container) => {
       const prevValue = option.typeValueGetter(container);
       let value: any;
       if (typeof prevValue === "object") {
         if (!prevValue[parsedKey]) {
-          value = parse(container, option.parsers, prevValue, target);
+          value = parse(container, option.parsers, prevValue, classType);
           prevValue[parsedKey] = true;
         }
       } else {
-        value = parse(container, option.parsers, prevValue, target);
+        value = parse(container, option.parsers, prevValue, classType);
       }
       if (option.validator === false || typeof value !== "object") return value;
       if (!value[validatedKey]) {
         value[validatedKey] = true;
-        validate(container, target, targetMethodName, targetIndex, value);
+        validate(container, classType, value);
       }
       return value;
     },
     afterExecute: option.afterExecute,
   });
-  return (target: any, methodName?: any, index?: any) => {
-    inject(target, methodName, index);
-    target = target;
-    targetMethodName = getDecoratedName(methodName) as string;
-    targetIndex = index;
+  return (clazz: any, methodName: any, index: number) => {
+    inject(clazz, methodName, index);
+    const types =
+      (Reflect as any).getMetadata("design:paramtypes", clazz, methodName) ??
+      [];
+    classType = types[index];
   };
 }
 
@@ -59,16 +44,8 @@ export function ParserAndValidate(
  * @throws NotFoundValidatorError 当找不到类型对应的验证器时抛出
  * @throws ValidateFailedError 当数据验证失败时抛出
  */
-function validate(
-  container: Container,
-  target: any,
-  methodName: string,
-  argIndex: number,
-  value: any,
-) {
-  const metadata = Metadata.getOrCreateMetadata(target);
-  const parameterTypes = metadata.getMethodParameterTypes(methodName);
-  const type = parameterTypes.types[argIndex];
+function validate(container: Container, classType: any, value: any) {
+  const type = classType.name;
   if (
     type === "String" ||
     type === "Boolean" ||
@@ -86,7 +63,7 @@ function validate(
   } catch (e) {
     if (e instanceof NotExistLabelError)
       throw new NotFoundValidatorError(`找不到类型${type}对应的验证器`);
-    throw e;
+    else if (!(e instanceof NoValidationError)) throw e;
   }
   if (errorProps.length)
     throw new ValidateFailedError(
@@ -101,9 +78,9 @@ function parse(
   value: any,
   clazz: any,
 ) {
-  if (!parsers && parsers === undefined) parsers = [RegularParser];
-  if (parsers && !(parsers instanceof Array)) parsers = [parsers];
-  if (!parsers) return value;
+  if (parsers === null) return value;
+  if (parsers === undefined) parsers = [RegularParser];
+  else if (!(parsers instanceof Array)) parsers = [parsers];
   if (typeof clazz === "object") clazz = clazz.constructor;
   return parsers.reduce(
     (value, parserClass) =>

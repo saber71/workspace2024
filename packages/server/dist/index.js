@@ -1,6 +1,6 @@
-import { validate as validate$1 } from 'class-validator';
+import { validate as validate$1, NoValidationError } from 'class-validator';
 export * from 'class-validator';
-import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, LoadableContainer, Container } from 'dependency-injection';
+import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, Container, LoadableContainer } from 'dependency-injection';
 export * from 'dependency-injection';
 import chalk from 'chalk';
 import * as process from 'node:process';
@@ -45,6 +45,9 @@ import * as process from 'node:process';
 /* 当数据验证失败时抛出 */ class ValidateFailedError extends ServerError {
     name = "ValidateFailedError";
 }
+/* 当数据转换失败时抛出 */ class ParseFailedError extends ServerError {
+    name = "ParseFailedError";
+}
 
 /* 得到或新建专给server库使用的userData */ function getOrCreateMetadataUserData(obj) {
     const metadata = Metadata.getOrCreateMetadata(obj);
@@ -55,6 +58,7 @@ import * as process from 'node:process';
         userData.__server__controllerRoutePrefix = "";
         userData.__server__controllerMethods = {};
         userData.__server__handle_error_type = ServerError;
+        userData.__server__propParseToType = {};
     }
     return userData;
 }
@@ -157,19 +161,6 @@ var RouteManager;
     };
 }
 
-/* 类装饰器。标识类的实例是错误处理器。单例。 */ function ErrorHandler(errorClass) {
-    const injectable = Injectable({
-        singleton: true,
-        moduleName: MODULE_NAME
-    });
-    return (clazz, _)=>{
-        injectable(clazz, _);
-        const userData = getOrCreateMetadataUserData(clazz);
-        userData.__server__classType = "error-handler";
-        userData.__server__handle_error_type = errorClass;
-    };
-}
-
 /* 标识该类为路由守卫 */ function Guard() {
     const injectable = Injectable({
         singleton: true,
@@ -180,6 +171,16 @@ var RouteManager;
         const userData = getOrCreateMetadataUserData(clazz);
         userData.__server__classType = "guard";
     };
+}
+
+function Logger() {
+    return Injectable({
+        moduleName: MODULE_NAME,
+        singleton: true,
+        paramtypes: [
+            CONTEXT_LABEL
+        ]
+    });
 }
 
 /* 方法装饰器。标识此方法用来处理路由。只有在类上装饰了Controller装饰器时才会生效 */ function Method(option) {
@@ -196,6 +197,18 @@ var RouteManager;
         if (option?.routePrefix) ctrMethod.routePrefix = option.routePrefix;
     };
 }
+function Get(options) {
+    return Method({
+        type: "GET",
+        ...options
+    });
+}
+function Post(options) {
+    return Method({
+        type: "POST",
+        ...options
+    });
+}
 
 /* 标识该类用来处理值的转换 */ function Parser() {
     const injectable = Injectable({
@@ -208,16 +221,46 @@ var RouteManager;
         userData.__server__classType = "parser";
     };
 }
-
-/* 类装饰器。标识此类的实例为管道。 */ function Pipeline() {
-    const injectable = Injectable({
-        moduleName: MODULE_NAME
-    });
-    return (clazz, _)=>{
-        injectable(clazz, _);
-        const userData = getOrCreateMetadataUserData(clazz);
-        userData.__server__classType = "pipeline";
+function MarkParseType(...clazz) {
+    return (target, propName)=>{
+        propName = getDecoratedName(propName);
+        if (clazz.length === 0) {
+            const type = Reflect.getMetadata("design:type", target, propName);
+            if (type) clazz = [
+                type
+            ];
+        }
+        if (clazz.length === 0) throw new Error("Not found type");
+        const userData = getOrCreateMetadataUserData(target);
+        userData.__server__propParseToType[propName] = clazz;
     };
+}
+function ToString() {
+    return MarkParseType(String);
+}
+function ToNumber() {
+    return MarkParseType(Number);
+}
+function ToArray(...valueClass) {
+    return MarkParseType(Array, ...valueClass);
+}
+function ToSet(...valueClass) {
+    return MarkParseType(Set, ...valueClass);
+}
+function ToMap(valueClass) {
+    return MarkParseType(Map, valueClass);
+}
+function ToBoolean() {
+    return MarkParseType(Boolean);
+}
+function ToObject() {
+    return MarkParseType(Object);
+}
+function ToDate() {
+    return MarkParseType(Date);
+}
+function ToRegExp() {
+    return MarkParseType(RegExp);
 }
 
 /* 本库封装的请求对象，抹除不同框架的请求对象的不同 */ class ServerRequest {
@@ -249,78 +292,118 @@ var RouteManager;
     });
 }
 
-function _ts_decorate$4(decorators, target, key, desc) {
+function _ts_decorate$2(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
 class RegularParser {
-    parse(value) {
-        if (typeof value === "string") return parseString(value);
-        if (typeof value === "object" && value) {
-            for(let prop in value){
-                const val = value[prop];
-                value[prop] = this.parse(val);
+    parse(value, ...clazz) {
+        if (clazz[0]) return parseType.call(this, value);
+        if (typeof value === "object" && value) parsePropsType.call(this, value);
+        return value;
+        function parsePropsType(object) {
+            const propParseToType = clazz[0] ? getOrCreateMetadataUserData(clazz[0]).__server__propParseToType : {};
+            for(let prop in object){
+                const val = object[prop];
+                const toClass = propParseToType[prop] ?? [];
+                object[prop] = this.parse(val, ...toClass);
             }
         }
-        return value;
-        function parseString(value) {
-            if (value === "true") return true;
-            else if (value === "false") return false;
-            if (value.length === 0) return "";
-            const number = Number(value);
-            if (!Number.isNaN(number)) return number;
-            const date = new Date(value);
-            if (date.toString() !== "Invalid Date") return date;
-            return value;
+        function parseType(value) {
+            try {
+                if (clazz[0] === String) return String(value);
+                else if (clazz[0] === Boolean) return Boolean(value);
+                else if (clazz[0] === Object) return toObject(value);
+                else if (clazz[0] === Number) {
+                    const number = Number(value);
+                    if (!Number.isNaN(number)) return number;
+                } else if (clazz[0] === Date) {
+                    if (value) {
+                        const date = new Date(value);
+                        if (date.toString() !== "Invalid Date") return date;
+                    }
+                } else if (clazz[0] === Array || clazz[0] === Set) {
+                    const data = toObject(value);
+                    if (data instanceof Array) {
+                        if (clazz[1]) {
+                            for(let i = 0; i < data.length; i++){
+                                data[i] = this.parse(data[i], clazz[i + 1] ?? clazz[1]);
+                            }
+                        }
+                        return clazz[0] === Set ? new Set(data) : data;
+                    }
+                } else if (clazz[0] === Map) {
+                    const data = toObject(value);
+                    const map = new Map();
+                    if (data instanceof Array) {
+                        for (let item of data){
+                            map.set(item[0], clazz[1] ? this.parse(item[1], clazz[1]) : item[1]);
+                        }
+                    } else {
+                        for(let key in data){
+                            map.set(key, clazz[1] ? this.parse(data[key], clazz[1]) : data[key]);
+                        }
+                    }
+                    return map;
+                } else if (clazz[0] === RegExp) return new RegExp(value);
+                else {
+                    const data = toObject(value);
+                    parsePropsType.call(this, data);
+                    return data;
+                }
+            } catch (e) {
+                throw new ParseFailedError(`${value}不能被转为${clazz[0]?.name}\n` + e.message);
+            }
+            throw new ParseFailedError(`${value}不能被转为${clazz[0]?.name}`);
+        }
+        function toObject(data) {
+            return typeof data === "string" ? JSON.parse(data) : data;
         }
     }
 }
-RegularParser = _ts_decorate$4([
+RegularParser = _ts_decorate$2([
     Parser()
 ], RegularParser);
 
 const parsedKey = Symbol("parsed");
 const validatedKey = Symbol("validated");
-/* 对输入进行转化和校验 */ function ParserAndValidate(option) {
-    let targetObject, targetMethodName = "", targetIndex = 0;
+/* 对输入进行转化和校验 */ function MethodParameter(option) {
+    let classType;
     const inject = Inject({
         typeValueGetter: (container)=>{
             const prevValue = option.typeValueGetter(container);
             let value;
             if (typeof prevValue === "object") {
                 if (!prevValue[parsedKey]) {
-                    value = parse(container, option.parsers, prevValue);
+                    value = parse(container, option.parsers, prevValue, classType);
                     prevValue[parsedKey] = true;
                 }
             } else {
-                value = parse(container, option.parsers, prevValue);
+                value = parse(container, option.parsers, prevValue, classType);
             }
             if (option.validator === false || typeof value !== "object") return value;
             if (!value[validatedKey]) {
                 value[validatedKey] = true;
-                validate(container, targetObject, targetMethodName, targetIndex, value);
+                validate(container, classType, value);
             }
             return value;
         },
         afterExecute: option.afterExecute
     });
-    return (target, methodName, index)=>{
-        inject(target, methodName, index);
-        targetObject = target;
-        targetMethodName = getDecoratedName(methodName);
-        targetIndex = index;
+    return (clazz, methodName, index)=>{
+        inject(clazz, methodName, index);
+        const types = Reflect.getMetadata("design:paramtypes", clazz, methodName) ?? [];
+        classType = types[index];
     };
 }
 /**
  * 验证指定的数据
  * @throws NotFoundValidatorError 当找不到类型对应的验证器时抛出
  * @throws ValidateFailedError 当数据验证失败时抛出
- */ function validate(container, target, methodName, argIndex, value) {
-    const metadata = Metadata.getOrCreateMetadata(target);
-    const parameterTypes = metadata.getMethodParameterTypes(methodName);
-    const type = parameterTypes.types[argIndex];
+ */ function validate(container, classType, value) {
+    const type = classType.name;
     if (type === "String" || type === "Boolean" || type === "Number" || type === "Object" || type === "Function" || type === "Symbol") return;
     const errorProps = [];
     try {
@@ -328,23 +411,24 @@ const validatedKey = Symbol("validated");
         if (typeof instance === "object") errorProps.push(...validate$1(Object.assign(instance, value)));
     } catch (e) {
         if (e instanceof NotExistLabelError) throw new NotFoundValidatorError(`找不到类型${type}对应的验证器`);
-        throw e;
+        else if (!(e instanceof NoValidationError)) throw e;
     }
     if (errorProps.length) throw new ValidateFailedError(errorProps.map((propName)=>`${type}.${propName}校验失败。`).join("\n"));
 }
-/* 将输入的值进行转化 */ function parse(container, parsers, value) {
-    if (!parsers && parsers === undefined) parsers = [
+/* 将输入的值进行转化 */ function parse(container, parsers, value, clazz) {
+    if (parsers === null) return value;
+    if (parsers === undefined) parsers = [
         RegularParser
     ];
-    if (parsers && !(parsers instanceof Array)) parsers = [
+    else if (!(parsers instanceof Array)) parsers = [
         parsers
     ];
-    if (!parsers) return value;
-    return parsers.reduce((value, parserClass)=>container.getValue(parserClass).parse(value), value);
+    if (typeof clazz === "object") clazz = clazz.constructor;
+    return parsers.reduce((value, parserClass)=>container.getValue(parserClass).parse(value, clazz), value);
 }
 
 /* 属性/参数装饰器。为被装饰者注入请求体 */ function ReqBody(option) {
-    return ParserAndValidate({
+    return MethodParameter({
         ...option,
         typeValueGetter: (container)=>container.getValue(ServerRequest).body,
         afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
@@ -386,7 +470,7 @@ const validatedKey = Symbol("validated");
 }
 
 /* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
-    return ParserAndValidate({
+    return MethodParameter({
         ...option,
         typeValueGetter: (container)=>container.getValue(ServerRequest).query,
         afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
@@ -461,45 +545,13 @@ const validatedKey = Symbol("validated");
     });
 }
 
-/* 标识类用来处理需要返回的内容 */ function ResponseBodySender() {
-    const injectable = Injectable({
-        singleton: true,
-        moduleName: MODULE_NAME
-    });
-    return (clazz, _)=>{
-        injectable(clazz, _);
-        const userData = getOrCreateMetadataUserData(clazz);
-        userData.__server__classType = "response-body-sender";
-    };
-}
-
-/* 错误处理器派发器，匹配Error对应的错误处理器 */ class ErrorHandlerDispatcher {
-    _errorHandlerClasses = new Array();
-    constructor(customErrorHandlers){
-        this._errorHandlerClasses.push(...customErrorHandlers);
-        this._checkErrorHandlers();
-    }
-    /* 匹配Error对应的错误处理器 */ dispatch(error) {
-        for (let errorHandlerClass of this._errorHandlerClasses){
-            const userData = getOrCreateMetadataUserData(errorHandlerClass);
-            if (error instanceof userData.__server__handle_error_type) return errorHandlerClass;
-        }
-    }
-    /* 检查现有的类是否都装饰ErrorHandler */ _checkErrorHandlers() {
-        for (let errorHandlerClass of this._errorHandlerClasses){
-            const userData = getOrCreateMetadataUserData(errorHandlerClass);
-            if (userData.__server__classType !== "error-handler") throw new ServerError(errorHandlerClass.name + "未装饰ErrorHandler");
-        }
-    }
-}
-
-function _ts_decorate$3(decorators, target, key, desc) {
+function _ts_decorate$1(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-function _ts_metadata$2(k, v) {
+function _ts_metadata$1(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
 function _ts_param(paramIndex, decorator) {
@@ -514,31 +566,31 @@ class AuthorizedGuard {
         if (!session.get("userId")) throw new UnauthorizedError("未登录或登陆信息已过期");
     }
 }
-_ts_decorate$3([
+_ts_decorate$1([
     Inject(),
     _ts_param(0, ReqSession()),
     _ts_param(1, Inject({
         typeLabel: WHITE_LIST
     })),
-    _ts_metadata$2("design:type", Function),
-    _ts_metadata$2("design:paramtypes", [
+    _ts_metadata$1("design:type", Function),
+    _ts_metadata$1("design:paramtypes", [
         typeof Session === "undefined" ? Object : Session,
         Array,
         typeof ServerRequest === "undefined" ? Object : ServerRequest
     ]),
-    _ts_metadata$2("design:returntype", Object)
+    _ts_metadata$1("design:returntype", Object)
 ], AuthorizedGuard.prototype, "guard", null);
-AuthorizedGuard = _ts_decorate$3([
+AuthorizedGuard = _ts_decorate$1([
     Guard()
 ], AuthorizedGuard);
 
-function _ts_decorate$2(decorators, target, key, desc) {
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-function _ts_metadata$1(k, v) {
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
@@ -571,43 +623,32 @@ class ConsoleLogger {
         process.stdout.write(output);
     }
 }
-ConsoleLogger = _ts_decorate$2([
-    Injectable({
-        moduleName: MODULE_NAME,
-        singleton: true,
-        paramtypes: [
-            CONTEXT_LABEL
-        ]
-    }),
-    _ts_metadata$1("design:type", Function),
-    _ts_metadata$1("design:paramtypes", [
+ConsoleLogger = _ts_decorate([
+    Logger(),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
         String
     ])
 ], ConsoleLogger);
 
-function _ts_decorate$1(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-/* 将要返回的响应体内容 */ class ResponseBody {
+const filePath = Symbol("__FilePath__");
+/* 将要返回的响应体内容 */ class ResponseBodyImpl {
     object;
     success;
     code;
     msg;
     /* 从Error对象生成响应体内容 */ static fromError(error) {
-        return new ResponseBody({}, false, error.code ?? 500, error.message);
+        return new ResponseBodyImpl({}, false, error.code ?? 500, error.message);
     }
     /* 从值生成响应体内容 */ static from(value) {
         if (value instanceof Error) return this.fromError(value);
-        else if (value instanceof ResponseBody) return value;
-        return new ResponseBody(value);
+        else if (value instanceof ResponseBodyImpl) return value;
+        return new ResponseBodyImpl(value);
     }
     static fromFilePath(filePath) {
         return this.from({
             filePath,
-            __isFilePath__: true
+            [filePath]: true
         });
     }
     constructor(object, success = true, code = 200, msg = "ok"){
@@ -616,18 +657,44 @@ function _ts_decorate$1(decorators, target, key, desc) {
         this.code = code;
         this.msg = msg;
     }
-}
-class RegularResponseBodySender {
-    send(value, res) {
-        const responseBody = ResponseBody.from(value);
-        res.statusCode = responseBody.code;
-        if (responseBody.object?.__isFilePath__) return res.sendFile(responseBody.object.filePath);
-        else res.body(responseBody);
+    send(res) {
+        res.statusCode = this.code;
+        if (this.object?.[filePath]) return res.sendFile(this.object.filePath);
+        else return res.body(this);
     }
 }
-RegularResponseBodySender = _ts_decorate$1([
-    ResponseBodySender()
-], RegularResponseBodySender);
+
+/* 用来处理请求的管道 */ class RequestPipeline {
+    server;
+    request;
+    response;
+    constructor(server, request, response){
+        this.server = server;
+        this.request = request;
+        this.response = response;
+        this._container = server.createContainer();
+        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
+    }
+    /* 依赖注入容器 */ _container;
+    /* 启动管道，开始处理请求 */ async start() {
+        let result;
+        try {
+            for (let guardClass of this.server.guardClasses){
+                const guard = this._container.getValue(guardClass);
+                await this._container.call(guard, "guard");
+            }
+            const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
+            result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
+        } catch (e) {
+            this.server.log(e.logLevel || "error", e);
+            result = e;
+        }
+        return ResponseBodyImpl.from(result).send(this.response);
+    }
+    /* 销毁管道 */ dispose() {
+        this._container.dispose();
+    }
+}
 
 class Server {
     _serverPlatform;
@@ -646,18 +713,9 @@ class Server {
     get dependencyInjection() {
         return this._dependencyInjection;
     }
-    /* 用来处理请求的管道类 */ _requestPipelineClass;
     /* Web框架的实例 */ _platformInstance;
     get platformInstance() {
         return this._platformInstance;
-    }
-    /* 错误处理器派发器，匹配Error对应的错误处理器 */ _errorHandlerDispatcher;
-    get errorHandlerDispatcher() {
-        return this._errorHandlerDispatcher;
-    }
-    /* 响应体body构建者的Class */ _responseBodySender;
-    get responseBodySender() {
-        return this._responseBodySender;
     }
     /* 用来处理日志的Logger类集合 */ _loggerClasses;
     /* 路由守卫类的集合 */ _guardClasses;
@@ -692,25 +750,16 @@ class Server {
     }
     /* 处理请求 */ async handleRequest(request, response) {
         this.log("log", request);
-        const container = this.createContainer();
-        container.bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response);
-        const pipeline = container.getValue(this._requestPipelineClass);
+        const pipeline = new RequestPipeline(this, request, response);
         await pipeline.start();
         pipeline.dispose();
-        container.dispose();
     }
     /* 初始化Web服务器 */ async _init(options) {
-        this._errorHandlerDispatcher = new ErrorHandlerDispatcher(options.errorHandlers ?? []);
-        this._requestPipelineClass = options.pipeline ?? RequestPipeline;
-        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this)).bindValue(CONTEXT_LABEL, (options.contextName || "server") + ":" + this._serverPlatform.name);
-        this._dependencyInjection.load({
+        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this)).bindValue(CONTEXT_LABEL, (options.contextName || "server") + ":" + this._serverPlatform.name).load({
             moduleName: MODULE_NAME
         });
-        this._responseBodySender = this._dependencyInjection.getValue(options.responseBodySender ?? RegularResponseBodySender);
         if (options.consoleLogger !== false) this._loggerClasses.push(ConsoleLogger);
-        if (options.loggers) {
-            this._loggerClasses.push(...options.loggers);
-        }
+        if (options.loggers) this._loggerClasses.push(...options.loggers);
         if (options.guards) this._guardClasses.push(...options.guards);
         this._setupRoutes();
         this._platformInstance = await this._serverPlatform.create();
@@ -729,64 +778,8 @@ class Server {
     }
     /* 处理请求中的错误 */ _catchRequestError(err, _, response) {
         this.log(err.logLevel || "error", err);
-        return this._responseBodySender.send(err, response);
+        return ResponseBodyImpl.from(err).send(response);
     }
 }
 
-function _ts_decorate(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-function _ts_metadata(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-}
-class RequestPipeline {
-    server;
-    request;
-    response;
-    constructor(server, request, response){
-        this.server = server;
-        this.request = request;
-        this.response = response;
-        this._container = server.createContainer();
-        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
-    }
-    /* 依赖注入容器 */ _container;
-    /* 启动管道，开始处理请求 */ async start() {
-        const responseBodySender = this.server.responseBodySender;
-        let result;
-        try {
-            for (let guardClass of this.server.guardClasses){
-                const guard = this._container.getValue(guardClass);
-                await this._container.call(guard, "guard");
-            }
-            const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
-            result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
-        } catch (e) {
-            this.server.log(e.logLevel || "error", e);
-            result = e;
-            const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(e);
-            if (errorHandlerClass) {
-                const errorHandler = this._container.getValue(errorHandlerClass);
-                result = await errorHandler.handle(e, this.response, this.request);
-            }
-        }
-        return responseBodySender.send(result, this.response);
-    }
-    /* 销毁管道 */ dispose() {
-        this._container.dispose();
-    }
-}
-RequestPipeline = _ts_decorate([
-    Pipeline(),
-    _ts_metadata("design:type", Function),
-    _ts_metadata("design:paramtypes", [
-        typeof Server === "undefined" ? Object : Server,
-        typeof ServerRequest === "undefined" ? Object : ServerRequest,
-        typeof ServerResponse === "undefined" ? Object : ServerResponse
-    ])
-], RequestPipeline);
-
-export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, ErrorHandler, ErrorHandlerDispatcher, Guard, ImproperDecoratorError, MODULE_NAME, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, Parser, Pipeline, RegularParser, RegularResponseBodySender, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, RequestPipeline, Res, ResponseBody, ResponseBodySender, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };
+export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, Get, Guard, ImproperDecoratorError, Logger, MODULE_NAME, MarkParseType, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, ParseFailedError, Parser, Post, RegularParser, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, Res, ResponseBodyImpl, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ToArray, ToBoolean, ToDate, ToMap, ToNumber, ToObject, ToRegExp, ToSet, ToString, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };

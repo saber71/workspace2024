@@ -40,6 +40,9 @@ declare interface MethodParameterTypes {
 
   /* 对应序号入参的自定义getter函数 */
   getters: Record<number, TypeValueGetter>;
+
+  beforeCallMethods: InjectOptions["beforeCallMethod"][];
+  afterCallMethods: InjectOptions["afterCallMethod"][];
 }
 
 /* 定义一个可以指定入参类型和自定义入参获取方式的getter函数 */
@@ -58,4 +61,38 @@ declare interface FieldType {
 
   /* 字段值的获取getter函数 */
   getter?: TypeValueGetter;
+}
+
+declare interface InjectOptions extends MethodParameterOption {
+  typeLabel?: string;
+  typeValueGetter?: TypeValueGetter;
+  afterExecute?: (
+    metadata: import("src").Metadata,
+    className: string,
+    ...args: Array<string | number>
+  ) => void;
+  beforeCallMethod?: (
+    container: import("src").Container,
+    metadata: import("src").Metadata,
+    args: any[],
+  ) => void | Promise<void>;
+  afterCallMethod?: (
+    container: import("src").Container,
+    metadata: import("src").Metadata,
+    returnValue: any,
+    args: any[],
+    error?: Error,
+  ) => any | Promise<any>;
+}
+
+declare interface InjectableOptions extends MethodParameterOption {
+  /* 指定类所属的模块名 */
+  moduleName?: string;
+  /* 指定类是否是单例的 */
+  singleton?: boolean;
+  /* 类是否立即实例化 */
+  createImmediately?: boolean;
+  /* 默认true。是否可以用子类的元数据中的入参类型覆盖从父类继承来的类型信息。当子类没有改变父类的构造函数入参类型时，就应该将该字段设为false */
+  overrideConstructor?: boolean;
+  onCreate?: (instance: object) => void;
 }

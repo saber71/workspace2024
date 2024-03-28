@@ -2,6 +2,10 @@
 
 import EventEmitter from 'eventemitter3';
 
+export declare function AfterCallMethod(cb: InjectOptions["afterCallMethod"]): (target: any, methodName: any) => void;
+
+export declare function BeforeCallMethod(cb: InjectOptions["beforeCallMethod"]): (target: any, methodName: any) => void;
+
 export declare class Container extends EventEmitter<{
     loadClass: (clazz: Class, member: ContainerMember) => void;
 }> {
@@ -49,7 +53,12 @@ export declare class Container extends EventEmitter<{
      * 调用方法，其入参必须支持依赖注入
      * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
      */
-    call<T extends object>(instance: T, methodName: keyof T): any;
+    call<T extends object>(instance: T, methodName: keyof T): Promise<any>;
+    /**
+     * 调用方法，其入参必须支持依赖注入
+     * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+     */
+    callSync<T extends object>(instance: T, methodName: keyof T): any;
     protected _getMethodParameters(parameters?: MethodParameterTypes): any[];
     protected _newMember(name: string, metadata?: Metadata): ContainerMember;
 }
@@ -74,27 +83,13 @@ export declare function getDecoratedName(ctx?: string | ClassMemberDecoratorCont
  * @param option.typeValueGetter 指定被装饰的字段或入参的自定义getter。当被装饰的是类的字段或入参时才生效
  * @throws InjectNotFoundTypeError 在无法确定被装饰者的类型时抛出
  */
-export declare function Inject(option?: {
-    typeLabel?: string;
-    typeValueGetter?: TypeValueGetter;
-    afterExecute?: (metadata: Metadata, ...args: Array<string | number>) => void;
-} & MethodParameterOption): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: any) => void;
+export declare function Inject(option?: InjectOptions): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: any) => void;
 
 /**
  * 类装饰器。获取类的构造函数的入参类型，标记该类可以被依赖注入
  * 如果父类没有用Injectable装饰，那么子类就必须要声明构造函数，否则的话无法通过元数据得到子类正确的构造函数入参类型
- * @param option.moduleName 可选。指定类所属的模块名
- * @param option.singleton 可选。指定类是否是单例的
- * @param option.createImmediately 可选。类是否立即实例化
- * @param option.overrideConstructor 默认true。是否可以用子类的元数据中的入参类型覆盖从父类继承来的类型信息。当子类没有改变父类的构造函数入参类型时，就应该将该字段设为false
  */
-export declare function Injectable(option?: {
-    moduleName?: string;
-    singleton?: boolean;
-    createImmediately?: boolean;
-    overrideConstructor?: boolean;
-    onCreate?: (instance: object) => void;
-} & MethodParameterOption): (clazz: Class, ctx?: any) => void;
+export declare function Injectable(option?: InjectableOptions): (clazz: Class, ctx?: any) => void;
 
 export declare class InjectNotFoundTypeError extends Error {
 }

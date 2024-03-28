@@ -78,7 +78,9 @@ import EventEmitter from 'eventemitter3';
         if (methodName === "constructor") methodName = "_" + methodName;
         if (!this.methodNameMapParameterTypes[methodName]) this.methodNameMapParameterTypes[methodName] = {
             types: [],
-            getters: {}
+            getters: {},
+            beforeCallMethods: [],
+            afterCallMethods: []
         };
         return this.methodNameMapParameterTypes[methodName];
     }
@@ -90,7 +92,9 @@ import EventEmitter from 'eventemitter3';
             this.copiedConstructorParams = true;
             this.methodNameMapParameterTypes._constructor = {
                 types: parentConstructorParamTypes.types.slice(),
-                getters: Object.assign({}, parentConstructorParamTypes.getters)
+                getters: Object.assign({}, parentConstructorParamTypes.getters),
+                beforeCallMethods: [],
+                afterCallMethods: []
             };
             console.log("merge", this.clazz.name, parentConstructorParamTypes);
         }
@@ -129,10 +133,6 @@ import EventEmitter from 'eventemitter3';
 /**
  * 类装饰器。获取类的构造函数的入参类型，标记该类可以被依赖注入
  * 如果父类没有用Injectable装饰，那么子类就必须要声明构造函数，否则的话无法通过元数据得到子类正确的构造函数入参类型
- * @param option.moduleName 可选。指定类所属的模块名
- * @param option.singleton 可选。指定类是否是单例的
- * @param option.createImmediately 可选。类是否立即实例化
- * @param option.overrideConstructor 默认true。是否可以用子类的元数据中的入参类型覆盖从父类继承来的类型信息。当子类没有改变父类的构造函数入参类型时，就应该将该字段设为false
  */ function Injectable(option) {
     return (clazz, ctx)=>{
         const metadata = Metadata.getOrCreateMetadata(clazz);
@@ -181,6 +181,8 @@ import EventEmitter from 'eventemitter3';
             if (types) {
                 /* 方法装饰器 */ const methodParameterTypes = metadata.getMethodParameterTypes(propName);
                 fillInMethodParameterTypes(methodParameterTypes, option, types);
+                if (option?.beforeCallMethod) methodParameterTypes.beforeCallMethods.push(option.beforeCallMethod);
+                if (option?.afterCallMethod) methodParameterTypes.afterCallMethods.push(option.afterCallMethod);
             } else {
                 /* 属性装饰器 */ const type = typeLabel || Reflect.getMetadata("design:type", clazz, propName)?.name;
                 if (!type && !typeValueGetter) throw new InjectNotFoundTypeError("无法通过元数据获取字段类型，必须指定类型");
@@ -191,6 +193,22 @@ import EventEmitter from 'eventemitter3';
             }
             option?.afterExecute?.(metadata, metadata.clazz.name, propName);
         }
+    };
+}
+function BeforeCallMethod(cb) {
+    return (target, methodName)=>{
+        methodName = getDecoratedName(methodName);
+        const metadata = Metadata.getOrCreateMetadata(target);
+        const methodParameterTypes = metadata.getMethodParameterTypes(methodName);
+        methodParameterTypes.beforeCallMethods.push(cb);
+    };
+}
+function AfterCallMethod(cb) {
+    return (target, methodName)=>{
+        methodName = getDecoratedName(methodName);
+        const metadata = Metadata.getOrCreateMetadata(target);
+        const methodParameterTypes = metadata.getMethodParameterTypes(methodName);
+        methodParameterTypes.afterCallMethods.push(cb);
     };
 }
 /* 在装饰器Inject无法确定被装饰者类型时抛出 */ class InjectNotFoundTypeError extends Error {
@@ -314,10 +332,50 @@ import EventEmitter from 'eventemitter3';
     /**
    * 调用方法，其入参必须支持依赖注入
    * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
-   */ call(instance, methodName) {
+   */ async call(instance, methodName) {
         const metadata = Metadata.getOrCreateMetadata(instance.constructor);
         if (!(methodName in metadata.methodNameMapParameterTypes)) throw new MethodNotDecoratedInjectError(methodName + "方法未装饰Inject");
-        return instance[methodName](...this._getMethodParameters(metadata.methodNameMapParameterTypes[methodName]));
+        const methodParameter = metadata.methodNameMapParameterTypes[methodName];
+        const args = this._getMethodParameters(methodParameter);
+        for (let cb of methodParameter.beforeCallMethods){
+            await cb?.(this, metadata, args);
+        }
+        try {
+            const returnValue = await instance[methodName](...args);
+            for (let cb of methodParameter.afterCallMethods){
+                await cb?.(this, metadata, returnValue, args);
+            }
+            return returnValue;
+        } catch (e) {
+            for (let cb of methodParameter.afterCallMethods){
+                await cb?.(this, metadata, undefined, args, e);
+            }
+            throw e;
+        }
+    }
+    /**
+   * 调用方法，其入参必须支持依赖注入
+   * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+   */ callSync(instance, methodName) {
+        const metadata = Metadata.getOrCreateMetadata(instance.constructor);
+        if (!(methodName in metadata.methodNameMapParameterTypes)) throw new MethodNotDecoratedInjectError(methodName + "方法未装饰Inject");
+        const methodParameter = metadata.methodNameMapParameterTypes[methodName];
+        const args = this._getMethodParameters(methodParameter);
+        for (let cb of methodParameter.beforeCallMethods){
+            cb?.(this, metadata, args);
+        }
+        try {
+            const returnValue = instance[methodName](...args);
+            for (let cb of methodParameter.afterCallMethods){
+                cb?.(this, metadata, returnValue, args);
+            }
+            return returnValue;
+        } catch (e) {
+            for (let cb of methodParameter.afterCallMethods){
+                cb?.(this, metadata, undefined, args, e);
+            }
+            throw e;
+        }
     }
     /* 获取方法的入参 */ _getMethodParameters(parameters) {
         if (!parameters) return [];
@@ -414,4 +472,4 @@ import EventEmitter from 'eventemitter3';
 /* 当要覆盖可依赖注入的对象时抛出 */ class ForbiddenOverrideInjectableError extends Error {
 }
 
-export { Container, ContainerRepeatLoadError, DependencyCycleError, ForbiddenOverrideInjectableError, Inject, InjectNotFoundTypeError, Injectable, InvalidValueError, LoadableContainer, Metadata, MethodNotDecoratedInjectError, NotExistLabelError, fillInMethodParameterTypes, getDecoratedName };
+export { AfterCallMethod, BeforeCallMethod, Container, ContainerRepeatLoadError, DependencyCycleError, ForbiddenOverrideInjectableError, Inject, InjectNotFoundTypeError, Injectable, InvalidValueError, LoadableContainer, Metadata, MethodNotDecoratedInjectError, NotExistLabelError, fillInMethodParameterTypes, getDecoratedName };

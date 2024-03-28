@@ -106,6 +106,8 @@ export class Metadata {
       this.methodNameMapParameterTypes[methodName] = {
         types: [],
         getters: {},
+        beforeCallMethods: [],
+        afterCallMethods: [],
       };
     return this.methodNameMapParameterTypes[methodName];
   }
@@ -126,6 +128,8 @@ export class Metadata {
       this.methodNameMapParameterTypes._constructor = {
         types: parentConstructorParamTypes.types.slice(),
         getters: Object.assign({}, parentConstructorParamTypes.getters),
+        beforeCallMethods: [],
+        afterCallMethods: [],
       };
       console.log("merge", this.clazz.name, parentConstructorParamTypes);
     }

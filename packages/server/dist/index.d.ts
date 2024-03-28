@@ -30,14 +30,7 @@ export declare class DuplicateRouteHandlerError extends ServerError {
     name: string;
 }
 
-export declare function ErrorHandler<T extends Error>(errorClass: Class<T>): (clazz: Class, _?: any) => void;
-
-export declare class ErrorHandlerDispatcher {
-    private readonly _errorHandlerClasses;
-    constructor(customErrorHandlers: ErrorHandlerClass[]);
-    dispatch(error: Error): ErrorHandlerClass | undefined;
-    private _checkErrorHandlers;
-}
+export declare function Get(options?: WithoutTypeMethodOptions): (target: any, methodName?: any) => void;
 
 export declare function getOrCreateControllerMethod(target: any, methodName: string): ControllerMethod;
 
@@ -49,7 +42,11 @@ export declare class ImproperDecoratorError extends ServerError {
     name: string;
 }
 
-export declare function Method(option?: Partial<Pick<ControllerMethod, "route" | "routePrefix" | "type">> & MethodParameterOption): (target: any, methodName?: any) => void;
+export declare function Logger(): (clazz: Class<any>, ctx?: any) => void;
+
+export declare function MarkParseType(...clazz: Array<Class | null | undefined>): (target: any, propName?: any) => void;
+
+export declare function Method(option?: MethodOptions): (target: any, methodName?: any) => void;
 
 export declare const MODULE_NAME = "server";
 
@@ -76,54 +73,43 @@ export declare class NotFoundValidatorError extends ServerError {
     name: string;
 }
 
-export declare function Parser(): (clazz: Class, _?: any) => void;
-
-export declare function Pipeline(): (clazz: Class, _?: any) => void;
-
-export declare class RegularParser implements ParserInterface {
-    parse(value: any): any;
+export declare class ParseFailedError extends ServerError {
+    name: string;
 }
 
-export declare class RegularResponseBodySender implements ResponseBodySenderInterface {
-    send(value: any, res: ServerResponse): Promise<void> | undefined;
+export declare function Parser(): (clazz: Class, _?: any) => void;
+
+export declare function Post(options?: WithoutTypeMethodOptions): (target: any, methodName?: any) => void;
+
+export declare class RegularParser implements ParserInterface {
+    parse(value: any, ...clazz: Array<Class | undefined | null>): any;
 }
 
 export declare function Req(): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqBody(option?: ParserAndValidator): (target: any, methodName?: any, index?: any) => void;
+export declare function ReqBody(option?: ParserAndValidator): (clazz: any, methodName: any, index: number) => void;
 
 export declare function ReqFile(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
 export declare function ReqFiles(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
-export declare function ReqQuery(option?: ParserAndValidator): (target: any, methodName?: any, index?: any) => void;
+export declare function ReqQuery(option?: ParserAndValidator): (clazz: any, methodName: any, index: number) => void;
 
 export declare function ReqSession(): (clazz: any, propName: any, index?: any) => void;
 
-export declare class RequestPipeline {
-    readonly server: Server;
-    readonly request: ServerRequest;
-    readonly response: ServerResponse;
-    constructor(server: Server, request: ServerRequest, response: ServerResponse);
-    private readonly _container;
-    start(): Promise<void>;
-    dispose(): void;
-}
-
 export declare function Res(): (clazz: any, propName: any, index?: any) => void;
 
-export declare class ResponseBody implements RegularResponseBody {
+export declare class ResponseBodyImpl implements ResponseBody {
     readonly object: any;
     readonly success: boolean;
     readonly code: number;
     readonly msg: string;
-    static fromError(error: Error): ResponseBody;
-    static from(value: any): ResponseBody;
-    static fromFilePath(filePath: string): ResponseBody;
+    static fromError(error: Error): ResponseBodyImpl;
+    static from(value: any): ResponseBodyImpl;
+    static fromFilePath(filePath: string): ResponseBodyImpl;
     constructor(object: any, success?: boolean, code?: number, msg?: string);
+    send(res: ServerResponse): void | Promise<void>;
 }
-
-export declare function ResponseBodySender(): (clazz: Class, _?: any) => void;
 
 export declare namespace RouteManager {
     export function getUrls(): IterableIterator<string>;
@@ -150,13 +136,8 @@ export declare class Server<PlatformInstance extends object = object> {
     private constructor();
     private readonly _dependencyInjection;
     get dependencyInjection(): Container;
-    private _requestPipelineClass;
     private _platformInstance;
     get platformInstance(): PlatformInstance;
-    private _errorHandlerDispatcher;
-    get errorHandlerDispatcher(): ErrorHandlerDispatcher;
-    private _responseBodySender;
-    get responseBodySender(): ResponseBodySenderInterface;
     private readonly _loggerClasses;
     private readonly _guardClasses;
     get guardClasses(): ReadonlyArray<Class<GuardInterface>>;
@@ -232,6 +213,24 @@ export declare class Session<T extends Record<string, any>> {
 export declare class SessionKeyNotExistError extends ServerError {
     name: string;
 }
+
+export declare function ToArray(...valueClass: Class[]): (target: any, propName?: any) => void;
+
+export declare function ToBoolean(): (target: any, propName?: any) => void;
+
+export declare function ToDate(): (target: any, propName?: any) => void;
+
+export declare function ToMap(valueClass?: Class): (target: any, propName?: any) => void;
+
+export declare function ToNumber(): (target: any, propName?: any) => void;
+
+export declare function ToObject(): (target: any, propName?: any) => void;
+
+export declare function ToRegExp(): (target: any, propName?: any) => void;
+
+export declare function ToSet(...valueClass: Class[]): (target: any, propName?: any) => void;
+
+export declare function ToString(): (target: any, propName?: any) => void;
 
 export declare class UnauthorizedError extends ServerError {
     code: number;
