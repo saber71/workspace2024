@@ -1,9 +1,10 @@
 import {
   Controller,
-  Method,
   ReqBody,
   ReqQuery,
   NotFoundObjectError,
+  Get,
+  Post,
 } from "server";
 import { COLLECTION_ROLE } from "../constants";
 import { CreateRoleDTO, QueryDTO, UpdateRoleDTO } from "../dto";
@@ -12,7 +13,7 @@ import { Collection, StoreCollection } from "server-store";
 @Controller({ routePrefix: "/role" })
 export class RoleController {
   /* 新建Role对象 */
-  @Method({ type: "POST" })
+  @Post()
   create(
     @ReqBody() body: CreateRoleDTO,
     @Collection(COLLECTION_ROLE) collection: StoreCollection<RoleModel>,
@@ -30,7 +31,7 @@ export class RoleController {
    * 更新Role对象，如果toDelete为true时则删除对象不做其他更新
    * @throws NotFoundObjectError 当根据id找不到Role对象时抛出
    */
-  @Method({ type: "POST" })
+  @Post()
   update(
     @ReqBody() body: UpdateRoleDTO,
     @Collection(COLLECTION_ROLE) collection: StoreCollection<RoleModel>,
@@ -59,7 +60,7 @@ export class RoleController {
    * 根据id查找Role对象
    * @throws NotFoundObjectError 当根据id找不到Role对象时抛出
    */
-  @Method()
+  @Get()
   async findById(
     @ReqQuery() query: QueryDTO,
     @Collection(COLLECTION_ROLE) collection: StoreCollection<RoleModel>,

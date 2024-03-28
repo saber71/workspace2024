@@ -3,7 +3,7 @@ import { expect } from "vitest";
 import axiosCookieJarSupport from "axios-cookiejar-support";
 import { CookieJar } from "tough-cookie";
 
-axiosCookieJarSupport.wrapper(axios);
+const axiosInstance = axiosCookieJarSupport.wrapper(axios);
 
 const cookieJar = new CookieJar();
 
@@ -13,7 +13,7 @@ export function httpTest<Data = any>(
 ) {
   if (typeof config === "function") config = config();
   return new ExpectResponse<Data>(
-    axios
+    axiosInstance
       .request({
         baseURL: "http://localhost:4000/",
         withCredentials: true,

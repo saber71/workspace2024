@@ -688,6 +688,7 @@ const filePath = Symbol("__FilePath__");
         } catch (e) {
             this.server.log(e.logLevel || "error", e);
             result = e;
+            console.error(e);
         }
         return ResponseBodyImpl.from(result).send(this.response);
     }

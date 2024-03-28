@@ -94,5 +94,7 @@ declare interface InjectableOptions extends MethodParameterOption {
   createImmediately?: boolean;
   /* 默认true。是否可以用子类的元数据中的入参类型覆盖从父类继承来的类型信息。当子类没有改变父类的构造函数入参类型时，就应该将该字段设为false */
   overrideConstructor?: boolean;
+  /* 默认true。 */
+  overrideParent?: boolean;
   onCreate?: (instance: object) => void;
 }

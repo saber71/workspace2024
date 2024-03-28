@@ -27,6 +27,7 @@ describe("ServerUser", async () => {
         password: "123456",
       },
     })
+      .expectHasHeader("set-cookie")
       .expectStatus(200)
       .done();
 

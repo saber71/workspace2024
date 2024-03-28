@@ -1,4 +1,4 @@
-import { ToArray, ToBoolean, Validation } from "server";
+import { Injectable, ToArray, ToBoolean, Validation } from "server";
 
 export class QueryDTO {
   @Validation({ validatorType: "isString" })
@@ -63,6 +63,7 @@ export class CreateUserDTO {
   putUserData?: UserModel["userData"];
 }
 
+@Injectable({ overrideParent: false })
 export class UpdateUserDTO extends CreateUserDTO {
   @Validation({ validatorType: "isString" })
   id: UserModel["_id"];

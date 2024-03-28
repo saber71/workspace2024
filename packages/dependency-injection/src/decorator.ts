@@ -50,6 +50,7 @@ export function Injectable(option?: InjectableOptions) {
     metadata.moduleName = option?.moduleName;
     metadata.singleton = option?.singleton;
     metadata.createImmediately = option?.createImmediately;
+    metadata.overrideParent = option?.overrideParent;
     metadata.onCreate = option?.onCreate;
     const parameterTypes = metadata.getMethodParameterTypes();
     const designParameterTypes = Reflect.getMetadata(

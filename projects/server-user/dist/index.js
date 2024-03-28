@@ -1,4 +1,4 @@
-import { Validation, Method, ReqBody, ReqQuery, Controller, NotFoundObjectError, ReqSession, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
+import { Validation, ToBoolean, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqSession, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
 import { createServerPlatformKoa } from 'server-platform-koa';
 import { Collection, StoreCollection, ServerStore } from 'server-store';
 import validator from 'validator';
@@ -60,6 +60,7 @@ _ts_decorate$2([
         validatorType: "isBoolean",
         allowUndefined: true
     }),
+    ToBoolean(),
     _ts_metadata$2("design:type", Boolean)
 ], UpdateRoleDTO.prototype, "toDelete", void 0);
 _ts_decorate$2([
@@ -81,9 +82,11 @@ _ts_decorate$2([
         validatorType: "isArray",
         allowUndefined: true
     }),
+    ToArray(String),
     _ts_metadata$2("design:type", Array)
 ], UpdateRoleDTO.prototype, "deleteAuthorizations", void 0);
 class CreateUserDTO {
+    _id;
     name;
     loginName;
     password;
@@ -92,6 +95,13 @@ class CreateUserDTO {
     avatar;
     putUserData;
 }
+_ts_decorate$2([
+    Validation({
+        validatorType: "isString",
+        allowUndefined: true
+    }),
+    _ts_metadata$2("design:type", Object)
+], CreateUserDTO.prototype, "_id", void 0);
 _ts_decorate$2([
     Validation({
         validatorType: "isString"
@@ -162,6 +172,7 @@ _ts_decorate$2([
         validatorType: "isArray",
         allowUndefined: true
     }),
+    ToArray(String),
     _ts_metadata$2("design:type", Array)
 ], UpdateUserDTO.prototype, "deleteUserData", void 0);
 _ts_decorate$2([
@@ -169,8 +180,14 @@ _ts_decorate$2([
         validatorType: "isBoolean",
         allowUndefined: true
     }),
+    ToBoolean(),
     _ts_metadata$2("design:type", Boolean)
 ], UpdateUserDTO.prototype, "toDelete", void 0);
+UpdateUserDTO = _ts_decorate$2([
+    Injectable({
+        overrideParent: false
+    })
+], UpdateUserDTO);
 class LoginDTO {
     loginNameOrEmail;
     password;
@@ -239,14 +256,9 @@ class RoleController {
         if (!role) throw new NotFoundObjectError(`找不到id为${query.id}的Role对象`);
         return role;
     }
-    /* 返回数据库中的Role对象数量 */ async count(collection) {
-        return (await collection.getAll()).length;
-    }
 }
 _ts_decorate$1([
-    Method({
-        type: "POST"
-    }),
+    Post(),
     _ts_param$1(0, ReqBody()),
     _ts_param$1(1, Collection(COLLECTION_ROLE)),
     _ts_metadata$1("design:type", Function),
@@ -257,9 +269,7 @@ _ts_decorate$1([
     _ts_metadata$1("design:returntype", void 0)
 ], RoleController.prototype, "create", null);
 _ts_decorate$1([
-    Method({
-        type: "POST"
-    }),
+    Post(),
     _ts_param$1(0, ReqBody()),
     _ts_param$1(1, Collection(COLLECTION_ROLE)),
     _ts_metadata$1("design:type", Function),
@@ -270,7 +280,7 @@ _ts_decorate$1([
     _ts_metadata$1("design:returntype", void 0)
 ], RoleController.prototype, "update", null);
 _ts_decorate$1([
-    Method(),
+    Get(),
     _ts_param$1(0, ReqQuery()),
     _ts_param$1(1, Collection(COLLECTION_ROLE)),
     _ts_metadata$1("design:type", Function),
@@ -280,15 +290,6 @@ _ts_decorate$1([
     ]),
     _ts_metadata$1("design:returntype", Promise)
 ], RoleController.prototype, "findById", null);
-_ts_decorate$1([
-    Method(),
-    _ts_param$1(0, Collection(COLLECTION_ROLE)),
-    _ts_metadata$1("design:type", Function),
-    _ts_metadata$1("design:paramtypes", [
-        typeof StoreCollection === "undefined" ? Object : StoreCollection
-    ]),
-    _ts_metadata$1("design:returntype", Promise)
-], RoleController.prototype, "count", null);
 RoleController = _ts_decorate$1([
     Controller({
         routePrefix: "/role"
@@ -324,7 +325,7 @@ class UserController {
    */ create(data, collection, roleCollection) {
         return collection.transaction(async ()=>{
             if (!await roleCollection.getById(data.roleId)) throw new NotFoundObjectError("找不到roleId为" + data.roleId + "的Role对象");
-            return await collection.save({
+            return await collection.add({
                 ...data,
                 userData: data.putUserData ?? {},
                 createTime: Date.now()
@@ -350,7 +351,7 @@ class UserController {
                 });
             }
             if (!user) throw new Error("找不到用户或密码错误");
-            session.set("userId", user.id);
+            session.set("userId", user._id);
         });
     }
     /**
@@ -360,7 +361,7 @@ class UserController {
     }
 }
 _ts_decorate([
-    Method(),
+    Get(),
     _ts_param(0, ReqQuery()),
     _ts_param(1, Collection(COLLECTION_USER)),
     _ts_metadata("design:type", Function),
@@ -371,9 +372,7 @@ _ts_decorate([
     _ts_metadata("design:returntype", Promise)
 ], UserController.prototype, "findById", null);
 _ts_decorate([
-    Method({
-        type: "POST"
-    }),
+    Post(),
     _ts_param(0, ReqBody()),
     _ts_param(1, Collection(COLLECTION_USER)),
     _ts_param(2, Collection(COLLECTION_ROLE)),
@@ -386,9 +385,7 @@ _ts_decorate([
     _ts_metadata("design:returntype", void 0)
 ], UserController.prototype, "create", null);
 _ts_decorate([
-    Method({
-        type: "POST"
-    }),
+    Post(),
     _ts_param(0, ReqBody()),
     _ts_param(1, ReqSession()),
     _ts_param(2, Collection(COLLECTION_USER)),
@@ -401,9 +398,7 @@ _ts_decorate([
     _ts_metadata("design:returntype", void 0)
 ], UserController.prototype, "login", null);
 _ts_decorate([
-    Method({
-        type: "POST"
-    }),
+    Post(),
     _ts_param(0, ReqSession()),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
@@ -417,8 +412,8 @@ UserController = _ts_decorate([
     })
 ], UserController);
 
-async function bootstrap(port) {
-    const store = await ServerStore.create(createServerStoreFS("./store"));
+async function bootstrap(port, saveOnExit = true) {
+    const store = await ServerStore.create(createServerStoreFS("./store", saveOnExit));
     const app = await Server.create({
         serverPlatformAdapter: createServerPlatformKoa(),
         contextName: CONTEXT_NAME,
@@ -429,22 +424,41 @@ async function bootstrap(port) {
     app.dependencyInjection.bindInstance(store).bindValue(WHITE_LIST, [
         "/user/login"
     ]);
-    await checkAndInitRole(app, store);
+    await createDefaultData(app, store);
     app.bootstrap({
-        port
+        port,
+        session: {
+            secretKey: "secretKey"
+        }
     });
 }
-/* 检查数据库中的Role对象数量，如果数据库为空则新建一个默认角色 */ async function checkAndInitRole(app, store) {
-    const controller = app.dependencyInjection.getValue(RoleController);
-    const collection = store.collection(COLLECTION_ROLE);
-    const count = await controller.count(collection);
-    if (count === 0) {
-        const roleId = await controller.create({
+async function createDefaultData(app, store) {
+    const roleCollection = store.collection(COLLECTION_ROLE);
+    const userCollection = store.collection(COLLECTION_USER);
+    const defaultRole = await roleCollection.getById("0");
+    const defaultUser = await userCollection.getById("0");
+    if (!defaultRole) {
+        await roleCollection.add({
+            _id: "0",
             name: "默认",
-            authorizations: {}
-        }, collection);
-        app.log("log", "新建默认角色成功，id为" + roleId);
+            authorizations: {},
+            createTime: Date.now()
+        }, roleCollection);
+        app.log("log", "新建默认角色成功");
+    }
+    if (!defaultUser) {
+        await userCollection.add({
+            _id: "0",
+            name: "默认",
+            loginName: "default-user",
+            password: "123456",
+            roleId: "0",
+            email: "default-user@example.com",
+            userData: {},
+            createTime: Date.now()
+        });
+        app.log("log", "新建默认用户成功");
     }
 }
 
-export { CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, UpdateRoleDTO, UpdateUserDTO, bootstrap };
+export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, UpdateRoleDTO, UpdateUserDTO, bootstrap };

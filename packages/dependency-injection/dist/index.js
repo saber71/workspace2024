@@ -64,6 +64,7 @@ import EventEmitter from 'eventemitter3';
     /* 类是否立即实例化 */ createImmediately;
     copiedConstructorParams;
     /* 当Injectable装饰的类生成实例时调用 */ onCreate;
+    overrideParent;
     /* 保存方法的入参类型。key为方法名 */ methodNameMapParameterTypes;
     /* 字段名映射其类型名 */ _fieldTypes;
     get fieldTypes() {
@@ -140,6 +141,7 @@ import EventEmitter from 'eventemitter3';
         metadata.moduleName = option?.moduleName;
         metadata.singleton = option?.singleton;
         metadata.createImmediately = option?.createImmediately;
+        metadata.overrideParent = option?.overrideParent;
         metadata.onCreate = option?.onCreate;
         const parameterTypes = metadata.getMethodParameterTypes();
         const designParameterTypes = Reflect.getMetadata("design:paramtypes", clazz);
@@ -405,13 +407,14 @@ function AfterCallMethod(cb) {
         this.loadFromMetadata(metadataArray, option);
     }
     /* 从元数据中加载内容进容器中 */ loadFromMetadata(metadataArray, option = {}) {
-        const { overrideParent = true, moduleName } = option;
+        const { overrideParent = false, moduleName } = option;
         metadataArray = metadataArray.filter((metadata)=>!moduleName || !metadata.moduleName || metadata.moduleName === moduleName);
         for (let metadata of metadataArray){
             this._newMember(metadata.clazz.name, metadata);
         }
         if (overrideParent) {
             for (let item of metadataArray){
+                if (item.overrideParent === false) continue;
                 const member = this._memberMap.get(item.clazz.name);
                 /* 如果Member已被覆盖就跳过。可能是因为metadata顺序的原因，子类顺序先于父类 */ if (member.name !== item.clazz.name) continue;
                 for (let parentClassName of item.parentClassNames){

@@ -130,6 +130,7 @@ export declare class Metadata {
     createImmediately?: boolean;
     copiedConstructorParams: boolean;
     onCreate?: (instance: object) => void;
+    overrideParent?: boolean;
     readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes>;
     private _fieldTypes;
     get fieldTypes(): Record<string, FieldType>;

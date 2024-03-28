@@ -267,7 +267,7 @@ export class LoadableContainer extends Container {
 
   /* 从元数据中加载内容进容器中 */
   loadFromMetadata(metadataArray: Metadata[], option: LoadOption = {}) {
-    const { overrideParent = true, moduleName } = option;
+    const { overrideParent = false, moduleName } = option;
     metadataArray = metadataArray.filter(
       (metadata) =>
         !moduleName ||
@@ -279,6 +279,7 @@ export class LoadableContainer extends Container {
     }
     if (overrideParent) {
       for (let item of metadataArray) {
+        if (item.overrideParent === false) continue;
         const member = this._memberMap.get(item.clazz.name)!;
         /* 如果Member已被覆盖就跳过。可能是因为metadata顺序的原因，子类顺序先于父类 */
         if (member.name !== item.clazz.name) continue;

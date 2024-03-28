@@ -43,6 +43,7 @@ export class RequestPipeline {
     } catch (e) {
       this.server.log((e as any).logLevel || "error", e as Error);
       result = e;
+      console.error(e);
     }
     return ResponseBodyImpl.from(result).send(this.response);
   }
