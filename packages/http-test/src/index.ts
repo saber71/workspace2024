@@ -55,6 +55,8 @@ export class ExpectResponse<Data> {
   /* 是否对响应体进行测试 */
   private _toTestBody = false;
 
+  private _filterBody?: (data: any) => any;
+
   /* 设置期待的在响应头中存在的key */
   expectHasHeader(key: keyof AxiosResponse["headers"]) {
     this._expectHasHeaderKeys.push(key as string);
@@ -93,6 +95,11 @@ export class ExpectResponse<Data> {
     } as Data);
   }
 
+  filterBody(cb: (data: any) => any) {
+    this._filterBody = cb;
+    return this;
+  }
+
   /* 开始进行测试 */
   async done() {
     const res = await this._res;
@@ -108,6 +115,7 @@ export class ExpectResponse<Data> {
       expect(this._buildStatusObject(res.status)).toEqual(
         this._buildStatusObject(this._expectStatus),
       );
+    if (this._filterBody) res.data = this._filterBody(res.data);
     if (this._toTestBody)
       expect(this._buildBodyObject(res.data)).toEqual(
         this._buildBodyObject(this._expectBody),

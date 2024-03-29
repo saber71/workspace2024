@@ -10,11 +10,13 @@ export declare class ExpectResponse<Data> {
     private _expectStatus?;
     private _expectBody?;
     private _toTestBody;
+    private _filterBody?;
     expectHasHeader(key: keyof AxiosResponse["headers"]): this;
     expectHeader(key: keyof AxiosResponse["headers"], expectValue: string | RegExp): this;
     expectStatus(code: number): this;
     expectBody(data: Data): this;
     expectBodyData(data: any): this;
+    filterBody(cb: (data: any) => any): this;
     done(): Promise<void>;
     private _toBe;
     private _buildToBeObject;
