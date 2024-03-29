@@ -33,15 +33,6 @@ declare interface ServerCreateOption {
   /* Web框架适配器 */
   serverPlatformAdapter: ServerPlatformAdapter;
 
-  /* 自定义错误处理器 */
-  errorHandlers?: Array<ErrorHandlerClass>;
-
-  /* 指定用于处理请求的管道 */
-  pipeline?: Class<import("src").RequestPipeline>;
-
-  /* 用来处理需要由ServerResponse发送的内容 */
-  responseBodySender?: Class<ResponseBodySenderInterface>;
-
   /* 用来处理日志 */
   loggers?: Class<LoggerInterface>[];
 
@@ -146,14 +137,7 @@ declare interface ControllerMethod {
 }
 
 /* 类的类型 */
-declare type ServerClassType =
-  | "no-special"
-  | "pipeline"
-  | "error-handler"
-  | "controller"
-  | "response-body-sender"
-  | "parser"
-  | "guard";
+declare type ServerClassType = "no-special" | "controller" | "parser" | "guard";
 
 /* 保存类的自定义数据。挂在类的元数据上 */
 declare interface MetadataServerUserData {
@@ -176,18 +160,6 @@ declare interface MetadataServerUserData {
 
 /* 请求类型 */
 declare type MethodType = "GET" | "POST" | "PUT" | "DELETE";
-
-/* 输入错误，返回需要发送的内容。单例 */
-declare interface ErrorHandlerInterface<Err extends Error> {
-  handle(
-    err: Err,
-    res: import("src").ServerResponse,
-    req: import("src").ServerRequest,
-  ): any;
-}
-
-/* 错误处理器类定义 */
-declare type ErrorHandlerClass = Class<ErrorHandlerInterface<Error>>;
 
 /* 一条路由下，请求类型映射一个控制器方法 */
 declare type RouteHandlerSet = Partial<
@@ -216,6 +188,15 @@ declare interface ParserAndValidator {
   validator?: boolean;
 }
 
+declare type MethodParameterOptions = ParserAndValidator & {
+  typeValueGetter: (container: import("dependency-injection").Container) => any;
+  afterExecute?: (
+    metadata: import("dependency-injection").Metadata,
+    className: string,
+    ...args: Array<string | number>
+  ) => void;
+};
+
 /* 日志等级 */
 declare type LogLevel =
   | "log"
@@ -241,7 +222,7 @@ declare interface GuardInterface {
 }
 
 /* 内置的响应体格式 */
-declare interface RegularResponseBody<T = undefined> {
+declare interface ResponseBody<T = undefined> {
   code: number;
   object: T;
   success: boolean;
@@ -274,3 +255,10 @@ declare interface ProviderMetadata {
     };
   };
 }
+
+declare type MethodOptions = Partial<
+  Pick<ControllerMethod, "route" | "routePrefix" | "type">
+> &
+  MethodParameterOption;
+
+declare type WithoutTypeMethodOptions = Omit<MethodOptions, "type">;

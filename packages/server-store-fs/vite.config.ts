@@ -13,6 +13,7 @@ export default defineConfig({
         "node:process",
         "node:path",
         "common",
+        "deep-equal",
       ],
     },
     lib: {

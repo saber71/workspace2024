@@ -18,7 +18,7 @@ export async function bootstrap(port: number, saveOnExit = true) {
     .bindInstance(store)
     .bindValue(WHITE_LIST, ["/user/login"]);
   await createDefaultData(app, store);
-  app.bootstrap({ port });
+  app.bootstrap({ port, session: { secretKey: "secretKey" } });
 }
 
 async function createDefaultData(app: Server, store: ServerStore) {

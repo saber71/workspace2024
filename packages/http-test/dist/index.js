@@ -3,11 +3,11 @@ import { expect } from 'vitest';
 import axiosCookieJarSupport from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 
-axiosCookieJarSupport.wrapper(axios);
+const axiosInstance = axiosCookieJarSupport.wrapper(axios);
 const cookieJar = new CookieJar();
 /* 调用axios发起请求，返回准备对Response内容进行测试的对象 */ function httpTest(config) {
     if (typeof config === "function") config = config();
-    return new ExpectResponse(axios.request({
+    return new ExpectResponse(axiosInstance.request({
         baseURL: "http://localhost:4000/",
         withCredentials: true,
         jar: cookieJar,
@@ -34,6 +34,7 @@ const cookieJar = new CookieJar();
     /* 期待的状态码 */ _expectStatus;
     /* 期待的响应体 */ _expectBody;
     /* 是否对响应体进行测试 */ _toTestBody;
+    _filterBody;
     /* 设置期待的在响应头中存在的key */ expectHasHeader(key) {
         this._expectHasHeaderKeys.push(key);
         return this;
@@ -62,6 +63,10 @@ const cookieJar = new CookieJar();
             msg: "ok"
         });
     }
+    filterBody(cb) {
+        this._filterBody = cb;
+        return this;
+    }
     /* 开始进行测试 */ async done() {
         const res = await this._res;
         this._response = res;
@@ -73,6 +78,7 @@ const cookieJar = new CookieJar();
             expect(builder(res.headers[key])).toBeTruthy();
         }
         if (typeof this._expectStatus === "number") expect(this._buildStatusObject(res.status)).toEqual(this._buildStatusObject(this._expectStatus));
+        if (this._filterBody) res.data = this._filterBody(res.data);
         if (this._toTestBody) expect(this._buildBodyObject(res.data)).toEqual(this._buildBodyObject(this._expectBody));
     }
     /* 测试字符串是否满足期待 */ _toBe(res, value, expectValue) {

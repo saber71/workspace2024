@@ -3,6 +3,7 @@ import { Validation } from "class-validator";
 import * as fs from "fs";
 import { httpTest } from "http-test";
 import * as path from "node:path";
+import { Container } from "dependency-injection";
 import { expect } from "vitest";
 import {
   Controller,
@@ -11,16 +12,33 @@ import {
   ReqFile,
   ReqQuery,
   Session,
+  ToDate,
+  ToNumber,
 } from "../../src";
 //@ts-ignore
 import FormData from "form-data";
 
 class QueryForTest {
   @Validation({ validatorType: "isNumber" })
+  @ToNumber()
   id: number;
 
   @Validation({ validatorType: "isLength", arg: { min: 1 } })
   name: string;
+}
+
+class TestPostDTO {
+  @ToNumber()
+  id: number;
+  name: string;
+  @ToDate()
+  date: Date;
+}
+
+class UploadFileDTO {
+  @ToNumber()
+  id: number;
+  file: string;
 }
 
 @Controller()
@@ -33,10 +51,12 @@ export class CommonController {
   @Method({ type: "POST" })
   testPost(
     //@ts-ignore
-    @ReqBody() body: any,
+    @ReqBody() body: TestPostDTO,
+    container: Container,
   ) {
     expect(body.id).toEqual(12);
     expect(body.date).toBeInstanceOf(Date);
+    expect(container).toBeInstanceOf(Container);
     return { ...body, date: typeof body.date };
   }
 
@@ -47,7 +67,7 @@ export class CommonController {
     file: ServerFile,
     //@ts-ignore
     @ReqBody()
-    body: any,
+    body: UploadFileDTO,
   ) {
     fs.rmSync(file.filepath);
     return Object.assign(body, {

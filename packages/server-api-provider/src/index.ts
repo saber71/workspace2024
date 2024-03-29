@@ -23,7 +23,7 @@ export class ServerApiProvider {
     parameters: Partial<Args>,
     option?: AxiosRequestConfig,
   ): Promise<
-    RegularResponseBody<ExtractPromiseGenericType<ReturnType<T[MethodName]>>>
+    ResponseBody<ExtractPromiseGenericType<ReturnType<T[MethodName]>>>
   > {
     const methodSet = this.providerMetadata[key.description!];
     if (!methodSet)

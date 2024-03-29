@@ -78,6 +78,8 @@ export class Metadata {
   /* 当Injectable装饰的类生成实例时调用 */
   onCreate?: (instance: object) => void;
 
+  overrideParent?: boolean;
+
   /* 保存方法的入参类型。key为方法名 */
   readonly methodNameMapParameterTypes: Record<string, MethodParameterTypes> =
     {};
@@ -106,6 +108,8 @@ export class Metadata {
       this.methodNameMapParameterTypes[methodName] = {
         types: [],
         getters: {},
+        beforeCallMethods: [],
+        afterCallMethods: [],
       };
     return this.methodNameMapParameterTypes[methodName];
   }
@@ -126,6 +130,8 @@ export class Metadata {
       this.methodNameMapParameterTypes._constructor = {
         types: parentConstructorParamTypes.types.slice(),
         getters: Object.assign({}, parentConstructorParamTypes.getters),
+        beforeCallMethods: [],
+        afterCallMethods: [],
       };
       console.log("merge", this.clazz.name, parentConstructorParamTypes);
     }

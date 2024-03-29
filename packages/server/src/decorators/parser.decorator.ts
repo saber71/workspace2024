@@ -26,7 +26,7 @@ export function MarkParseType(...clazz: Array<Class | null | undefined>) {
       );
       if (type) clazz = [type];
     }
-    if (clazz.length === 0) throw new Error("Not fount type");
+    if (clazz.length === 0) throw new Error("Not found type");
     const userData = getOrCreateMetadataUserData(target);
     userData.__server__propParseToType[propName] = clazz;
   };

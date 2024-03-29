@@ -1,4 +1,5 @@
 import { deepClone, deepAssign } from 'common';
+import deepEqual from 'deep-equal';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { v4 } from 'uuid';
@@ -11,6 +12,9 @@ function createServerStoreFS(basePath = ".", saveOnExit = true) {
     return {
         init () {
             return Promise.resolve();
+        },
+        getById (collectionName, id) {
+            return Promise.resolve(collections.get(collectionName)?.data[id]);
         },
         add (collectionName, ...items) {
             const collection = getCollection(collectionName);
@@ -124,9 +128,9 @@ function parseFilterCondition(condition) {
     if (!condition) return [];
     const filterPredicates = [];
     for(let keyOrPropName in condition){
-        const value = condition[keyOrPropName];
+        const conditionValue = condition[keyOrPropName];
         if (keyOrPropName === "$or" || keyOrPropName === "$nor") {
-            const filterConditions = value;
+            const filterConditions = conditionValue;
             const conditions = filterConditions.map(parseFilterCondition);
             if (keyOrPropName === "$or") {
                 filterPredicates.push((item)=>{
@@ -144,10 +148,16 @@ function parseFilterCondition(condition) {
                 });
             }
         } else {
-            if (isCondition(value)) {
-                parseCondition(keyOrPropName, value, filterPredicates);
+            if (isCondition(conditionValue)) {
+                parseCondition(keyOrPropName, conditionValue, filterPredicates);
             } else {
-                filterPredicates.push((item)=>item[keyOrPropName] === value);
+                if (typeof conditionValue === "object" && conditionValue) {
+                    const subFilterPredicates = parseFilterCondition(conditionValue);
+                    filterPredicates.push((item)=>{
+                        if (item[keyOrPropName] === undefined || item[keyOrPropName] === null) return false;
+                        return subFilterPredicates.every((fn)=>fn(item[keyOrPropName]));
+                    });
+                } else filterPredicates.push((item)=>item[keyOrPropName] === conditionValue);
             }
         }
     }
@@ -161,7 +171,12 @@ function parseCondition(propName, condition, filterPredicates) {
         else if (conditionKey === "$greater") filterPredicates.push((item)=>item[propName] > conditionValue);
         else if (conditionKey === "$lessEqual") filterPredicates.push((item)=>item[propName] <= conditionValue);
         else if (conditionKey === "$greaterEqual") filterPredicates.push((item)=>item[propName] >= conditionValue);
-        else if (conditionKey === "$not") filterPredicates.push((item)=>item[propName] !== conditionValue);
+        else if (conditionKey === "$not") filterPredicates.push((item)=>!deepEqual(item[propName], conditionValue, {
+                strict: true
+            }));
+        else if (conditionKey === "$equal") filterPredicates.push((item)=>deepEqual(item[propName], conditionValue, {
+                strict: true
+            }));
         else if (conditionKey === "$dateBefore") {
             if (conditionValue instanceof Date) conditionValue = conditionValue.getTime();
             filterPredicates.push((item)=>{
@@ -197,26 +212,26 @@ function parseCondition(propName, condition, filterPredicates) {
                 return true;
             });
         } else if (conditionKey === "$in") {
-            filterPredicates.push((item)=>conditionValue.includes(item[propName]));
+            filterPredicates.push((item)=>includes(conditionValue, item[propName]));
         } else if (conditionKey === "$notIn") {
-            filterPredicates.push((item)=>!conditionValue.includes(item[propName]));
+            filterPredicates.push((item)=>!includes(conditionValue, item[propName]));
         } else if (conditionKey === "$contains") {
             filterPredicates.push((item)=>{
                 const value = item[propName];
                 if (value instanceof Array) {
                     if (conditionValue instanceof Array) {
                         for (let cond of conditionValue){
-                            if (!value.includes(cond)) return false;
+                            if (!includes(value, cond)) return false;
                         }
                         return true;
-                    } else return value.includes(conditionValue);
+                    } else return includes(value, conditionValue);
                 } else if (typeof value === "string") {
                     if (conditionValue instanceof Array) {
                         for (let cond of conditionValue){
-                            if (!value.includes(cond)) return false;
+                            if (!includes(value, cond)) return false;
                         }
                         return true;
-                    } else return value.includes(conditionValue);
+                    } else return includes(value, conditionValue);
                 }
                 return false;
             });
@@ -226,17 +241,17 @@ function parseCondition(propName, condition, filterPredicates) {
                 if (value instanceof Array) {
                     if (conditionValue instanceof Array) {
                         for (let cond of conditionValue){
-                            if (value.includes(cond)) return false;
+                            if (includes(value, cond)) return false;
                         }
                         return true;
-                    } else return !value.includes(conditionValue);
+                    } else return !includes(value, conditionValue);
                 } else if (typeof value === "string") {
                     if (conditionValue instanceof Array) {
                         for (let cond of conditionValue){
-                            if (value.includes(cond)) return false;
+                            if (includes(value, cond)) return false;
                         }
                         return true;
-                    } else return !value.includes(conditionValue);
+                    } else return !includes(value, conditionValue);
                 }
                 return false;
             });
@@ -253,6 +268,7 @@ function isCondition(arg) {
         "$lessEqual",
         "greater",
         "$greaterEqual",
+        "$equal",
         "$not",
         "$dateBefore",
         "$dateAfter",
@@ -268,6 +284,12 @@ function isCondition(arg) {
         if (key in arg) return true;
     }
     return false;
+}
+function includes(arr, value) {
+    if (typeof arr === "string") return arr.includes(value);
+    else return arr.find((item)=>deepEqual(item, value, {
+            strict: true
+        }));
 }
 
 export { createServerStoreFS, matchFilterCondition };

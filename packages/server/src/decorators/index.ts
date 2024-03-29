@@ -1,9 +1,8 @@
 export * from "./controller.decorator";
-export * from "./error-handler.decorator";
 export * from "./guard.decorator";
+export * from "./logger.decorator";
 export * from "./method.decorator";
 export * from "./parser.decorator";
-export * from "./pipeline.decorator";
 export * from "./req.decorator";
 export * from "./req-body.decorator";
 export * from "./req-file.decorator";
@@ -11,4 +10,3 @@ export * from "./req-files.decorator";
 export * from "./req-query.decorator";
 export * from "./req-session.decorator";
 export * from "./res.decorator";
-export * from "./response-body-sender.decorator";

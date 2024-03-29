@@ -1,13 +1,18 @@
 import { httpTest } from "http-test";
 import { expect } from "vitest";
-import { Controller, Method, ReqQuery } from "../../src";
+import { Controller, Get, Method, ReqQuery, ToNumber } from "../../src";
+
+class QueryDTO {
+  @ToNumber()
+  id: number;
+}
 
 @Controller({ routePrefix: "/user" })
 export class UserController {
-  @Method({ routePrefix: "/api" })
+  @Get({ routePrefix: "/api" })
   findById(
     //@ts-ignore
-    @ReqQuery() query: any,
+    @ReqQuery() query: QueryDTO,
   ) {
     return { id: query.id };
   }

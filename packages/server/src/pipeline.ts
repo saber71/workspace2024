@@ -1,13 +1,12 @@
 import { Container } from "dependency-injection";
-import { Pipeline } from "./decorators";
 import { ServerRequest } from "./request";
 import { ServerResponse } from "./response";
+import { ResponseBodyImpl } from "./response-body";
 import { RouteManager } from "./route-manager";
 import { Server } from "./server";
 import { Session } from "./session";
 
 /* 用来处理请求的管道 */
-@Pipeline()
 export class RequestPipeline {
   constructor(
     readonly server: Server,
@@ -27,7 +26,6 @@ export class RequestPipeline {
 
   /* 启动管道，开始处理请求 */
   async start() {
-    const responseBodySender = this.server.responseBodySender;
     let result: any;
     try {
       for (let guardClass of this.server.guardClasses) {
@@ -45,19 +43,9 @@ export class RequestPipeline {
     } catch (e) {
       this.server.log((e as any).logLevel || "error", e as Error);
       result = e;
-      const errorHandlerClass = this.server.errorHandlerDispatcher.dispatch(
-        e as Error,
-      );
-      if (errorHandlerClass) {
-        const errorHandler = this._container.getValue(errorHandlerClass);
-        result = await errorHandler.handle(
-          e as Error,
-          this.response,
-          this.request,
-        );
-      }
+      console.error(e);
     }
-    return responseBodySender.send(result, this.response);
+    return ResponseBodyImpl.from(result).send(this.response);
   }
 
   /* 销毁管道 */

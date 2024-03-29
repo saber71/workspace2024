@@ -166,17 +166,62 @@ export class Container extends EventEmitter<{
    * 调用方法，其入参必须支持依赖注入
    * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
    */
-  call<T extends object>(instance: T, methodName: keyof T) {
+  async call<T extends object>(instance: T, methodName: keyof T) {
     const metadata = Metadata.getOrCreateMetadata(instance.constructor);
     if (!(methodName in metadata.methodNameMapParameterTypes))
       throw new MethodNotDecoratedInjectError(
         (methodName as any) + "方法未装饰Inject",
       );
-    return (instance as any)[methodName](
-      ...this._getMethodParameters(
-        (metadata.methodNameMapParameterTypes as any)[methodName],
-      ),
-    );
+    const methodParameter = (metadata.methodNameMapParameterTypes as any)[
+      methodName
+    ] as MethodParameterTypes;
+    const args = this._getMethodParameters(methodParameter);
+    for (let cb of methodParameter.beforeCallMethods) {
+      await cb?.(this, metadata, args);
+    }
+    try {
+      let returnValue = await (instance as any)[methodName](...args);
+      for (let cb of methodParameter.afterCallMethods) {
+        returnValue = await cb?.(this, metadata, returnValue, args);
+      }
+      return returnValue;
+    } catch (e) {
+      for (let cb of methodParameter.afterCallMethods) {
+        await cb?.(this, metadata, undefined, args, e as Error);
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * 调用方法，其入参必须支持依赖注入
+   * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
+   */
+  callSync<T extends object>(instance: T, methodName: keyof T) {
+    const metadata = Metadata.getOrCreateMetadata(instance.constructor);
+    if (!(methodName in metadata.methodNameMapParameterTypes))
+      throw new MethodNotDecoratedInjectError(
+        (methodName as any) + "方法未装饰Inject",
+      );
+    const methodParameter = (metadata.methodNameMapParameterTypes as any)[
+      methodName
+    ] as MethodParameterTypes;
+    const args = this._getMethodParameters(methodParameter);
+    for (let cb of methodParameter.beforeCallMethods) {
+      cb?.(this, metadata, args);
+    }
+    try {
+      let returnValue = (instance as any)[methodName](...args);
+      for (let cb of methodParameter.afterCallMethods) {
+        returnValue = cb?.(this, metadata, returnValue, args);
+      }
+      return returnValue;
+    } catch (e) {
+      for (let cb of methodParameter.afterCallMethods) {
+        cb?.(this, metadata, undefined, args, e as Error);
+      }
+      throw e;
+    }
   }
 
   /* 获取方法的入参 */
@@ -222,7 +267,7 @@ export class LoadableContainer extends Container {
 
   /* 从元数据中加载内容进容器中 */
   loadFromMetadata(metadataArray: Metadata[], option: LoadOption = {}) {
-    const { overrideParent = true, moduleName } = option;
+    const { overrideParent = false, moduleName } = option;
     metadataArray = metadataArray.filter(
       (metadata) =>
         !moduleName ||
@@ -234,6 +279,7 @@ export class LoadableContainer extends Container {
     }
     if (overrideParent) {
       for (let item of metadataArray) {
+        if (item.overrideParent === false) continue;
         const member = this._memberMap.get(item.clazz.name)!;
         /* 如果Member已被覆盖就跳过。可能是因为metadata顺序的原因，子类顺序先于父类 */
         if (member.name !== item.clazz.name) continue;

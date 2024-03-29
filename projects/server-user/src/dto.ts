@@ -1,4 +1,4 @@
-import { Validation } from "server";
+import { Injectable, ToArray, ToBoolean, Validation } from "server";
 
 export class QueryDTO {
   @Validation({ validatorType: "isString" })
@@ -18,6 +18,7 @@ export class UpdateRoleDTO {
   id: string;
 
   @Validation({ validatorType: "isBoolean", allowUndefined: true })
+  @ToBoolean()
   toDelete?: boolean;
 
   @Validation({ validatorType: "isString", allowUndefined: true })
@@ -27,6 +28,7 @@ export class UpdateRoleDTO {
   putAuthorizations?: RoleModel["authorizations"];
 
   @Validation({ validatorType: "isArray", allowUndefined: true })
+  @ToArray(String)
   deleteAuthorizations?: string[];
 }
 
@@ -61,14 +63,17 @@ export class CreateUserDTO {
   putUserData?: UserModel["userData"];
 }
 
+@Injectable({ overrideParent: false })
 export class UpdateUserDTO extends CreateUserDTO {
   @Validation({ validatorType: "isString" })
   id: UserModel["_id"];
 
   @Validation({ validatorType: "isArray", allowUndefined: true })
+  @ToArray(String)
   deleteUserData?: string[];
 
   @Validation({ validatorType: "isBoolean", allowUndefined: true })
+  @ToBoolean()
   toDelete?: boolean;
 }
 

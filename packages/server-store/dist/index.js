@@ -93,11 +93,8 @@ class StoreCollection {
         const result = await this.search(condition);
         return result[0];
     }
-    async getById(id) {
-        const result = await this.search({
-            _id: id
-        });
-        return result[0];
+    getById(id) {
+        return this.adapter.getById(this.name, id);
     }
     async getAll() {
         return await this.search();

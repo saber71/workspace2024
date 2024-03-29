@@ -1,7 +1,6 @@
 import chalk from "chalk";
-import { Injectable } from "dependency-injection";
 import * as process from "node:process";
-import { CONTEXT_LABEL, MODULE_NAME } from "./constant";
+import { Logger } from "./decorators";
 import { ServerRequest } from "./request";
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
@@ -13,11 +12,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   month: "2-digit",
 });
 
-@Injectable({
-  moduleName: MODULE_NAME,
-  singleton: true,
-  paramtypes: [CONTEXT_LABEL],
-})
+@Logger()
 export class ConsoleLogger implements LoggerInterface {
   constructor(readonly contextName: string) {}
 

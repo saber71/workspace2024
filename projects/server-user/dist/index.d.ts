@@ -1,4 +1,10 @@
-export declare function bootstrap(port: number): Promise<void>;
+export declare function bootstrap(port: number, saveOnExit?: boolean): Promise<void>;
+
+export declare const COLLECTION_ROLE = "role";
+
+export declare const COLLECTION_USER = "user";
+
+export declare const CONTEXT_NAME = "server-user";
 
 export declare class CreateRoleDTO {
     name: string;
@@ -6,6 +12,7 @@ export declare class CreateRoleDTO {
 }
 
 export declare class CreateUserDTO {
+    _id: UserModel["_id"];
     name: UserModel["name"];
     loginName: UserModel["loginName"];
     password: UserModel["password"];
