@@ -180,9 +180,9 @@ export class Container extends EventEmitter<{
       await cb?.(this, metadata, args);
     }
     try {
-      const returnValue = await (instance as any)[methodName](...args);
+      let returnValue = await (instance as any)[methodName](...args);
       for (let cb of methodParameter.afterCallMethods) {
-        await cb?.(this, metadata, returnValue, args);
+        returnValue = await cb?.(this, metadata, returnValue, args);
       }
       return returnValue;
     } catch (e) {
@@ -211,9 +211,9 @@ export class Container extends EventEmitter<{
       cb?.(this, metadata, args);
     }
     try {
-      const returnValue = (instance as any)[methodName](...args);
+      let returnValue = (instance as any)[methodName](...args);
       for (let cb of methodParameter.afterCallMethods) {
-        cb?.(this, metadata, returnValue, args);
+        returnValue = cb?.(this, metadata, returnValue, args);
       }
       return returnValue;
     } catch (e) {

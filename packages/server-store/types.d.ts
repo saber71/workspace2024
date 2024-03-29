@@ -64,6 +64,8 @@ declare interface StoreAdapter {
     condition?: FilterCondition<T>,
   ): Promise<T[]>;
 
+  getById(collectionName: string, id: string): Promise<T | undefined>;
+
   init(): Promise<void>;
 }
 
@@ -72,6 +74,7 @@ declare interface Condition<Value> {
   $lessEqual?: Value;
   $greater?: Value;
   $greaterEqual?: Value;
+  $equal?: Value;
   $not?: Value;
   $dateBefore?: Date | number;
   $dateAfter?: Date | number;
@@ -91,7 +94,10 @@ declare interface Condition<Value> {
 }
 
 declare type FilterCondition<TSchema extends StoreItem> = Partial<{
-  [P in keyof TSchema]: TSchema[P] | Partial<Condition<TSchema[P]>>;
+  [P in keyof TSchema]:
+    | TSchema[P]
+    | FilterCondition<TSchema[P]>
+    | Partial<Condition<TSchema[P]>>;
 }> &
   Partial<{
     $or: FilterCondition<TSchema>[];

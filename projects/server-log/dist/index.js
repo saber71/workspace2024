@@ -95,13 +95,14 @@ Controller = _ts_decorate([
 
 function ServerLog(description, options = {}) {
     if (!options.creatorGetter) options.creatorGetter = (container)=>container.getValue(Session).get("userId");
-    return AfterCallMethod((container)=>{
+    return AfterCallMethod((container, metadata, returnValue, args, error)=>{
+        if (error) return returnValue;
         const creator = options.creatorGetter(container);
         const serverLogAddress = container.getValue(SERVER_LOG_ADDRESS);
         axios.post(serverLogAddress + "/log/create", {
             creator,
             description,
-            data: typeof options.data === "function" ? options.data() : options.data
+            data: typeof options.data === "function" ? options.data(container) : options.data
         });
     });
 }

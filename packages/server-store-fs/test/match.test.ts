@@ -5,8 +5,13 @@ describe("match", () => {
   test("query condition must match data", () => {
     expect(
       matchFilterCondition(
-        { _id: "1", a: 12, b: "  " },
-        { _id: "1", a: { $less: 20, $greaterEqual: 12 }, b: { $match: /\s+/ } },
+        { _id: "1", a: 12, b: "  ", c: { c1: 20, c2: 50 } },
+        {
+          _id: "1",
+          a: { $less: 20, $greaterEqual: 12 },
+          b: { $match: /\s+/ },
+          c: { c1: { $lessEqual: 30 }, c2: 50 },
+        },
       ),
     ).toEqual(true);
     expect(

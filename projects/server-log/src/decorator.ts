@@ -6,19 +6,23 @@ export function ServerLog(
   description: string,
   options: {
     creatorGetter?: (container: Container) => string;
-    data?: any | (() => any);
+    data?: any | ((container: Container) => any);
   } = {},
 ) {
   if (!options.creatorGetter)
     options.creatorGetter = (container) =>
       container.getValue(Session).get("userId");
-  return AfterCallMethod((container) => {
+  return AfterCallMethod((container, metadata, returnValue, args, error) => {
+    if (error) return returnValue;
     const creator = options.creatorGetter!(container);
     const serverLogAddress = container.getValue(SERVER_LOG_ADDRESS);
     axios.post(serverLogAddress + "/log/create", {
       creator,
       description,
-      data: typeof options.data === "function" ? options.data() : options.data,
+      data:
+        typeof options.data === "function"
+          ? options.data(container)
+          : options.data,
     });
   });
 }

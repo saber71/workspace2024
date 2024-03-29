@@ -106,9 +106,8 @@ export class StoreCollection<T extends StoreItem> {
     return result[0];
   }
 
-  async getById(id: string): Promise<T | undefined> {
-    const result = await this.search({ _id: id } as FilterCondition<T>);
-    return result[0] as T;
+  getById(id: string): Promise<T | undefined> {
+    return this.adapter.getById(this.name, id);
   }
 
   async getAll(): Promise<T[]> {

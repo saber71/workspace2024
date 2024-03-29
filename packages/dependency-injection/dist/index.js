@@ -343,9 +343,9 @@ function AfterCallMethod(cb) {
             await cb?.(this, metadata, args);
         }
         try {
-            const returnValue = await instance[methodName](...args);
+            let returnValue = await instance[methodName](...args);
             for (let cb of methodParameter.afterCallMethods){
-                await cb?.(this, metadata, returnValue, args);
+                returnValue = await cb?.(this, metadata, returnValue, args);
             }
             return returnValue;
         } catch (e) {
@@ -367,9 +367,9 @@ function AfterCallMethod(cb) {
             cb?.(this, metadata, args);
         }
         try {
-            const returnValue = instance[methodName](...args);
+            let returnValue = instance[methodName](...args);
             for (let cb of methodParameter.afterCallMethods){
-                cb?.(this, metadata, returnValue, args);
+                returnValue = cb?.(this, metadata, returnValue, args);
             }
             return returnValue;
         } catch (e) {
