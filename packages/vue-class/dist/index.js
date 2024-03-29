@@ -500,6 +500,7 @@ function getOrCreateMetadata(clazz, ctx) {
 }
 /* 适用于属性 */ function VueInject(key) {
     return (target, arg)=>{
+        if (!key) key = Reflect.getMetadata("design:type", target, arg)?.name;
         getOrCreateMetadata(target, arg).vueInject.push({
             propName: getName(arg),
             provideKey: key

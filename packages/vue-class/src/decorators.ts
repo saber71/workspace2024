@@ -129,8 +129,10 @@ export function Link(option?: {
 }
 
 /* 适用于属性 */
-export function VueInject(key: string | symbol) {
+export function VueInject(key?: string | symbol) {
   return (target: object, arg: any) => {
+    if (!key)
+      key = (Reflect as any).getMetadata("design:type", target, arg)?.name;
     getOrCreateMetadata(target, arg).vueInject.push({
       propName: getName(arg),
       provideKey: key,

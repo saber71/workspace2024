@@ -1,12 +1,33 @@
+import swc from "unplugin-swc";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import vueJsx from "@vitejs/plugin-vue-jsx";
+import * as path from "node:path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
-  server: {
-    proxy: {
-      "/user": "http://localhost:4001",
+  plugins: [
+    vue(),
+    vueJsx({
+      babelPlugins: [
+        [
+          "@babel/plugin-proposal-decorators",
+          {
+            version: "legacy",
+          },
+        ],
+        ["@babel/plugin-transform-class-properties"],
+      ],
+    }),
+    swc.vite(),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      tsconfig: "./tsconfig.json",
     },
   },
 });

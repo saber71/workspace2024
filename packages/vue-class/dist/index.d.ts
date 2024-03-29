@@ -1,7 +1,8 @@
-import type { App } from 'vue';
+import { App } from 'vue';
 import { ComponentCustomProps } from 'vue';
-import type { ComponentPublicInstance } from 'vue';
-import type { DirectiveBinding } from 'vue';
+import { ComponentPublicInstance } from 'vue';
+import { DefineSetupFnComponent } from 'vue';
+import { DirectiveBinding } from 'vue';
 import { EmitsOptions } from 'vue';
 import { getCurrentInstance } from 'vue';
 import { HTMLAttributes } from 'vue';
@@ -10,6 +11,7 @@ import { LoadableContainer } from 'dependency-injection';
 import { NavigationGuardNext } from 'vue-router';
 import { ObjectEmitsOptions } from 'vue';
 import { Prop } from 'vue';
+import { PublicProps } from 'vue';
 import { RouteLocationNormalized } from 'vue-router';
 import { RouteLocationNormalizedLoaded } from 'vue-router';
 import { Router } from 'vue-router';
@@ -100,7 +102,7 @@ export declare function RouterGuard(option?: {
 
 export declare function Service(option?: Parameters<typeof Injectable>[0]): (clazz: Class_2, ctx?: any) => void;
 
-export declare function toNative<Props extends VueComponentBaseProps, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>): (props: Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K_1 in `on${Capitalize<string & keyof Emit>}`]?: (K_1 extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {})) => any;
+export declare function toNative<Props extends VueComponentBaseProps, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>): DefineSetupFnComponent<Props, Emit, {}, Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K in `on${Capitalize<string & keyof Emit>}`]?: (K extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {}), PublicProps>;
 
 export declare type TransformModelValue<T extends {}> = "v-model:modelValue" extends keyof T ? Omit<T, "v-model:modelValue"> & {
     ["v-model"]?: T["v-model:modelValue"];
@@ -153,7 +155,7 @@ export declare class VueDirective<El extends HTMLElement | ComponentPublicInstan
     unmounted(binding: DirectiveBinding<Value>): void;
 }
 
-export declare function VueInject(key: string | symbol): (target: object, arg: any) => void;
+export declare function VueInject(key?: string | symbol): (target: object, arg: any) => void;
 
 export declare class VueRouterGuard {
     static install(router: Router): void;
