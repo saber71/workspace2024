@@ -3,6 +3,7 @@ import { Validation } from "class-validator";
 import * as fs from "fs";
 import { httpTest } from "http-test";
 import * as path from "node:path";
+import { Container } from "dependency-injection";
 import { expect } from "vitest";
 import {
   Controller,
@@ -51,9 +52,11 @@ export class CommonController {
   testPost(
     //@ts-ignore
     @ReqBody() body: TestPostDTO,
+    container: Container,
   ) {
     expect(body.id).toEqual(12);
     expect(body.date).toBeInstanceOf(Date);
+    expect(container).toBeInstanceOf(Container);
     return { ...body, date: typeof body.date };
   }
 

@@ -1,0 +1,1 @@
+{"Controller":{"create":{"type":"POST","url":"/log/create","parameters":[{"isBody":true},0]},"find":{"type":"GET","url":"/log/find","parameters":[{"isQuery":true},0]}}}

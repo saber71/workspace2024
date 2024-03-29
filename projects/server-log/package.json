@@ -1,0 +1,25 @@
+{
+  "name": "server-log",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build && server-provider-metadata",
+    "watch": "vite build --watch",
+    "test": "vitest",
+    "serve:prod": "node index.js",
+    "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
+  },
+  "peerDependencies": {
+    "axios": "^1.6.8",
+    "server": "workspace:^",
+    "server-platform-express": "workspace:^",
+    "server-store": "workspace:^",
+    "server-store-fs": "workspace:^"
+  },
+  "devDependencies": {
+    "http-test": "workspace:^",
+    "server-provider": "workspace:^"
+  }
+}
