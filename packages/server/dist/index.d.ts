@@ -1,11 +1,10 @@
 /// <reference types="dependency-injection/types" />
-/// <reference types="node" />
 
 import { Container } from 'dependency-injection';
-import type { IncomingHttpHeaders } from 'node:http';
-import type { OutgoingHttpHeaders } from 'node:http';
-import type { ParsedUrlQuery } from 'node:querystring';
-import type { URL as URL_2 } from 'node:url';
+import { IncomingHttpHeaders } from 'node:http';
+import { OutgoingHttpHeaders } from 'node:http';
+import { ParsedUrlQuery } from 'node:querystring';
+import { URL as URL_2 } from 'node:url';
 
 export declare class AuthorizedGuard implements GuardInterface {
     guard(session: Session<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
@@ -236,6 +235,7 @@ export declare class UnauthorizedError extends ServerError {
     code: number;
     name: string;
     logLevel: string;
+    constructor(message?: string);
 }
 
 export declare class ValidateFailedError extends ServerError {
@@ -249,3 +249,24 @@ export * from "class-validator";
 export * from "dependency-injection";
 
 export { }
+
+/// <reference types="dependency-injection/types" />
+export declare namespace RouteManager {
+    function getUrls(): IterableIterator<string>;
+    /**
+     * 获取url对应的请求类型
+     * @throws NotFoundRouteHandlerError 当找不到url对应的RouteHandler时抛出
+     */
+    function getMethodTypes(url: string): Set<MethodType>;
+    /**
+     * 保存路由url及其控制器方法
+     * @throws DuplicateRouteHandlerError 当路由出现重复时抛出
+     */
+    function register(type: MethodType, url: string, controllerClass: Class, methodName: string): void;
+    /**
+     * 查找路由url对应的控制器方法
+     * @throws NotFoundRouteHandlerError 当找不到路由对应的控制器方法时抛出
+     */
+    function getRouteHandler(methodType: MethodType, url: string): RouteHandler;
+}
+

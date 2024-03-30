@@ -7,6 +7,7 @@ import {
   ReqQuery,
   ReqSession,
   Session,
+  UnauthorizedError,
 } from "server";
 import { Collection, StoreCollection } from "server-store";
 import validator from "validator";
@@ -87,5 +88,15 @@ export class UserController {
   @Post()
   async logout(@ReqSession() session: Session<RegularSessionData>) {
     session.deleteKey("userId");
+  }
+
+  @Get()
+  auth(
+    @ReqSession() session: Session<RegularSessionData>,
+    @Collection(COLLECTION_USER) collection: StoreCollection<UserModel>,
+  ) {
+    const userId = session.get("userId");
+    if (!userId) throw new UnauthorizedError();
+    return collection.getById(userId);
   }
 }

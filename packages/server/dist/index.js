@@ -14,6 +14,9 @@ import * as process from 'node:process';
     code = 401;
     name = "UnauthorizedError";
     logLevel = "warn";
+    constructor(message = "未登录或登陆信息已过期"){
+        super(message);
+    }
 }
 /* 当找不到路由时抛出 */ class NotFoundError extends ServerError {
     code = 404;
@@ -563,7 +566,7 @@ class AuthorizedGuard {
     guard(session, whiteList, req) {
         if (whiteList.length === 0 || whiteList.includes("*")) return;
         if (whiteList.includes(req.path)) return;
-        if (!session.get("userId")) throw new UnauthorizedError("未登录或登陆信息已过期");
+        if (!session.get("userId")) throw new UnauthorizedError();
     }
 }
 _ts_decorate$1([

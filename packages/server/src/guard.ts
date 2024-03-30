@@ -16,7 +16,6 @@ export class AuthorizedGuard implements GuardInterface {
   ): void | Promise<void> {
     if (whiteList.length === 0 || whiteList.includes("*")) return;
     if (whiteList.includes(req.path)) return;
-    if (!session.get("userId"))
-      throw new UnauthorizedError("未登录或登陆信息已过期");
+    if (!session.get("userId")) throw new UnauthorizedError();
   }
 }

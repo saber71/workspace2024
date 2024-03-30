@@ -55,4 +55,5 @@ async function createDefaultData(app: Server, store: ServerStore) {
 
 export * from "./dto";
 export * from "./constants";
+export * from "./controllers";
 ///<reference types="../types.d.ts"/>

@@ -1,4 +1,4 @@
-import { Validation, ToBoolean, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqSession, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
+import { Validation, ToBoolean, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqSession, UnauthorizedError, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
 import { createServerPlatformKoa } from 'server-platform-koa';
 import { Collection, StoreCollection, ServerStore } from 'server-store';
 import validator from 'validator';
@@ -359,6 +359,11 @@ class UserController {
    */ async logout(session) {
         session.deleteKey("userId");
     }
+    auth(session, collection) {
+        const userId = session.get("userId");
+        if (!userId) throw new UnauthorizedError();
+        return collection.getById(userId);
+    }
 }
 _ts_decorate([
     Get(),
@@ -406,6 +411,17 @@ _ts_decorate([
     ]),
     _ts_metadata("design:returntype", Promise)
 ], UserController.prototype, "logout", null);
+_ts_decorate([
+    Get(),
+    _ts_param(0, ReqSession()),
+    _ts_param(1, Collection(COLLECTION_USER)),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof Session === "undefined" ? Object : Session,
+        typeof StoreCollection === "undefined" ? Object : StoreCollection
+    ]),
+    _ts_metadata("design:returntype", void 0)
+], UserController.prototype, "auth", null);
 UserController = _ts_decorate([
     Controller({
         routePrefix: "/user"
@@ -461,4 +477,4 @@ async function createDefaultData(app, store) {
     }
 }
 
-export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, UpdateRoleDTO, UpdateUserDTO, bootstrap };
+export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleController, UpdateRoleDTO, UpdateUserDTO, UserController, bootstrap };
