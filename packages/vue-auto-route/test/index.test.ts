@@ -1,67 +1,71 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { RouteRecordRaw } from "vue-router";
 import { autoRoutes } from "../src";
 
-test("vue-auto-route:autoRoutes", async () => {
-  const routes = await autoRoutes(
-    {
-      "./view1.ts": { default: 1 },
-      "./view2-p2-view.ts": () => ({ default: 2 }),
-      "./view/view4.ts": () => Promise.resolve({ default: 4 }),
-      "./view/view3-p3.view.ts": Promise.resolve({ default: 3 }),
-      "./view2/empty/view5.home.ts": { default: 5 },
-    },
-    ".",
-  );
-  expect(routes).toEqual({
-    path: "/",
-    redirect: "/view2/empty/view5",
-    children: [
-      {
-        path: "view1",
-        name: "View1",
-        component: 1 as any,
-        children: [],
-      },
-      {
-        path: "view2-p2-view",
-        name: "View2P2View",
-        component: 2 as any,
-        children: [],
-      },
-      {
-        path: "view",
-        children: [
-          {
-            path: "view3-p3",
-            name: "View3P3",
-            component: 3 as any,
-            children: [],
-          },
-          {
-            path: "view4",
-            name: "View4",
-            component: 4 as any,
-            children: [],
-          },
-        ],
-      },
-      {
-        path: "view2",
-        children: [
-          {
-            path: "empty",
-            children: [
-              {
-                path: "view5",
-                name: "View5",
-                component: 5 as any,
-                children: [],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  } satisfies RouteRecordRaw);
+function mockComponent(index: number) {
+  return { default: index };
+}
+
+describe("AutoRoutes", () => {
+  test.concurrent("basic", async () => {
+    expect(
+      await autoRoutes(
+        {
+          "./1.ts": mockComponent(1),
+          "./2.ts": () => mockComponent(2),
+          "./3.ts": () => Promise.resolve(mockComponent(3)),
+          "./4.ts": Promise.resolve(mockComponent(4)),
+          "./1.home.ts": Promise.resolve(mockComponent(5)),
+          "./1/1.home.ts": mockComponent(11),
+          "./1/2.ts": mockComponent(12),
+          "./1/2/1.home.ts": mockComponent(121),
+        },
+        ".",
+      ),
+    ).toEqual({
+      path: "/",
+      children: [
+        {
+          path: "1",
+          redirect: "/1/1",
+          children: [
+            {
+              path: "1",
+              children: [],
+              component: 11 as any,
+            },
+            {
+              path: "2",
+              redirect: "/1/2/1",
+              children: [
+                {
+                  path: "1",
+                  children: [],
+                  component: 121 as any,
+                },
+              ],
+              component: 12 as any,
+            },
+          ],
+          component: 5 as any,
+        },
+        {
+          path: "2",
+          children: [],
+          component: 2 as any,
+        },
+        {
+          path: "3",
+          children: [],
+          component: 3 as any,
+        },
+        {
+          path: "4",
+          children: [],
+          component: 4 as any,
+        },
+      ],
+      redirect: "/1",
+    } satisfies RouteRecordRaw);
+  });
 });
