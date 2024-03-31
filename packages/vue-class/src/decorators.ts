@@ -1,5 +1,6 @@
 import { Injectable } from "dependency-injection";
 import { type WatchOptions } from "vue";
+import type { RouteLocationNormalized } from "vue-router";
 import { ModuleName } from "./constants";
 import {
   applyMetadata,
@@ -60,7 +61,10 @@ export function Service(option?: Parameters<typeof Injectable>[0]) {
 }
 
 /* 适用于类 */
-export function RouterGuard(option?: { matchTo?: RegExp; matchFrom?: RegExp }) {
+export function RouterGuard(option?: {
+  matchTo?: RegExp | ((path: RouteLocationNormalized) => boolean);
+  matchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
+}) {
   const fn = Injectable(
     Object.assign(
       {

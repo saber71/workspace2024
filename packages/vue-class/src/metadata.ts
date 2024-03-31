@@ -22,7 +22,11 @@ import {
   watchEffect,
   type WatchOptions,
 } from "vue";
-import { onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
+import {
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  type RouteLocationNormalized,
+} from "vue-router";
 import type { HookType, WatcherTarget } from "./decorators";
 import type { Class } from "./types";
 import { VueComponent } from "./vue-component";
@@ -48,9 +52,9 @@ export class Metadata {
 
   directiveName = "";
 
-  routerGuardMatchTo?: RegExp;
+  routerGuardMatchTo?: RegExp | ((path: RouteLocationNormalized) => boolean);
 
-  routerGuardMatchFrom?: RegExp;
+  routerGuardMatchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
 
   readonly mutts: { propName: string; shallow?: boolean }[] = [];
 

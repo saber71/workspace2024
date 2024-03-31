@@ -96,8 +96,8 @@ declare function Readonly_2(shallow?: boolean): (target: object, arg: any) => vo
 export { Readonly_2 as Readonly }
 
 export declare function RouterGuard(option?: {
-    matchTo?: RegExp;
-    matchFrom?: RegExp;
+    matchTo?: RegExp | ((path: RouteLocationNormalized) => boolean);
+    matchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
 }): (clazz: Class_2<VueRouterGuard>, ctx?: any) => void;
 
 export declare function Service(option?: Parameters<typeof Injectable>[0]): (clazz: Class_2, ctx?: any) => void;

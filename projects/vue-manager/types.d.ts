@@ -7,3 +7,9 @@ declare module "*.vue" {
   const componentOptions: ComponentOptions;
   export default componentOptions;
 }
+
+declare interface ViewMeta {
+  title: string;
+  hidden?: boolean;
+  icon?: any;
+}

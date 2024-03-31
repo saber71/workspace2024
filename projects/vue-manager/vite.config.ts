@@ -30,4 +30,18 @@ export default defineConfig({
       tsconfig: "./tsconfig.json",
     },
   },
+  server: {
+    proxy: {
+      "^/server-user": {
+        target: "http://localhost:4001",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/server-user/, ""),
+      },
+      "^/server-log": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/server-log/, ""),
+      },
+    },
+  },
 });
