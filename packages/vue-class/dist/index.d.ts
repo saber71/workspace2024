@@ -165,12 +165,12 @@ export declare class VueRouterGuard {
     onError(error: Error, to: RouteLocationNormalized, from: RouteLocationNormalizedLoaded): void;
 }
 
-export declare function Watcher(option?: {
-    source?: WatcherTarget | WatcherTarget[];
+export declare function Watcher<T extends VueComponent>(option?: {
+    source?: WatcherTarget<T> | WatcherTarget<T>[];
     option?: WatchOptions;
 }): (target: object, arg: any) => void;
 
-export declare type WatcherTarget = string | ((instance: VueComponent | object) => any);
+export declare type WatcherTarget<T extends VueComponent> = string | ((instance: T) => any);
 
 export declare type WithSlotTypes<Emit extends EmitsOptions, T extends {}> = Omit<SetupContext<Emit>, "slots"> & {
     slots: NonNullable<VueComponentProps<T>["v-slots"]>;

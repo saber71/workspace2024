@@ -12,7 +12,9 @@ import { VueComponent, type VueComponentBaseProps } from "./vue-component";
 import type { VueDirective } from "./vue-directive";
 import type { VueRouterGuard } from "./vue-router-guard";
 
-export type WatcherTarget = string | ((instance: VueComponent | object) => any);
+export type WatcherTarget<T extends VueComponent> =
+  | string
+  | ((instance: T) => any);
 
 export type HookType =
   | "onMounted"
@@ -175,8 +177,8 @@ export function PropsWatcher(option?: WatchOptions) {
 }
 
 /* 适用于方法 */
-export function Watcher(option?: {
-  source?: WatcherTarget | WatcherTarget[];
+export function Watcher<T extends VueComponent>(option?: {
+  source?: WatcherTarget<T> | WatcherTarget<T>[];
   option?: WatchOptions;
 }) {
   return (target: object, arg: any) => {
