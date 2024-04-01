@@ -4,7 +4,7 @@ async function autoRoutes(data, pathPrefix) {
         children: []
     };
     const reg = new RegExp("^" + pathPrefix);
-    const homeReg = /\.home\./;
+    const homeReg = /(\.home\.|\.home$)/;
     const routeRecordMap = new Map();
     routeRecordMap.set("/", root);
     const promises = [];
@@ -34,15 +34,16 @@ async function autoRoutes(data, pathPrefix) {
                 }
                 routeRecordMap.set(accPath, routeRecord);
             }
-            if (i === arr.length - 1) {
+            const existHome = homeReg.test(pathComponent);
+            if (i === arr.length - 1 || existHome) {
                 if (prevRouteRecord) {
-                    if (component.default.name) routeRecord.name = component.default.name;
-                    routeRecord.component = component.default;
-                    if (component.Meta) routeRecord.meta = Object.assign({}, component.Meta);
-                    if (homeReg.test(pathComponent)) {
-                        prevRouteRecord.redirect = arr.slice(0, arr.length - 1).concat([
-                            pathName[0]
-                        ]).join("/");
+                    if (i === arr.length - 1) {
+                        if (component.default.name) routeRecord.name = component.default.name;
+                        routeRecord.component = component.default;
+                        if (component.Meta) routeRecord.meta = Object.assign({}, component.Meta);
+                    }
+                    if (existHome) {
+                        prevRouteRecord.redirect = accPath.slice(1);
                     }
                 }
             }
