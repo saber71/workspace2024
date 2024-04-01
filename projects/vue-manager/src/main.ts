@@ -1,3 +1,5 @@
+import "./styles/style.css";
+import "./styles/theme.css";
 import "ant-design-vue/dist/reset.css";
 import App from "@/App.vue";
 import { ROUTE_RECORDS, ROUTER } from "@/constant.ts";
@@ -33,8 +35,8 @@ const router = createRouter({
 await VueClass.install(app, router);
 
 VueClass.dependencyInjection
-  .bindInstance(router)
-  .bindValue(ROUTER, routeRecords);
+  .bindValue(ROUTER, router)
+  .bindValue(ROUTE_RECORDS, routeRecords);
 
 app
   .use(router)

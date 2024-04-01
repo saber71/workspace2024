@@ -3,6 +3,11 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import * as path from "node:path";
+import * as fs from "node:fs";
+
+const serverPortJson = JSON.parse(
+  fs.readFileSync(path.resolve("../server.json"), "utf8"),
+);
 
 export default defineConfig({
   plugins: [
@@ -33,12 +38,12 @@ export default defineConfig({
   server: {
     proxy: {
       "^/server-user": {
-        target: "http://localhost:4001",
+        target: "http://localhost:" + serverPortJson["server-user"].port,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/server-user/, ""),
       },
       "^/server-log": {
-        target: "http://localhost:4000",
+        target: "http://localhost:" + serverPortJson["server-log"].port,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/server-log/, ""),
       },

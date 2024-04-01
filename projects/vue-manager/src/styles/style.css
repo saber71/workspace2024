@@ -9,21 +9,3 @@
 .ant-btn-link {
   padding: 0;
 }
-
-.light {
-  --bg-base: #f5f5f5;
-  --bg-secondary: white;
-  --border-base: #f0f0f0;
-  --text-base: black;
-}
-
-.dark {
-  --bg-base: black;
-  --bg-secondary: #141414;
-  --border-base: #303030;
-  --text-base: #ffffff;
-}
-
-.root-view {
-  color: var(--text-base);
-}

@@ -1,3 +1,4 @@
+import { MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import type { VNodeChild } from "vue";
 import {
   Component,
@@ -21,4 +22,5 @@ export default toNative<VueComponentBaseProps>(LoginInst);
 export const Meta: ViewMeta = {
   title: "登陆",
   hidden: true,
+  icon: <MenuUnfoldOutlined />,
 };
