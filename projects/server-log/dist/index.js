@@ -1,12 +1,10 @@
-import { Validation, Post, ReqBody, Get, ReqQuery, Controller as Controller$1, Session, AfterCallMethod, Server } from 'server';
+import { Validation, Post, ReqBody, Get, ReqQuery, Controller as Controller$1, Server } from 'server';
 import { createServerPlatformExpress } from 'server-platform-express';
 import { Collection, StoreCollection, ServerStore } from 'server-store';
 import { createServerStoreFS } from 'server-store-fs';
-import axios from 'axios';
 
 const CONTEXT_NAME = "server-log";
 const COLLECTION_LOG = "collected-log";
-const SERVER_LOG_ADDRESS = "server-log-address";
 
 function _ts_decorate$1(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -21,6 +19,9 @@ class CreateLogDTO {
     creator;
     description;
     data;
+    body;
+    query;
+    url;
 }
 _ts_decorate$1([
     Validation({
@@ -37,6 +38,12 @@ _ts_decorate$1([
     }),
     _ts_metadata$1("design:type", String)
 ], CreateLogDTO.prototype, "description", void 0);
+_ts_decorate$1([
+    Validation({
+        validatorType: "isString"
+    }),
+    _ts_metadata$1("design:type", String)
+], CreateLogDTO.prototype, "url", void 0);
 
 function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -93,21 +100,6 @@ Controller = _ts_decorate([
     })
 ], Controller);
 
-function ServerLog(description, options = {}) {
-    if (!options.creatorGetter) options.creatorGetter = (container)=>container.getValue(Session).get("userId");
-    return AfterCallMethod((container, metadata, returnValue, args, error)=>{
-        if (error) return returnValue;
-        const creator = options.creatorGetter(container);
-        const serverLogAddress = container.getValue(SERVER_LOG_ADDRESS);
-        axios.post(serverLogAddress + "/log/create", {
-            creator,
-            description,
-            data: typeof options.data === "function" ? options.data(container) : options.data
-        });
-    });
-}
-
-///<reference types="../types.d.ts"/>
 async function bootstrap(port, saveOnExit = true) {
     const store = await ServerStore.create(createServerStoreFS("../store", saveOnExit));
     const app = await Server.create({
@@ -120,4 +112,4 @@ async function bootstrap(port, saveOnExit = true) {
     });
 }
 
-export { COLLECTION_LOG, CONTEXT_NAME, Controller, SERVER_LOG_ADDRESS, ServerLog, bootstrap };
+export { COLLECTION_LOG, CONTEXT_NAME, Controller, bootstrap };

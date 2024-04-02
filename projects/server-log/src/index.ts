@@ -1,5 +1,3 @@
-///<reference types="../types.d.ts"/>
-
 import { Server } from "server";
 import { createServerPlatformExpress } from "server-platform-express";
 import { ServerStore } from "server-store";
@@ -21,5 +19,5 @@ export async function bootstrap(port: number, saveOnExit = true) {
 }
 
 export * from "./controller";
-export * from "./decorator";
 export * from "./constants";
+///<reference types="../types.d.ts"/>

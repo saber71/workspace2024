@@ -7,8 +7,19 @@ import { v4 } from 'uuid';
 ///<reference types="../types.d.ts"/>
 function createServerStoreFS(basePath = ".", saveOnExit = true) {
     basePath = path.resolve(basePath);
-    process.on("exit", saveDataToFile);
     const collections = initCollections();
+    const needSaveCollectionNames = new Set();
+    let prevTime = Date.now();
+    if (saveOnExit) {
+        process.on("exit", saveDataToFile);
+        process.nextTick(()=>{
+            const now = Date.now();
+            if (now - prevTime >= 1000) {
+                prevTime = now;
+                saveCollectionChange();
+            }
+        });
+    }
     return {
         init () {
             return Promise.resolve();
@@ -17,6 +28,7 @@ function createServerStoreFS(basePath = ".", saveOnExit = true) {
             return Promise.resolve(collections.get(collectionName)?.data[id]);
         },
         add (collectionName, ...items) {
+            needSaveCollectionNames.add(collectionName);
             const collection = getCollection(collectionName);
             const ids = [];
             for (let item of items){
@@ -33,6 +45,7 @@ function createServerStoreFS(basePath = ".", saveOnExit = true) {
             return query(collection, condition, sortOrders);
         },
         async update (collectionName, ...items) {
+            needSaveCollectionNames.add(collectionName);
             const collection = getCollection(collectionName);
             for (let item of items){
                 const id = item._id = item._id ?? v4();
@@ -52,6 +65,7 @@ function createServerStoreFS(basePath = ".", saveOnExit = true) {
             };
         },
         async delete (collectionName, condition) {
+            needSaveCollectionNames.add(collectionName);
             const collection = getCollection(collectionName);
             const result = query(collection, condition);
             const deleted = [];
@@ -83,11 +97,27 @@ function createServerStoreFS(basePath = ".", saveOnExit = true) {
         }
         return collections;
     }
+    function saveCollectionChange() {
+        if (needSaveCollectionNames.size) {
+            saveCollections(Array.from(needSaveCollectionNames));
+            needSaveCollectionNames.clear();
+        }
+    }
     function saveDataToFile() {
-        if (!collections || !saveOnExit) return;
+        if (!collections) return;
+        saveCollections(Array.from(collections.keys()));
+    }
+    function saveCollections(collectionNames, sync = true) {
         if (!fs.existsSync(basePath)) fs.mkdirSync(basePath);
-        for (let collection of collections.values()){
-            fs.writeFileSync(collection.path, JSON.stringify(Object.values(collection.data)));
+        for (let collectionName of collectionNames){
+            const collection = collections.get(collectionName);
+            if (collection) {
+                const content = JSON.stringify(Object.values(collection.data));
+                if (sync) fs.writeFileSync(collection.path, content);
+                else fs.writeFile(collection.path, content, (err)=>{
+                    if (err) throw err;
+                });
+            }
         }
     }
     function getCollection(name) {

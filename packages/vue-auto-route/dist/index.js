@@ -39,7 +39,7 @@ async function autoRoutes(data, pathPrefix) {
                 if (prevRouteRecord) {
                     if (i === arr.length - 1) {
                         if (component.default) {
-                            if (typeof component.default === "function") routeRecord.component = component.default;
+                            if (typeof component.default.setup === "function") routeRecord.component = component.default;
                             if (component.default.name) routeRecord.name = component.default.name;
                         }
                         if (component.Meta) routeRecord.meta = Object.assign({}, component.Meta);

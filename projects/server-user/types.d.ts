@@ -20,3 +20,7 @@ declare interface RoleModel extends StoreItem {
   authorizations: Record<string, boolean>;
   createTime: number;
 }
+
+declare interface UserInfo
+  extends UserModel,
+    Pick<RoleModel, "authorizations"> {}

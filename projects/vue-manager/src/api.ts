@@ -33,22 +33,17 @@ function createAxiosInstance(baseURL: string) {
   });
   instance.interceptors.response.use(
     (res: AxiosResponse<ResponseBody<any>>) => {
-      const body = res.data;
+      const body = res.data ?? {};
       if (!body.success) {
-        switch (body.code) {
-          case 401: {
-            const router = VueClass.dependencyInjection.getValue(
-              ROUTER,
-            ) as Router;
-            router.push({
-              name: LoginView.name,
-              params: { redirect: router.currentRoute.value.fullPath },
-            });
-            break;
-          }
-          case 500:
-            message.error(body.msg || "操作失败");
-            break;
+        message.error(body.msg || "操作失败");
+        if (body.code === 401) {
+          const router = VueClass.dependencyInjection.getValue(
+            ROUTER,
+          ) as Router;
+          router.push({
+            name: LoginView.name,
+            params: { redirect: router.currentRoute.value.fullPath },
+          });
         }
       }
       return res;

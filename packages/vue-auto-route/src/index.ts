@@ -46,7 +46,7 @@ export async function autoRoutes(
         if (prevRouteRecord) {
           if (i === arr.length - 1) {
             if (component.default) {
-              if (typeof component.default === "function")
+              if (typeof component.default.setup === "function")
                 routeRecord.component = component.default;
               if (component.default.name)
                 routeRecord.name = component.default.name;

@@ -12,21 +12,19 @@ import {
 import { Collection, StoreCollection } from "server-store";
 import validator from "validator";
 import { COLLECTION_ROLE, COLLECTION_USER } from "../constants";
-import { CreateUserDTO, LoginDTO, QueryDTO } from "../dto";
+import { CreateUserDTO, LoginDTO, QueryDTO, UpdateUserDataDTO } from "../dto";
+import { ServerLog } from "server-log-decorator";
 
 @Controller({ routePrefix: "/user" })
 export class UserController {
-  /**
-   * 根据id查找User对象
-   * @throws NotFoundObjectError 当根据id找不到User对象时抛出
-   */
+  @ServerLog("根据id查找User对象")
   @Get()
   async findById(
     @ReqQuery() query: QueryDTO,
     @Collection(COLLECTION_USER) collection: StoreCollection<UserModel>,
   ): Promise<UserModel> {
     const user = await collection.getById(query.id);
-    if (!user) throw new NotFoundObjectError(`找不到id为${query.id}的Role对象`);
+    if (!user) throw new NotFoundObjectError(`找不到id为${query.id}的User对象`);
     return user;
   }
 
@@ -53,10 +51,7 @@ export class UserController {
     });
   }
 
-  /**
-   * 登陆，设置用户id进session中
-   * @throws Error 当找不到用户或密码错误时抛出
-   */
+  @ServerLog("登陆")
   @Post()
   login(
     @ReqBody() data: LoginDTO,
@@ -77,26 +72,47 @@ export class UserController {
           password: data.password,
         });
       }
-      if (!user) throw new Error("找不到用户或密码错误");
+      if (!user) throw new NotFoundObjectError("找不到用户或密码错误");
       session.set("userId", user._id);
     });
   }
 
-  /**
-   * 退出登陆
-   */
+  @ServerLog("退出登陆")
   @Post()
   async logout(@ReqSession() session: Session<RegularSessionData>) {
-    session.deleteKey("userId");
+    session.destroy();
   }
 
+  @ServerLog("获取用户数据")
   @Get()
-  auth(
+  async auth(
     @ReqSession() session: Session<RegularSessionData>,
-    @Collection(COLLECTION_USER) collection: StoreCollection<UserModel>,
+    @Collection(COLLECTION_USER) userCollection: StoreCollection<UserModel>,
+    @Collection(COLLECTION_ROLE) roleCollection: StoreCollection<RoleModel>,
   ) {
     const userId = session.get("userId");
     if (!userId) throw new UnauthorizedError();
-    return collection.getById(userId);
+    const user = await userCollection.getById(userId);
+    if (user?.roleId) {
+      const role = await roleCollection.getById(user.roleId);
+      if (!role) throw new UnauthorizedError("用户未配置角色");
+      return {
+        ...user,
+        authorizations: role.authorizations,
+      } satisfies UserInfo;
+    } else throw new UnauthorizedError();
+  }
+
+  @ServerLog("更新用户的自定义数据")
+  @Post()
+  async updateUserData(
+    @ReqBody() data: UpdateUserDataDTO,
+    @Collection(COLLECTION_USER) collection: StoreCollection<UserModel>,
+  ) {
+    const user = await this.findById({ id: data.id }, collection);
+    if (data.appendUserData) Object.assign(user.userData, data.appendUserData);
+    if (data.deleteUserData)
+      data.deleteUserData.forEach((key) => delete user.userData[key]);
+    await collection.update(user);
   }
 }

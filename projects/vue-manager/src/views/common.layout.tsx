@@ -1,10 +1,9 @@
 import { ROUTE_RECORDS, ROUTER } from "@/constant.ts";
-import { useTheme } from "@/stores";
+import { useUser } from "@/stores";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  type BreadcrumbItemProps,
   Flex,
   type ItemType,
   Layout,
@@ -39,13 +38,13 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
 
   @VueInject(ROUTE_RECORDS) readonly routeRecords: RouteRecordRaw;
 
-  @Mut() siderCollapsed: boolean = false;
+  @Mut() sideCollapsed: boolean = false;
 
   @VueInject(ROUTER) router: Router;
 
   @Mut() breadcrumbItems: { title: string; routeName?: string }[] = [];
 
-  readonly themeStore = useTheme();
+  readonly userStore = useUser();
 
   @Computed() get curRouteName() {
     let result = "";
@@ -127,7 +126,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
     return (
       <Layout class={"h-full"}>
         <LayoutSider
-          collapsed={this.siderCollapsed}
+          collapsed={this.sideCollapsed}
           collapsible={true}
           trigger={null}
         >
@@ -135,7 +134,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
           <Flex class={"p-2 select-none"} align={"center"} justify={"center"}>
             <img src={"/vite.svg"} />
             {/*侧边栏收起时不显示系统名*/}
-            {this.siderCollapsed ? null : (
+            {this.sideCollapsed ? null : (
               <div class={"text-white whitespace-nowrap text-2xl ml-1"}>
                 Vue-Manager
               </div>
@@ -158,25 +157,30 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
             {/*头部左侧*/}
             <Flex align={"center"}>
               {/*侧边栏收起/展开触发器*/}
-              {this.siderCollapsed ? (
+              {this.sideCollapsed ? (
                 <MenuUnfoldOutlined
-                  onClick={() => (this.siderCollapsed = false)}
+                  onClick={() => (this.sideCollapsed = false)}
                 />
               ) : (
-                <MenuFoldOutlined
-                  onClick={() => (this.siderCollapsed = true)}
-                />
+                <MenuFoldOutlined onClick={() => (this.sideCollapsed = true)} />
               )}
               {/*面包屑*/}
               <Breadcrumb class={"ml-3"}>
                 {this.breadcrumbItems.map((item) => (
-                  <BreadcrumbItem>{item.title}</BreadcrumbItem>
+                  <BreadcrumbItem>
+                    {item.routeName ? (
+                      <RouterLink to={{ name: item.routeName }}>
+                        {item.title}
+                      </RouterLink>
+                    ) : (
+                      item.title
+                    )}
+                  </BreadcrumbItem>
                 ))}
               </Breadcrumb>
-              {/*启用暗黑模式，测试样式用*/}
               <Switch
-                checked={this.themeStore.isDark}
-                onUpdate:checked={(val) => (this.themeStore.isDark = !!val)}
+                checked={this.userStore.isDarkTheme()}
+                onUpdate:checked={(val) => this.userStore.setDarkTheme(!!val)}
               ></Switch>
             </Flex>
             {/*头部右侧*/}

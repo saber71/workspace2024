@@ -1,7 +1,9 @@
+/// <reference types="../types.d.ts" />
+
 import { Session } from 'server';
 import { StoreCollection } from 'server-store';
 
-export declare function bootstrap(port: number, saveOnExit?: boolean): Promise<void>;
+export declare function bootstrap(port: number, saveOnExit?: boolean, logPort?: number): Promise<void>;
 
 export declare const COLLECTION_ROLE = "role";
 
@@ -41,10 +43,6 @@ export declare class RoleController {
      * @throws NotFoundObjectError 当根据id找不到Role对象时抛出
      */
     update(body: UpdateRoleDTO, collection: StoreCollection<RoleModel>): Promise<void>;
-    /**
-     * 根据id查找Role对象
-     * @throws NotFoundObjectError 当根据id找不到Role对象时抛出
-     */
     findById(query: QueryDTO, collection: StoreCollection<RoleModel>): Promise<RoleModel>;
 }
 
@@ -56,6 +54,12 @@ export declare class UpdateRoleDTO {
     deleteAuthorizations?: string[];
 }
 
+export declare class UpdateUserDataDTO {
+    id: UserModel["_id"];
+    deleteUserData?: string[];
+    appendUserData?: Record<string, any>;
+}
+
 export declare class UpdateUserDTO extends CreateUserDTO {
     id: UserModel["_id"];
     deleteUserData?: string[];
@@ -63,26 +67,27 @@ export declare class UpdateUserDTO extends CreateUserDTO {
 }
 
 export declare class UserController {
-    /**
-     * 根据id查找User对象
-     * @throws NotFoundObjectError 当根据id找不到User对象时抛出
-     */
     findById(query: QueryDTO, collection: StoreCollection<UserModel>): Promise<UserModel>;
     /**
      * 新建用户
      * @throws NotFoundObjectError 当找不到roleId对应的Role对象时抛出
      */
     create(data: CreateUserDTO, collection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<string[]>;
-    /**
-     * 登陆，设置用户id进session中
-     * @throws Error 当找不到用户或密码错误时抛出
-     */
     login(data: LoginDTO, session: Session<RegularSessionData>, collection: StoreCollection<UserModel>): Promise<void>;
-    /**
-     * 退出登陆
-     */
     logout(session: Session<RegularSessionData>): Promise<void>;
-    auth(session: Session<RegularSessionData>, collection: StoreCollection<UserModel>): Promise<UserModel | undefined>;
+    auth(session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<{
+        authorizations: Record<string, boolean>;
+        name: string;
+        loginName: string;
+        password: string;
+        roleId: string;
+        email?: string | undefined;
+        avatar?: string | undefined;
+        userData: Record<string, any>;
+        createTime: number;
+        _id: string;
+    }>;
+    updateUserData(data: UpdateUserDataDTO, collection: StoreCollection<UserModel>): Promise<void>;
 }
 
 export { }

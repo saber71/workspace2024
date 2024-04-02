@@ -11,8 +11,19 @@ export function createServerStoreFS(
   saveOnExit = true,
 ): StoreAdapter {
   basePath = path.resolve(basePath);
-  process.on("exit", saveDataToFile);
   const collections = initCollections();
+  const needSaveCollectionNames = new Set<string>();
+  let prevTime = Date.now();
+  if (saveOnExit) {
+    process.on("exit", saveDataToFile);
+    process.nextTick(() => {
+      const now = Date.now();
+      if (now - prevTime >= 1000) {
+        prevTime = now;
+        saveCollectionChange();
+      }
+    });
+  }
 
   return {
     init(): Promise<void> {
@@ -30,6 +41,7 @@ export function createServerStoreFS(
       collectionName: string,
       ...items: Array<PartialStoreItem<T>>
     ): Promise<string[]> {
+      needSaveCollectionNames.add(collectionName);
       const collection = getCollection(collectionName);
       const ids: string[] = [];
       for (let item of items) {
@@ -51,6 +63,7 @@ export function createServerStoreFS(
       return query(collection, condition, sortOrders);
     },
     async update(collectionName: string, ...items): Promise<void> {
+      needSaveCollectionNames.add(collectionName);
       const collection = getCollection(collectionName);
       for (let item of items) {
         const id = (item._id = item._id ?? v4());
@@ -79,6 +92,7 @@ export function createServerStoreFS(
       collectionName: string,
       condition?: FilterCondition<StoreItem>,
     ): Promise<T[]> {
+      needSaveCollectionNames.add(collectionName);
       const collection = getCollection(collectionName);
       const result = query(collection, condition);
       const deleted: T[] = [];
@@ -112,14 +126,30 @@ export function createServerStoreFS(
     return collections;
   }
 
+  function saveCollectionChange() {
+    if (needSaveCollectionNames.size) {
+      saveCollections(Array.from(needSaveCollectionNames));
+      needSaveCollectionNames.clear();
+    }
+  }
+
   function saveDataToFile() {
-    if (!collections || !saveOnExit) return;
+    if (!collections) return;
+    saveCollections(Array.from(collections.keys()));
+  }
+
+  function saveCollections(collectionNames: string[], sync: boolean = true) {
     if (!fs.existsSync(basePath)) fs.mkdirSync(basePath);
-    for (let collection of collections.values()) {
-      fs.writeFileSync(
-        collection.path,
-        JSON.stringify(Object.values(collection.data)),
-      );
+    for (let collectionName of collectionNames) {
+      const collection = collections.get(collectionName);
+      if (collection) {
+        const content = JSON.stringify(Object.values(collection.data));
+        if (sync) fs.writeFileSync(collection.path, content);
+        else
+          fs.writeFile(collection.path, content, (err) => {
+            if (err) throw err;
+          });
+      }
     }
   }
 

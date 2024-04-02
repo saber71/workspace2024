@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { useTheme } from "@/stores";
+import { useUser } from "@/stores";
 import { computed } from "vue";
 
-const themeStore = useTheme();
+const userStore = useUser();
 
 const classes = computed(() => {
   const result = ["root-view"];
-  if (themeStore.isDark) result.push("dark");
+  if (userStore.isDarkTheme()) result.push("dark");
   else result.push("light");
   return result;
 });

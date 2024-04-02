@@ -56,8 +56,8 @@ export function ToBoolean() {
   return MarkParseType(Boolean);
 }
 
-export function ToObject() {
-  return MarkParseType(Object);
+export function ToObject(valueClass?: Class) {
+  return MarkParseType(Object, valueClass);
 }
 
 export function ToDate() {

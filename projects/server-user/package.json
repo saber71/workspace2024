@@ -13,6 +13,7 @@
   },
   "peerDependencies": {
     "server": "workspace:^",
+    "server-log-decorator": "workspace:^",
     "server-platform-koa": "workspace:^",
     "server-store": "workspace:^",
     "server-store-fs": "workspace:^",

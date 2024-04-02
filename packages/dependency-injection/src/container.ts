@@ -131,6 +131,10 @@ export class Container extends EventEmitter<{
     this.extend(undefined);
   }
 
+  hasLabel(label: string): boolean {
+    return this._memberMap.has(label);
+  }
+
   /**
    * 获取指定标识符的值
    * @param label 要获取值的标识符

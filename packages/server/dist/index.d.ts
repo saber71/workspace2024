@@ -223,7 +223,7 @@ export declare function ToMap(valueClass?: Class): (target: any, propName?: any)
 
 export declare function ToNumber(): (target: any, propName?: any) => void;
 
-export declare function ToObject(): (target: any, propName?: any) => void;
+export declare function ToObject(valueClass?: Class): (target: any, propName?: any) => void;
 
 export declare function ToRegExp(): (target: any, propName?: any) => void;
 

@@ -1,3 +1,4 @@
+import { HomeFilled } from "@ant-design/icons-vue";
 import type { VNodeChild } from "vue";
 import {
   Component,
@@ -20,4 +21,5 @@ export default toNative<VueComponentBaseProps>(DashboardInst);
 
 export const Meta: ViewMeta = {
   title: "仪表盘",
+  icon: <HomeFilled />,
 };

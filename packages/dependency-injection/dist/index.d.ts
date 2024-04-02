@@ -1,12 +1,12 @@
 /// <reference types="../types" />
 
-import EventEmitter from 'eventemitter3';
+import { default as default_2 } from 'eventemitter3';
 
 export declare function AfterCallMethod(cb: InjectOptions["afterCallMethod"]): (target: any, methodName: any) => void;
 
 export declare function BeforeCallMethod(cb: InjectOptions["beforeCallMethod"]): (target: any, methodName: any) => void;
 
-export declare class Container extends EventEmitter<{
+export declare class Container extends default_2<{
     loadClass: (clazz: Class, member: ContainerMember) => void;
 }> {
     protected readonly _memberMap: Map<string, ContainerMember>;
@@ -41,6 +41,7 @@ export declare class Container extends EventEmitter<{
     unbind(label: string): this;
     unbindAll(): void;
     dispose(): void;
+    hasLabel(label: string): boolean;
     /**
      * 获取指定标识符的值
      * @param label 要获取值的标识符
