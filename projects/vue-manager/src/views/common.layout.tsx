@@ -113,7 +113,8 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
           if (item.meta) {
             result.unshift({
               title: item.meta.title as string,
-              routeName: item.name as string,
+              routeName:
+                item.name === curRouteName ? "" : (item.name as string),
             });
           }
           break;
@@ -165,15 +166,20 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
                 <MenuFoldOutlined onClick={() => (this.sideCollapsed = true)} />
               )}
               {/*面包屑*/}
-              <Breadcrumb class={"ml-3"}>
-                {this.breadcrumbItems.map((item) => (
+              <Breadcrumb class={"ml-3 select-none"}>
+                {this.breadcrumbItems.map((item, index) => (
                   <BreadcrumbItem>
                     {item.routeName ? (
-                      <RouterLink to={{ name: item.routeName }}>
+                      <RouterLink
+                        to={{ name: item.routeName }}
+                        class={"hover:bg-opacity-0 hover:bg-amber-200"}
+                      >
                         {item.title}
                       </RouterLink>
                     ) : (
-                      item.title
+                      <span class={index === 0 ? "not-link" : "cur-path"}>
+                        {item.title}
+                      </span>
                     )}
                   </BreadcrumbItem>
                 ))}

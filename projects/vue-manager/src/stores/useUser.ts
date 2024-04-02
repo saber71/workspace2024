@@ -9,7 +9,7 @@ enum UserData {
 
 export const useUser = defineStore("user", () => {
   const token = useLocalStorage("token", "");
-  const info: Ref<UserInfo> = ref({} as any);
+  const info: Ref<UserInfo> = ref({ userData: {} } as any);
 
   function isDarkTheme(): boolean {
     return !!info.value.userData?.[UserData.IsDarkTheme];

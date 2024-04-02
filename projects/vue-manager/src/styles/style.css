@@ -9,3 +9,20 @@
 .ant-btn-link {
   padding: 0;
 }
+
+.ant-breadcrumb a {
+  &:hover {
+    color: var(--text-base);
+    background-color: transparent;
+  }
+}
+
+.ant-breadcrumb a,
+.ant-breadcrumb .not-link,
+.ant-breadcrumb .ant-breadcrumb-separator {
+  color: var(--text-secondary);
+}
+
+.ant-breadcrumb .cur-path {
+  color: var(--text-base);
+}

@@ -9,16 +9,9 @@ function createServerStoreFS(basePath = ".", saveOnExit = false) {
     basePath = path.resolve(basePath);
     const collections = initCollections();
     const needSaveCollectionNames = new Set();
-    let prevTime = Date.now();
     if (saveOnExit) {
         process.on("exit", saveDataToFile);
-        process.nextTick(()=>{
-            const now = Date.now();
-            if (now - prevTime >= 1000) {
-                prevTime = now;
-                saveCollectionChange();
-            }
-        });
+        setInterval(saveCollectionChange, 1000);
     }
     return {
         init () {
@@ -99,7 +92,7 @@ function createServerStoreFS(basePath = ".", saveOnExit = false) {
     }
     function saveCollectionChange() {
         if (needSaveCollectionNames.size) {
-            saveCollections(Array.from(needSaveCollectionNames));
+            saveCollections(Array.from(needSaveCollectionNames), false);
             needSaveCollectionNames.clear();
         }
     }

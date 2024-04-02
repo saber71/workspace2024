@@ -3,6 +3,7 @@
   --bg-secondary: white;
   --border-base: #f0f0f0;
   --text-base: black;
+  --text-secondary: rgba(0, 0, 0, 0.45);
 }
 
 .dark {
@@ -10,6 +11,7 @@
   --bg-secondary: #141414;
   --border-base: #303030;
   --text-base: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.45);
 }
 
 .root-view {

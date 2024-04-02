@@ -40,15 +40,12 @@ async function createDefaultData(app: Server, store: ServerStore) {
   const defaultRole = await roleCollection.getById("0");
   const defaultUser = await userCollection.getById("0");
   if (!defaultRole) {
-    await roleCollection.add(
-      {
-        _id: "0",
-        name: "默认",
-        authorizations: {},
-        createTime: Date.now(),
-      },
-      roleCollection,
-    );
+    await roleCollection.add({
+      _id: "0",
+      name: "默认",
+      authorizations: {},
+      createTime: Date.now(),
+    });
     app.log("log", "新建默认角色成功");
   }
   if (!defaultUser) {

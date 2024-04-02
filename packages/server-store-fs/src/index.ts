@@ -13,16 +13,9 @@ export function createServerStoreFS(
   basePath = path.resolve(basePath);
   const collections = initCollections();
   const needSaveCollectionNames = new Set<string>();
-  let prevTime = Date.now();
   if (saveOnExit) {
     process.on("exit", saveDataToFile);
-    process.nextTick(() => {
-      const now = Date.now();
-      if (now - prevTime >= 1000) {
-        prevTime = now;
-        saveCollectionChange();
-      }
-    });
+    setInterval(saveCollectionChange, 1000);
   }
 
   return {
@@ -128,7 +121,7 @@ export function createServerStoreFS(
 
   function saveCollectionChange() {
     if (needSaveCollectionNames.size) {
-      saveCollections(Array.from(needSaveCollectionNames));
+      saveCollections(Array.from(needSaveCollectionNames), false);
       needSaveCollectionNames.clear();
     }
   }
