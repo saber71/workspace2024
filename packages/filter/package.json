@@ -1,5 +1,5 @@
 {
-  "name": "server-store",
+  "name": "filter",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,11 +10,6 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "dependency-injection": "workspace:^",
-    "filter": "workspace:^",
-    "server": "workspace:^"
-  },
-  "devDependencies": {
-    "server-store-fs": "workspace:*"
+    "deep-equal": "^2.2.3"
   }
 }

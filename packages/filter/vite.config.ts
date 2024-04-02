@@ -6,15 +6,7 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: [
-        "server-store",
-        "uuid",
-        "node:fs",
-        "node:process",
-        "node:path",
-        "common",
-        "filter",
-      ],
+      external: ["deep-equal"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
