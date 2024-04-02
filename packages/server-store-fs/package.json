@@ -10,7 +10,7 @@
   },
   "peerDependencies": {
     "common": "workspace:^",
-    "deep-equal": "^2.2.3",
+    "filter": "workspace:^",
     "server-store": "workspace:^",
     "uuid": "^9.0.1"
   }

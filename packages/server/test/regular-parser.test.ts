@@ -25,7 +25,7 @@ class Test {
   string: string;
   @ToBoolean()
   boolean: boolean;
-  @ToObject()
+  @ToObject(Number)
   object: Object;
   @ToArray(Number, Boolean)
   array: Array<number | boolean>;
@@ -51,7 +51,7 @@ describe("regular-parser", () => {
           number: "1",
           string: "string",
           boolean: "true",
-          object: JSON.stringify({ 1: 0 }),
+          object: JSON.stringify({ 1: "0" }),
           array: ["20", "true"],
           set: ["true"],
           map: { 1: "20" },

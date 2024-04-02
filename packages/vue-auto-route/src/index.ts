@@ -9,79 +9,58 @@ export async function autoRoutes(
     children: [],
   };
   const reg = new RegExp("^" + pathPrefix);
-  const fileReg = /\.(ts|tsx)$/;
-  const homeReg = /\.home/;
-  const componentMap = new Map<string[], any>();
-  const metaMap = new Map<string[], any>();
+  const homeReg = /(\.home\.|\.home$)/;
+  const routeRecordMap = new Map<string, RouteRecordRaw>();
+  routeRecordMap.set("/", root);
   const promises: Promise<any>[] = [];
-  const routeItems = Object.entries(data)
-    .map(([path, loader]) => {
-      path = path.replace(reg, "");
-      const arr = path.split("/").filter((item) => !!item);
-      if (typeof loader === "function") loader = loader();
-      if (loader instanceof Promise)
-        promises.push(
-          loader.then((val) => {
-            componentMap.set(arr, val.default);
-            metaMap.set(arr, val.Meta);
-          }),
-        );
-      else {
-        componentMap.set(arr, loader.default);
-        metaMap.set(arr, loader.Meta);
-      }
-      return arr;
-    })
-    .sort((a, b) => {
-      if (a.length === b.length) return a.join().localeCompare(b.join());
-      return a.length - b.length;
-    });
-  await Promise.all(promises);
-  for (let routeItem of routeItems) {
-    setRouteRecord(routeItem, 0, root, []);
+  for (let [path, value] of Object.entries(data)) {
+    const arr = path.replace(reg, "").split("/");
+    if (typeof value === "function") value = value();
+    if (value instanceof Promise)
+      promises.push(value.then((val) => collect(arr, val)));
+    else collect(arr, value);
   }
+  await Promise.all(promises);
   return root;
 
-  function setRouteRecord(
-    routeItems: string[],
-    index: number,
-    parentRouteRecord: RouteRecordRaw,
-    parentRouteItems: string[],
-  ) {
-    if (index >= routeItems.length) return;
-    let routeItem = routeItems[index];
-    const isFile = fileReg.test(routeItem);
-    if (isFile) {
-      const isHome = homeReg.test(routeItem);
-      routeItem = routeItem.split(".")[0];
-      if (isHome) {
-        root.redirect = "/" + [...parentRouteItems, routeItem].join("/");
+  function collect(arr: string[], component: any) {
+    let prevRouteRecord: RouteRecordRaw | undefined;
+    let i = 0;
+    let accPath = "";
+    for (let pathComponent of arr) {
+      const pathName = pathComponent.split(".");
+      accPath += "/" + pathName[0];
+      let routeRecord = routeRecordMap.get(accPath);
+      if (!routeRecord) {
+        routeRecord = {
+          path: pathName[0],
+          children: [],
+        };
+        if (prevRouteRecord) {
+          prevRouteRecord.children!.push(routeRecord);
+        }
+        routeRecordMap.set(accPath, routeRecord);
       }
-    }
-    let routeRecord: RouteRecordRaw | undefined =
-      parentRouteRecord.children!.find((item) => item.path === routeItem);
-    if (!routeRecord) {
-      routeRecord = {
-        path: routeItem,
-        children: [],
-      };
-      if (isFile) {
-        const component = componentMap.get(routeItems);
-        routeRecord.component = component;
-        routeRecord.meta = metaMap.get(routeItems);
-        if (component?.name) routeRecord.name = component.name;
-        else {
-          const arr = routeItem
-            .split(/[.\-]/)
-            .map((str) => str[0].toUpperCase() + str.slice(1));
-          routeRecord.name = arr.join("");
+      const existHome = homeReg.test(pathComponent);
+      if (i === arr.length - 1 || existHome) {
+        if (prevRouteRecord) {
+          if (i === arr.length - 1) {
+            if (component.default) {
+              if (typeof component.default.setup === "function")
+                routeRecord.component = component.default;
+              if (component.default.name)
+                routeRecord.name = component.default.name;
+            }
+            if (component.Meta)
+              routeRecord.meta = Object.assign({}, component.Meta);
+          }
+          if (existHome) {
+            prevRouteRecord.redirect = accPath.slice(1);
+          }
         }
       }
-      parentRouteRecord.children!.push(routeRecord);
+      prevRouteRecord = routeRecord;
+      i++;
     }
-    setRouteRecord(routeItems, index + 1, routeRecord, [
-      ...parentRouteItems,
-      routeItem,
-    ]);
   }
 }

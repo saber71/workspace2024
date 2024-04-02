@@ -304,6 +304,9 @@ function AfterCallMethod(cb) {
         this.unbindAll();
         this.extend(undefined);
     }
+    hasLabel(label) {
+        return this._memberMap.has(label);
+    }
     /**
    * 获取指定标识符的值
    * @param label 要获取值的标识符

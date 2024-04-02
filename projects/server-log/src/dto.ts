@@ -6,6 +6,10 @@ export class CreateLogDTO {
 
   @Validation({ validatorType: "isString" })
   description: string;
-
   data?: any;
+  body?: any;
+  query?: any;
+
+  @Validation({ validatorType: "isString" })
+  url: string;
 }

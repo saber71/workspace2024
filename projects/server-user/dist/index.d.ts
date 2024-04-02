@@ -1,4 +1,9 @@
-export declare function bootstrap(port: number, saveOnExit?: boolean): Promise<void>;
+/// <reference types="../types.d.ts" />
+
+import { Session } from 'server';
+import { StoreCollection } from 'server-store';
+
+export declare function bootstrap(port: number, saveOnExit?: boolean, logPort?: number): Promise<void>;
 
 export declare const COLLECTION_ROLE = "role";
 
@@ -31,6 +36,16 @@ export declare class QueryDTO {
     id: string;
 }
 
+export declare class RoleController {
+    create(body: CreateRoleDTO, collection: StoreCollection<RoleModel>): Promise<string[]>;
+    /**
+     * 更新Role对象，如果toDelete为true时则删除对象不做其他更新
+     * @throws NotFoundObjectError 当根据id找不到Role对象时抛出
+     */
+    update(body: UpdateRoleDTO, collection: StoreCollection<RoleModel>): Promise<void>;
+    findById(query: QueryDTO, collection: StoreCollection<RoleModel>): Promise<RoleModel>;
+}
+
 export declare class UpdateRoleDTO {
     id: string;
     toDelete?: boolean;
@@ -39,10 +54,40 @@ export declare class UpdateRoleDTO {
     deleteAuthorizations?: string[];
 }
 
+export declare class UpdateUserDataDTO {
+    id: UserModel["_id"];
+    deleteUserData?: string[];
+    appendUserData?: Record<string, any>;
+}
+
 export declare class UpdateUserDTO extends CreateUserDTO {
     id: UserModel["_id"];
     deleteUserData?: string[];
     toDelete?: boolean;
+}
+
+export declare class UserController {
+    findById(query: QueryDTO, collection: StoreCollection<UserModel>): Promise<UserModel>;
+    /**
+     * 新建用户
+     * @throws NotFoundObjectError 当找不到roleId对应的Role对象时抛出
+     */
+    create(data: CreateUserDTO, collection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<string[]>;
+    login(data: LoginDTO, session: Session<RegularSessionData>, collection: StoreCollection<UserModel>): Promise<void>;
+    logout(session: Session<RegularSessionData>): Promise<void>;
+    auth(session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<{
+        authorizations: Record<string, boolean>;
+        name: string;
+        loginName: string;
+        password: string;
+        roleId: string;
+        email?: string | undefined;
+        avatar?: string | undefined;
+        userData: Record<string, any>;
+        createTime: number;
+        _id: string;
+    }>;
+    updateUserData(data: UpdateUserDataDTO, collection: StoreCollection<UserModel>): Promise<void>;
 }
 
 export { }

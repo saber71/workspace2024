@@ -10,6 +10,10 @@ export class UnauthorizedError extends ServerError {
   code = 401;
   name = "UnauthorizedError";
   logLevel = "warn";
+
+  constructor(message: string = "未登录或登陆信息已过期") {
+    super(message);
+  }
 }
 
 /* 当找不到路由时抛出 */

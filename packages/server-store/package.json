@@ -11,6 +11,7 @@
   },
   "peerDependencies": {
     "dependency-injection": "workspace:^",
+    "filter": "workspace:^",
     "server": "workspace:^"
   },
   "devDependencies": {

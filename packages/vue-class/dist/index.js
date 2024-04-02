@@ -106,8 +106,13 @@ class VueRouterGuard {
         }
         function match(to, from, matchTo, matchFrom) {
             if (!matchFrom && !matchTo) return true;
-            else if (matchTo && matchFrom) return matchFrom.test(from.path) && matchTo.test(to.path);
-            else return matchTo?.test(to.path) || matchFrom?.test(from.path);
+            else if (matchTo && matchFrom) return match(matchFrom, from) && match(matchTo, to);
+            else return match(matchTo, to) || match(matchFrom, from);
+            function match(item, path) {
+                if (!item) return false;
+                if (item instanceof RegExp) return item.test(path.path);
+                return item(path);
+            }
         }
     }
     beforeEach(to, from, next) {
@@ -500,6 +505,7 @@ function getOrCreateMetadata(clazz, ctx) {
 }
 /* 适用于属性 */ function VueInject(key) {
     return (target, arg)=>{
+        if (!key) key = Reflect.getMetadata("design:type", target, arg)?.name;
         getOrCreateMetadata(target, arg).vueInject.push({
             propName: getName(arg),
             provideKey: key

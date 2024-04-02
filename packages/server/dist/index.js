@@ -14,6 +14,9 @@ import * as process from 'node:process';
     code = 401;
     name = "UnauthorizedError";
     logLevel = "warn";
+    constructor(message = "未登录或登陆信息已过期"){
+        super(message);
+    }
 }
 /* 当找不到路由时抛出 */ class NotFoundError extends ServerError {
     code = 404;
@@ -253,8 +256,8 @@ function ToMap(valueClass) {
 function ToBoolean() {
     return MarkParseType(Boolean);
 }
-function ToObject() {
-    return MarkParseType(Object);
+function ToObject(valueClass) {
+    return MarkParseType(Object, valueClass);
 }
 function ToDate() {
     return MarkParseType(Date);
@@ -315,8 +318,15 @@ class RegularParser {
             try {
                 if (clazz[0] === String) return String(value);
                 else if (clazz[0] === Boolean) return Boolean(value);
-                else if (clazz[0] === Object) return toObject(value);
-                else if (clazz[0] === Number) {
+                else if (clazz[0] === Object) {
+                    const data = toObject(value);
+                    if (clazz[1]) {
+                        Object.entries(data).forEach(([key, value])=>{
+                            data[key] = this.parse(value, clazz[1]);
+                        });
+                    }
+                    return data;
+                } else if (clazz[0] === Number) {
                     const number = Number(value);
                     if (!Number.isNaN(number)) return number;
                 } else if (clazz[0] === Date) {
@@ -563,7 +573,7 @@ class AuthorizedGuard {
     guard(session, whiteList, req) {
         if (whiteList.length === 0 || whiteList.includes("*")) return;
         if (whiteList.includes(req.path)) return;
-        if (!session.get("userId")) throw new UnauthorizedError("未登录或登陆信息已过期");
+        if (!session.get("userId")) throw new UnauthorizedError();
     }
 }
 _ts_decorate$1([

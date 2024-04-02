@@ -22,7 +22,11 @@ import {
   watchEffect,
   type WatchOptions,
 } from "vue";
-import { onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
+import {
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  type RouteLocationNormalized,
+} from "vue-router";
 import type { HookType, WatcherTarget } from "./decorators";
 import type { Class } from "./types";
 import { VueComponent } from "./vue-component";
@@ -48,9 +52,9 @@ export class Metadata {
 
   directiveName = "";
 
-  routerGuardMatchTo?: RegExp;
+  routerGuardMatchTo?: RegExp | ((path: RouteLocationNormalized) => boolean);
 
-  routerGuardMatchFrom?: RegExp;
+  routerGuardMatchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
 
   readonly mutts: { propName: string; shallow?: boolean }[] = [];
 
@@ -71,7 +75,7 @@ export class Metadata {
 
   readonly watchers: {
     methodName: string;
-    source?: WatcherTarget | WatcherTarget[];
+    source?: WatcherTarget<any> | WatcherTarget<any>[];
     option?: WatchOptions;
   }[] = [];
 
@@ -114,7 +118,7 @@ export class Metadata {
       else {
         if (!(metadata.source instanceof Array))
           metadata.source = [metadata.source];
-        const source: any = metadata.source.map((item) => {
+        const source: any = metadata.source.map((item: any) => {
           if (typeof item === "string") {
             const $ = (instance as any)[Symbol.for(item)];
             return $ ?? (() => (instance as any)[item]);

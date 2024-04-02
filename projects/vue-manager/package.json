@@ -1,0 +1,30 @@
+{
+  "name": "vue-manager",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "@vueuse/core": "^10.9.0",
+    "ant-design-vue": "^4.1.2",
+    "axios": "^1.6.8",
+    "check-password-strength": "^2.0.10",
+    "dayjs": "^1.11.10",
+    "pinia": "^2.1.7",
+    "reflect-metadata": "^0.2.2",
+    "server-api-provider": "workspace:^",
+    "vue": "^3.4.21",
+    "vue-auto-route": "workspace:^",
+    "vue-class": "workspace:*",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "server-log": "workspace:^",
+    "server-user": "workspace:^"
+  }
+}

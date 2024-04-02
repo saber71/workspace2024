@@ -4,10 +4,10 @@ import * as path from "node:path";
 import * as fs from "node:fs";
 import { composeUrl } from "common";
 
-Promise.all([
-  import("server"),
-  import(path.resolve(".", "./dist/index.js")),
-]).then(([{ Metadata }]) => {
+let filePath = path.resolve(".", "dist", "index.js");
+if (process.platform === "win32") filePath = "file://" + filePath;
+
+Promise.all([import("server"), import(filePath)]).then(([{ Metadata }]) => {
   const metadataArray = Array.from(Metadata.getAllMetadata()).filter(
     (item) => item.userData.__server__classType === "controller",
   );

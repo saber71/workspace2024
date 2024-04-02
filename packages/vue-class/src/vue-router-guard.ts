@@ -70,13 +70,22 @@ export class VueRouterGuard {
     function match(
       to: RouteLocationNormalized,
       from: RouteLocationNormalized,
-      matchTo?: RegExp,
-      matchFrom?: RegExp,
+      matchTo?: RegExp | ((path: RouteLocationNormalized) => boolean),
+      matchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean),
     ) {
       if (!matchFrom && !matchTo) return true;
       else if (matchTo && matchFrom)
-        return matchFrom.test(from.path) && matchTo.test(to.path);
-      else return matchTo?.test(to.path) || matchFrom?.test(from.path);
+        return match(matchFrom, from) && match(matchTo, to);
+      else return match(matchTo, to) || match(matchFrom, from);
+
+      function match(
+        item: undefined | RegExp | ((path: RouteLocationNormalized) => boolean),
+        path: RouteLocationNormalized,
+      ) {
+        if (!item) return false;
+        if (item instanceof RegExp) return item.test(path.path);
+        return item(path);
+      }
     }
   }
 

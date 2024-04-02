@@ -3,33 +3,35 @@
 import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import axios from "axios";
 
-export function controllerKey<T>(name: string): ControllerKey<T> {
-  return Symbol(name);
-}
-
 export class ServerApiProvider {
   constructor(
     readonly providerMetadata: ProviderMetadata,
     readonly axiosInstance: AxiosInstance = axios,
   ) {}
 
+  provider<T extends Record<string, any>>(key: string) {
+    return <MethodName extends keyof T, Args extends Parameters<T[MethodName]>>(
+      methodName: MethodName,
+      parameters?: Partial<Args>,
+      option?: AxiosRequestConfig,
+    ) => this.request<T, MethodName, Args>(key, methodName, parameters, option);
+  }
+
   async request<
     T extends Record<string, any>,
     MethodName extends keyof T,
     Args extends Parameters<T[MethodName]>,
   >(
-    key: ControllerKey<T>,
+    key: string,
     methodName: MethodName,
-    parameters: Partial<Args>,
+    parameters?: Partial<Args>,
     option?: AxiosRequestConfig,
   ): Promise<
     ResponseBody<ExtractPromiseGenericType<ReturnType<T[MethodName]>>>
   > {
-    const methodSet = this.providerMetadata[key.description!];
+    const methodSet = this.providerMetadata[key!];
     if (!methodSet)
-      throw new NotFoundControllerError(
-        `找不到名为${key.description!}的控制器数据`,
-      );
+      throw new NotFoundControllerError(`找不到名为${key!}的控制器数据`);
     const method = methodSet[methodName as string];
     if (!method)
       throw new NotFoundMethodError(
@@ -38,23 +40,26 @@ export class ServerApiProvider {
 
     let params: any;
     let data: any;
-    for (let i = 0; i < parameters.length; i++) {
-      const parameter = parameters[i];
-      const typeInfo = method.parameters[i];
-      if (!typeInfo) {
-        if (method.type === "GET") params = parameter;
-        else data = parameters;
-        continue;
+    if (parameters) {
+      for (let i = 0; i < parameters.length; i++) {
+        const parameter = parameters[i];
+        const typeInfo = method.parameters[i];
+        if (!typeInfo) {
+          if (method.type === "GET") params = parameter;
+          else data = parameters;
+          continue;
+        }
+        const fileFieldName = typeInfo.isFiles || typeInfo.isFile;
+        if (fileFieldName) {
+          const formData = new FormData();
+          formData.append(fileFieldName, parameter as any);
+          data = formData;
+        } else if (typeInfo.isQuery) params = parameter;
+        else if (typeInfo.isBody) data = parameter;
+        else if (typeInfo.isSession || typeInfo.isReq || typeInfo.isRes)
+          continue;
+        else throw new Error("unknown typeInfo " + JSON.stringify(typeInfo));
       }
-      const fileFieldName = typeInfo.isFiles || typeInfo.isFile;
-      if (fileFieldName) {
-        const formData = new FormData();
-        formData.append(fileFieldName, parameter as any);
-        data = formData;
-      } else if (typeInfo.isQuery) params = parameter;
-      else if (typeInfo.isBody) data = parameter;
-      else if (typeInfo.isSession || typeInfo.isReq || typeInfo.isRes) continue;
-      else throw new Error("unknown typeInfo " + JSON.stringify(typeInfo));
     }
 
     const res = await this.axiosInstance.request({

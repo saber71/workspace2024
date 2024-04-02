@@ -24,8 +24,15 @@ export class RegularParser implements ParserInterface {
       try {
         if (clazz[0] === String) return String(value);
         else if (clazz[0] === Boolean) return Boolean(value);
-        else if (clazz[0] === Object) return toObject(value);
-        else if (clazz[0] === Number) {
+        else if (clazz[0] === Object) {
+          const data = toObject(value);
+          if (clazz[1]) {
+            Object.entries(data).forEach(([key, value]) => {
+              data[key] = this.parse(value, clazz[1]);
+            });
+          }
+          return data;
+        } else if (clazz[0] === Number) {
           const number = Number(value);
           if (!Number.isNaN(number)) return number;
         } else if (clazz[0] === Date) {

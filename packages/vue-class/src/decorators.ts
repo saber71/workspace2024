@@ -1,5 +1,6 @@
 import { Injectable } from "dependency-injection";
 import { type WatchOptions } from "vue";
+import type { RouteLocationNormalized } from "vue-router";
 import { ModuleName } from "./constants";
 import {
   applyMetadata,
@@ -11,7 +12,9 @@ import { VueComponent, type VueComponentBaseProps } from "./vue-component";
 import type { VueDirective } from "./vue-directive";
 import type { VueRouterGuard } from "./vue-router-guard";
 
-export type WatcherTarget = string | ((instance: VueComponent | object) => any);
+export type WatcherTarget<T extends VueComponent> =
+  | string
+  | ((instance: T) => any);
 
 export type HookType =
   | "onMounted"
@@ -60,7 +63,10 @@ export function Service(option?: Parameters<typeof Injectable>[0]) {
 }
 
 /* 适用于类 */
-export function RouterGuard(option?: { matchTo?: RegExp; matchFrom?: RegExp }) {
+export function RouterGuard(option?: {
+  matchTo?: RegExp | ((path: RouteLocationNormalized) => boolean);
+  matchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
+}) {
   const fn = Injectable(
     Object.assign(
       {
@@ -129,8 +135,10 @@ export function Link(option?: {
 }
 
 /* 适用于属性 */
-export function VueInject(key: string | symbol) {
+export function VueInject(key?: string | symbol) {
   return (target: object, arg: any) => {
+    if (!key)
+      key = (Reflect as any).getMetadata("design:type", target, arg)?.name;
     getOrCreateMetadata(target, arg).vueInject.push({
       propName: getName(arg),
       provideKey: key,
@@ -169,8 +177,8 @@ export function PropsWatcher(option?: WatchOptions) {
 }
 
 /* 适用于方法 */
-export function Watcher(option?: {
-  source?: WatcherTarget | WatcherTarget[];
+export function Watcher<T extends VueComponent>(option?: {
+  source?: WatcherTarget<T> | WatcherTarget<T>[];
   option?: WatchOptions;
 }) {
   return (target: object, arg: any) => {

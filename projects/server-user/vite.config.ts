@@ -13,6 +13,7 @@ export default defineConfig({
         "validator",
         "server-store",
         "server-store-fs",
+        "server-log-decorator",
       ],
     },
     lib: {
