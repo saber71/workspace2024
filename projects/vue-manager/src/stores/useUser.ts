@@ -9,7 +9,10 @@ enum UserData {
 
 export const useUser = defineStore("user", () => {
   const token = useLocalStorage("token", "");
+  const rememberMe = useLocalStorage("rememberMe", false);
   const info: Ref<UserInfo> = ref({ userData: {} } as any);
+
+  if (!rememberMe.value) token.value = null;
 
   function isDarkTheme(): boolean {
     return !!info.value.userData?.[UserData.IsDarkTheme];
@@ -22,7 +25,7 @@ export const useUser = defineStore("user", () => {
     }
   }
 
-  return { token, info, isDarkTheme, setDarkTheme };
+  return { token, info, rememberMe, isDarkTheme, setDarkTheme };
 
   function updateUserData(key: string, value: any): void {
     info.value.userData[key] = value;

@@ -56,24 +56,26 @@ export class UserController {
   login(
     @ReqBody() data: LoginDTO,
     @ReqSession() session: Session<RegularSessionData>,
-    @Collection(COLLECTION_USER) collection: StoreCollection<UserModel>,
-  ) {
-    return collection.transaction(async () => {
+    @Collection(COLLECTION_USER) userCollection: StoreCollection<UserModel>,
+    @Collection(COLLECTION_ROLE) roleCollection: StoreCollection<RoleModel>,
+  ): Promise<UserInfo> {
+    return userCollection.transaction(async () => {
       const is_email = validator.isEmail(data.loginNameOrEmail);
       let user;
       if (is_email) {
-        user = await collection.searchOne({
+        user = await userCollection.searchOne({
           email: data.loginNameOrEmail,
           password: data.password,
         });
       } else {
-        user = await collection.searchOne({
+        user = await userCollection.searchOne({
           loginName: data.loginNameOrEmail,
           password: data.password,
         });
       }
       if (!user) throw new NotFoundObjectError("找不到用户或密码错误");
       session.set("userId", user._id);
+      return this.auth(session, userCollection, roleCollection);
     });
   }
 
@@ -89,7 +91,7 @@ export class UserController {
     @ReqSession() session: Session<RegularSessionData>,
     @Collection(COLLECTION_USER) userCollection: StoreCollection<UserModel>,
     @Collection(COLLECTION_ROLE) roleCollection: StoreCollection<RoleModel>,
-  ) {
+  ): Promise<UserInfo> {
     const userId = session.get("userId");
     if (!userId) throw new UnauthorizedError();
     const user = await userCollection.getById(userId);

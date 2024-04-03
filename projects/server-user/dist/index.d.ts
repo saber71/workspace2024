@@ -73,20 +73,9 @@ export declare class UserController {
      * @throws NotFoundObjectError 当找不到roleId对应的Role对象时抛出
      */
     create(data: CreateUserDTO, collection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<string[]>;
-    login(data: LoginDTO, session: Session<RegularSessionData>, collection: StoreCollection<UserModel>): Promise<void>;
+    login(data: LoginDTO, session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<UserInfo>;
     logout(session: Session<RegularSessionData>): Promise<void>;
-    auth(session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<{
-        authorizations: Record<string, boolean>;
-        name: string;
-        loginName: string;
-        password: string;
-        roleId: string;
-        email?: string | undefined;
-        avatar?: string | undefined;
-        userData: Record<string, any>;
-        createTime: number;
-        _id: string;
-    }>;
+    auth(session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<UserInfo>;
     updateUserData(data: UpdateUserDataDTO, collection: StoreCollection<UserModel>): Promise<void>;
 }
 

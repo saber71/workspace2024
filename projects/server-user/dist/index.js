@@ -358,23 +358,24 @@ class UserController {
             });
         });
     }
-    login(data, session, collection) {
-        return collection.transaction(async ()=>{
+    login(data, session, userCollection, roleCollection) {
+        return userCollection.transaction(async ()=>{
             const is_email = validator.isEmail(data.loginNameOrEmail);
             let user;
             if (is_email) {
-                user = await collection.searchOne({
+                user = await userCollection.searchOne({
                     email: data.loginNameOrEmail,
                     password: data.password
                 });
             } else {
-                user = await collection.searchOne({
+                user = await userCollection.searchOne({
                     loginName: data.loginNameOrEmail,
                     password: data.password
                 });
             }
             if (!user) throw new NotFoundObjectError("找不到用户或密码错误");
             session.set("userId", user._id);
+            return this.auth(session, userCollection, roleCollection);
         });
     }
     async logout(session) {
@@ -433,13 +434,15 @@ _ts_decorate([
     _ts_param(0, ReqBody()),
     _ts_param(1, ReqSession()),
     _ts_param(2, Collection(COLLECTION_USER)),
+    _ts_param(3, Collection(COLLECTION_ROLE)),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
         typeof LoginDTO === "undefined" ? Object : LoginDTO,
         typeof Session === "undefined" ? Object : Session,
+        typeof StoreCollection === "undefined" ? Object : StoreCollection,
         typeof StoreCollection === "undefined" ? Object : StoreCollection
     ]),
-    _ts_metadata("design:returntype", void 0)
+    _ts_metadata("design:returntype", typeof Promise === "undefined" ? Object : Promise)
 ], UserController.prototype, "login", null);
 _ts_decorate([
     ServerLog("退出登陆"),
@@ -517,7 +520,7 @@ async function createDefaultData(app, store) {
             name: "默认",
             authorizations: {},
             createTime: Date.now()
-        }, roleCollection);
+        });
         app.log("log", "新建默认角色成功");
     }
     if (!defaultUser) {

@@ -13,3 +13,5 @@ declare interface ViewMeta {
   hidden?: boolean;
   icon?: any;
 }
+
+declare type CurrentRoute = import("vue-router").Router["currentRoute"];
