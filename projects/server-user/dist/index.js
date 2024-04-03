@@ -503,10 +503,7 @@ async function bootstrap(port, saveOnExit = true, logPort) {
     if (typeof logPort === "number") app.dependencyInjection.bindValue(SERVER_LOG_ADDRESS, "http://localhost:" + logPort);
     await createDefaultData(app, store);
     app.bootstrap({
-        port,
-        session: {
-            secretKey: "secretKey"
-        }
+        port
     });
 }
 async function createDefaultData(app, store) {

@@ -25,7 +25,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
       app.use(mount(routePathPrefix, staticServe(assetsPath)));
     },
     bootstrap(option) {
-      if (option.session?.secretKey) app.keys = [option.session.secretKey];
+      app.keys = [option.session?.secretKey ?? "koa-secret-key"];
       proxies.forEach((proxy) => app.use(proxy));
       app
         .use(
@@ -37,7 +37,7 @@ export function createServerPlatformKoa(): ServerPlatformAdapter<Koa> {
         .use(
           session(
             {
-              key: option.session?.cookieKey ?? "Secret key",
+              key: option.session?.cookieKey ?? "sid",
               maxAge: option.session?.maxAge,
             },
             app,

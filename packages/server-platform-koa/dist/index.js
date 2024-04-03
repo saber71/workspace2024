@@ -23,8 +23,8 @@ function createServerPlatformKoa() {
             app.use(mount(routePathPrefix, staticServe(assetsPath)));
         },
         bootstrap (option) {
-            if (option.session?.secretKey) app.keys = [
-                option.session.secretKey
+            app.keys = [
+                option.session?.secretKey ?? "koa-secret-key"
             ];
             proxies.forEach((proxy)=>app.use(proxy));
             app.use(koaBody({
@@ -34,7 +34,7 @@ function createServerPlatformKoa() {
                     multiples: true
                 }
             })).use(session({
-                key: option.session?.cookieKey ?? "Secret key",
+                key: option.session?.cookieKey ?? "sid",
                 maxAge: option.session?.maxAge
             }, app)).use(router.routes()).use(router.allowedMethods()).listen(option.port, option.hostname);
         },

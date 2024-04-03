@@ -1,10 +1,8 @@
-/// <reference types="server/types" />
-
 import { Express as Express_2 } from 'express';
 import { Request as Request_2 } from 'express';
 import { Response as Response_2 } from 'express';
-import type { ServerRequest } from 'server';
-import type { ServerResponse } from 'server';
+import { ServerRequest } from 'server';
+import { ServerResponse } from 'server';
 
 export declare function createServerPlatformExpress(): ServerPlatformAdapter<Express_2>;
 

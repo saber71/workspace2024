@@ -48,7 +48,7 @@ function createServerPlatformExpress() {
             }
             app.use(session({
                 secret: option.session?.secretKey ?? "express-secret-key",
-                name: option.session?.cookieKey,
+                name: option.session?.cookieKey ?? "sid",
                 resave: true,
                 saveUninitialized: false,
                 cookie: {

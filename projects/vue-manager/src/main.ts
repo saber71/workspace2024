@@ -37,7 +37,7 @@ await VueClass.install(app, router);
 VueClass.dependencyInjection
   .bindValue(ROUTER, router)
   .bindValue(ROUTE_RECORDS, routeRecords)
-  .bindGetter(ROUTE, () => router.currentRoute);
+  .bindFactory(ROUTE, () => router.currentRoute.value);
 
 app
   .use(router)

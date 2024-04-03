@@ -31,7 +31,7 @@ export async function bootstrap(
       "http://localhost:" + logPort,
     );
   await createDefaultData(app, store);
-  app.bootstrap({ port, session: { secretKey: "secretKey" } });
+  app.bootstrap({ port });
 }
 
 async function createDefaultData(app: Server, store: ServerStore) {

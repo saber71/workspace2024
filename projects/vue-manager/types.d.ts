@@ -14,4 +14,4 @@ declare interface ViewMeta {
   icon?: any;
 }
 
-declare type CurrentRoute = import("vue-router").Router["currentRoute"];
+declare type CurrentRoute = import("vue-router").RouteLocationNormalizedLoaded;

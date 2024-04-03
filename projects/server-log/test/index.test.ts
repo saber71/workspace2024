@@ -12,6 +12,7 @@ describe("ServerLog", () => {
       data: {
         creator: "",
         description: "description",
+        url: "",
       },
     })
       .expectStatus(500)
@@ -23,6 +24,7 @@ describe("ServerLog", () => {
       data: {
         creator: "0",
         description: "description",
+        url: "",
       },
     })
       .expectStatus(200)
@@ -42,7 +44,7 @@ describe("ServerLog", () => {
           });
         return data;
       })
-      .expectBodyData([{ creator: "0", description: "description" }])
+      .expectBodyData([{ creator: "0", description: "description", url: "" }])
       .done();
   });
 });
