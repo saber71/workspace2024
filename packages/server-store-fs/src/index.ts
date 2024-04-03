@@ -15,6 +15,7 @@ export function createServerStoreFS(
   const needSaveCollectionNames = new Set<string>();
   if (saveOnExit) {
     process.on("exit", saveDataToFile);
+    process.on("SIGINT", saveDataToFile);
     setInterval(saveCollectionChange, 1000);
   }
 

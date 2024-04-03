@@ -11,6 +11,7 @@ function createServerStoreFS(basePath = ".", saveOnExit = false) {
     const needSaveCollectionNames = new Set();
     if (saveOnExit) {
         process.on("exit", saveDataToFile);
+        process.on("SIGINT", saveDataToFile);
         setInterval(saveCollectionChange, 1000);
     }
     return {
