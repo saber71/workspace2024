@@ -375,7 +375,7 @@ class UserController {
             }
             if (!user) throw new NotFoundObjectError("找不到用户或密码错误");
             session.set("userId", user._id);
-            return this.auth(session, userCollection, roleCollection);
+            return await this.auth(session, userCollection, roleCollection);
         });
     }
     async logout(session) {
@@ -390,6 +390,7 @@ class UserController {
             if (!role) throw new UnauthorizedError("用户未配置角色");
             return {
                 ...user,
+                password: undefined,
                 authorizations: role.authorizations
             };
         } else throw new UnauthorizedError();
@@ -489,7 +490,7 @@ UserController = _ts_decorate([
 // @ts-ignore
 ///<reference types="../types.d.ts"/>
 async function bootstrap(port, saveOnExit = true, logPort) {
-    const store = await ServerStore.create(createServerStoreFS("./store", saveOnExit));
+    const store = await ServerStore.create(createServerStoreFS("../store", saveOnExit));
     const app = await Server.create({
         serverPlatformAdapter: createServerPlatformKoa(),
         contextName: CONTEXT_NAME,

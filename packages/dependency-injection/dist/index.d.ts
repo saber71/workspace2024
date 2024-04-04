@@ -84,7 +84,7 @@ export declare function getDecoratedName(ctx?: string | ClassMemberDecoratorCont
  * @param option.typeValueGetter 指定被装饰的字段或入参的自定义getter。当被装饰的是类的字段或入参时才生效
  * @throws InjectNotFoundTypeError 在无法确定被装饰者的类型时抛出
  */
-export declare function Inject(option?: InjectOptions): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: any) => void;
+export declare function Inject(option?: InjectOptions | string): (clazz: any, propName: ClassFieldDecoratorContext | any, index?: any) => void;
 
 /**
  * 类装饰器。获取类的构造函数的入参类型，标记该类可以被依赖注入

@@ -5,6 +5,8 @@ import {
   type EmitsOptions,
   type HTMLAttributes,
 } from "vue";
+import type { Router } from "vue-router";
+import { ROUTER } from "./constants";
 import { applyMetadata } from "./metadata";
 import type { ComponentProps, VueComponentClass, WithSlotTypes } from "./types";
 import { VueClass } from "./vue-class";
@@ -40,6 +42,14 @@ export class VueComponent<
 
   get props(): Props {
     return this.vueInstance.props as Props;
+  }
+
+  get router(): Router {
+    return VueClass.dependencyInjection.getValue(ROUTER);
+  }
+
+  get route() {
+    return this.router.currentRoute.value;
   }
 
   render(): VNodeChild {}

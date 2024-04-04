@@ -37,5 +37,6 @@ export function ServerLog(
             : options.data,
       });
     }
+    return returnValue;
   });
 }

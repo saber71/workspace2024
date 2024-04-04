@@ -132,7 +132,7 @@ export class Container extends EventEmitter<{
   }
 
   hasLabel(label: string): boolean {
-    return this._memberMap.has(label);
+    return this._memberMap.has(label) || !!this._extend?.hasLabel(label);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ROUTE_RECORDS, ROUTER } from "@/constant.ts";
+import { ROUTE_RECORDS } from "@/constant.ts";
 import { useUser } from "@/stores";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import {
@@ -18,17 +18,12 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
-  VueInject,
   Computed,
   Mut,
   Watcher,
+  Inject,
 } from "vue-class";
-import {
-  type Router,
-  type RouteRecordRaw,
-  RouterLink,
-  RouterView,
-} from "vue-router";
+import { type RouteRecordRaw, RouterLink, RouterView } from "vue-router";
 
 export interface CommonLayoutProps extends VueComponentBaseProps {}
 
@@ -36,11 +31,9 @@ export interface CommonLayoutProps extends VueComponentBaseProps {}
 export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
   static readonly defineProps: ComponentProps<CommonLayoutProps> = ["inst"];
 
-  @VueInject(ROUTE_RECORDS) readonly routeRecords: RouteRecordRaw;
+  @Inject(ROUTE_RECORDS) readonly routeRecords: RouteRecordRaw;
 
   @Mut() sideCollapsed: boolean = false;
-
-  @VueInject(ROUTER) router: Router;
 
   @Mut() breadcrumbItems: { title: string; routeName?: string }[] = [];
 

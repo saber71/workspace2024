@@ -4,6 +4,7 @@ import { getCurrentInstance, defineComponent, inject, provide, watchEffect, watc
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router';
 
 const ModuleName = "vue-class";
+const ROUTER = "router";
 
 class VueDirective {
     el;
@@ -134,6 +135,7 @@ class VueClass {
         this.dependencyInjection.load({
             moduleName: ModuleName
         });
+        this.dependencyInjection.bindValue(ROUTER, router);
         VueDirective.install(app);
         VueRouterGuard.install(router);
     }
@@ -160,6 +162,12 @@ class VueComponent {
     childInstMap = {};
     get props() {
         return this.vueInstance.props;
+    }
+    get router() {
+        return VueClass.dependencyInjection.getValue(ROUTER);
+    }
+    get route() {
+        return this.router.currentRoute.value;
     }
     render() {}
     setup() {}
@@ -554,4 +562,4 @@ function getName(arg) {
     return arg.name;
 }
 
-export { BindThis, Component, Computed, Directive, Hook, Link, ModuleName, Mut, PropsWatcher, Readonly, RouterGuard, Service, VueClass, VueComponent, VueDirective, VueInject, VueRouterGuard, Watcher, toNative };
+export { BindThis, Component, Computed, Directive, Hook, Link, ModuleName, Mut, PropsWatcher, ROUTER, Readonly, RouterGuard, Service, VueClass, VueComponent, VueDirective, VueInject, VueRouterGuard, Watcher, toNative };

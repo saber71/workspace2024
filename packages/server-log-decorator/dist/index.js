@@ -20,6 +20,7 @@ function ServerLog(description, options = {}) {
                 data: typeof options.data === "function" ? options.data(container) : options.data
             });
         }
+        return returnValue;
     });
 }
 

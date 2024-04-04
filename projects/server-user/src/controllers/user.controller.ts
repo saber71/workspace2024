@@ -75,7 +75,7 @@ export class UserController {
       }
       if (!user) throw new NotFoundObjectError("找不到用户或密码错误");
       session.set("userId", user._id);
-      return this.auth(session, userCollection, roleCollection);
+      return await this.auth(session, userCollection, roleCollection);
     });
   }
 
@@ -100,6 +100,7 @@ export class UserController {
       if (!role) throw new UnauthorizedError("用户未配置角色");
       return {
         ...user,
+        password: undefined,
         authorizations: role.authorizations,
       } satisfies UserInfo;
     } else throw new UnauthorizedError();

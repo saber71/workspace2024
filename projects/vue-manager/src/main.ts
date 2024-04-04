@@ -2,7 +2,7 @@ import "./styles/style.css";
 import "./styles/theme.css";
 import "ant-design-vue/dist/reset.css";
 import App from "@/App.vue";
-import { ROUTE, ROUTE_RECORDS, ROUTER } from "@/constant.ts";
+import { ROUTE_RECORDS } from "@/constant.ts";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import antd from "ant-design-vue";
@@ -34,13 +34,6 @@ const router = createRouter({
 
 await VueClass.install(app, router);
 
-VueClass.dependencyInjection
-  .bindValue(ROUTER, router)
-  .bindValue(ROUTE_RECORDS, routeRecords)
-  .bindFactory(ROUTE, () => router.currentRoute.value);
+VueClass.dependencyInjection.bindValue(ROUTE_RECORDS, routeRecords);
 
-app
-  .use(router)
-  .provide(ROUTER, router)
-  .provide(ROUTE_RECORDS, routeRecords)
-  .mount("#app");
+app.use(router).mount("#app");

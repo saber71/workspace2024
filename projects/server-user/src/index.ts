@@ -15,7 +15,7 @@ export async function bootstrap(
   logPort?: number,
 ) {
   const store = await ServerStore.create(
-    createServerStoreFS("./store", saveOnExit),
+    createServerStoreFS("../store", saveOnExit),
   );
   const app = await Server.create({
     serverPlatformAdapter: createServerPlatformKoa(),

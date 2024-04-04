@@ -1,4 +1,4 @@
-import { ROUTER } from "@/constant.ts";
+import { ROUTER } from "vue-class";
 import LoginView from "@/views/login.view.tsx";
 import { message } from "ant-design-vue";
 import axios, { type AxiosResponse } from "axios";

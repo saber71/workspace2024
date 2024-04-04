@@ -1,7 +1,5 @@
 import { userApi } from "@/api.ts";
-import { ROUTE, ROUTER } from "@/constant.ts";
 import { useUser } from "@/stores";
-import { MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import {
   Button,
   Card,
@@ -21,11 +19,8 @@ import {
   VueComponent,
   Mut,
   BindThis,
-  VueInject,
-  Inject,
 } from "vue-class";
 import { Required } from "vue-form-rules";
-import type { Router } from "vue-router";
 
 @Component()
 export class LoginInst extends VueComponent {
@@ -36,10 +31,6 @@ export class LoginInst extends VueComponent {
     password: "",
     rememberMe: true,
   };
-
-  @VueInject(ROUTER) router: Router;
-
-  @Inject({ typeLabel: ROUTE }) route: CurrentRoute;
 
   @BindThis()
   handleLogin() {
@@ -101,5 +92,4 @@ export default toNative<VueComponentBaseProps>(LoginInst);
 export const Meta: ViewMeta = {
   title: "登陆",
   hidden: true,
-  icon: <MenuUnfoldOutlined />,
 };
