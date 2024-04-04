@@ -2,7 +2,7 @@
 ///<reference types="../types.d.ts"/>
 
 import { AuthorizedGuard, Server, WHITE_LIST } from "server";
-import { SERVER_LOG_ADDRESS } from "server-log-decorator";
+import { SERVER_LOG_COLLECTION } from "server-log-decorator";
 import { createServerPlatformKoa } from "server-platform-koa";
 import "./controllers";
 import { ServerStore } from "server-store";
@@ -12,7 +12,7 @@ import { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME } from "./constants";
 export async function bootstrap(
   port: number,
   saveOnExit = true,
-  logPort?: number,
+  log?: boolean,
 ) {
   const store = await ServerStore.create(
     createServerStoreFS("../store", saveOnExit),
@@ -25,11 +25,8 @@ export async function bootstrap(
   app.dependencyInjection
     .bindInstance(store)
     .bindValue(WHITE_LIST, ["/user/login"]);
-  if (typeof logPort === "number")
-    app.dependencyInjection.bindValue(
-      SERVER_LOG_ADDRESS,
-      "http://localhost:" + logPort,
-    );
+  if (log)
+    app.dependencyInjection.bindValue(SERVER_LOG_COLLECTION, "server-user-log");
   await createDefaultData(app, store);
   app.bootstrap({ port });
 }

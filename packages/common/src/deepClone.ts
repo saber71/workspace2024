@@ -20,7 +20,7 @@ export function deepClone<T>(obj: T, options: DeepCloneOption = {}): T {
     return new obj.constructor(obj);
   } else {
     //@ts-ignore
-    const result = new obj.constructor();
+    const result = new (obj.constructor || Object)();
     Object.assign(result, obj);
     for (let objKey in obj) {
       const value = obj[objKey];

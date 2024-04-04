@@ -1,14 +1,25 @@
+import { userApi } from "@/api.ts";
 import { ROUTE_RECORDS } from "@/constant.ts";
 import { useUser } from "@/stores";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons-vue";
+import LoginView from "@/views/login.view.tsx";
 import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  UserOutlined,
+} from "@ant-design/icons-vue";
+import {
+  Avatar,
   Breadcrumb,
   BreadcrumbItem,
+  Dropdown,
   Flex,
   type ItemType,
   Layout,
   LayoutSider,
   Menu,
+  MenuItem,
+  Space,
+  SubMenu,
   Switch,
 } from "ant-design-vue";
 import type { VNodeChild } from "vue";
@@ -22,6 +33,7 @@ import {
   Mut,
   Watcher,
   Inject,
+  BindThis,
 } from "vue-class";
 import { type RouteRecordRaw, RouterLink, RouterView } from "vue-router";
 
@@ -35,9 +47,17 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
 
   @Mut() sideCollapsed: boolean = false;
 
-  @Mut() breadcrumbItems: { title: string; routeName?: string }[] = [];
+  @Mut() breadcrumbItems: {
+    title: string;
+    routeName: string;
+    enableJump?: boolean;
+  }[] = [];
 
   readonly userStore = useUser();
+
+  get userAvatar() {
+    return this.userStore.info.avatar;
+  }
 
   @Computed() get curRouteName() {
     let result = "";
@@ -93,6 +113,8 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
     findRoutes(this.routeRecords.children!, result);
     result.unshift({
       title: "首页",
+      enableJump: false,
+      routeName: "",
     });
     this.breadcrumbItems = result;
 
@@ -106,13 +128,30 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
           if (item.meta) {
             result.unshift({
               title: item.meta.title as string,
-              routeName:
-                item.name === curRouteName ? "" : (item.name as string),
+              routeName: item.name as string,
+              enableJump: item.name !== curRouteName,
             });
           }
           break;
         }
       }
+    }
+  }
+
+  @BindThis()
+  onClickUserDropdown({ key }: any) {
+    switch (key) {
+      case "logout":
+        userApi("logout").then((data) => {
+          if (data.success) this.router.push({ name: LoginView.name });
+        });
+        break;
+      case "theme-light":
+        this.userStore.setDarkTheme(false);
+        break;
+      case "theme-dark":
+        this.userStore.setDarkTheme(true);
+        break;
     }
   }
 
@@ -149,7 +188,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
             }
           >
             {/*头部左侧*/}
-            <Flex align={"center"}>
+            <Space>
               {/*侧边栏收起/展开触发器*/}
               {this.sideCollapsed ? (
                 <MenuUnfoldOutlined
@@ -162,7 +201,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
               <Breadcrumb class={"ml-3 select-none"}>
                 {this.breadcrumbItems.map((item, index) => (
                   <BreadcrumbItem>
-                    {item.routeName ? (
+                    {item.enableJump ? (
                       <RouterLink
                         to={{ name: item.routeName }}
                         class={"hover:bg-opacity-0 hover:bg-amber-200"}
@@ -181,9 +220,33 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
                 checked={this.userStore.isDarkTheme()}
                 onUpdate:checked={(val) => this.userStore.setDarkTheme(!!val)}
               ></Switch>
-            </Flex>
+            </Space>
             {/*头部右侧*/}
-            <div>user</div>
+            <Space>
+              <Dropdown
+                arrow
+                placement={"bottom"}
+                trigger={"click"}
+                overlay={
+                  <Menu onClick={this.onClickUserDropdown}>
+                    <SubMenu key={"sub1"} title={"主题"}>
+                      <MenuItem key={"theme-light"}>浅色</MenuItem>
+                      <MenuItem key={"theme-dark"}>暗色</MenuItem>
+                    </SubMenu>
+                    <MenuItem key={"logout"}>退出登陆</MenuItem>
+                  </Menu>
+                }
+              >
+                <Space class={"cursor-pointer"}>
+                  <Avatar
+                    src={this.userAvatar}
+                    size={"small"}
+                    icon={this.userAvatar ? null : <UserOutlined />}
+                  />
+                  {this.userStore.info.name}
+                </Space>
+              </Dropdown>
+            </Space>
           </header>
           <main class={"bg-base p-6 flex-grow overflow-auto"}>
             <RouterView class={"bg-secondary h-full"} />

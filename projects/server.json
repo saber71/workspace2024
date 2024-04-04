@@ -1,7 +1,4 @@
 {
-  "server-log": {
-    "port": 4000
-  },
   "server-user": {
     "port": 4001
   }

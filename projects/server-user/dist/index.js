@@ -1,5 +1,5 @@
 import { Validation, ToBoolean, ToObject, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqSession, UnauthorizedError, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
-import { ServerLog, SERVER_LOG_ADDRESS } from 'server-log-decorator';
+import { ServerLog, SERVER_LOG_COLLECTION } from 'server-log-decorator';
 import { createServerPlatformKoa } from 'server-platform-koa';
 import { Collection, StoreCollection, ServerStore } from 'server-store';
 import validator from 'validator';
@@ -489,7 +489,7 @@ UserController = _ts_decorate([
 
 // @ts-ignore
 ///<reference types="../types.d.ts"/>
-async function bootstrap(port, saveOnExit = true, logPort) {
+async function bootstrap(port, saveOnExit = true, log) {
     const store = await ServerStore.create(createServerStoreFS("../store", saveOnExit));
     const app = await Server.create({
         serverPlatformAdapter: createServerPlatformKoa(),
@@ -501,7 +501,7 @@ async function bootstrap(port, saveOnExit = true, logPort) {
     app.dependencyInjection.bindInstance(store).bindValue(WHITE_LIST, [
         "/user/login"
     ]);
-    if (typeof logPort === "number") app.dependencyInjection.bindValue(SERVER_LOG_ADDRESS, "http://localhost:" + logPort);
+    if (log) app.dependencyInjection.bindValue(SERVER_LOG_COLLECTION, "server-user-log");
     await createDefaultData(app, store);
     app.bootstrap({
         port

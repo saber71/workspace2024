@@ -100,6 +100,7 @@ export class UserController {
       if (!role) throw new UnauthorizedError("用户未配置角色");
       return {
         ...user,
+        //@ts-ignore
         password: undefined,
         authorizations: role.authorizations,
       } satisfies UserInfo;

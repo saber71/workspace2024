@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["axios", "server"],
+      external: ["server", "server-store"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

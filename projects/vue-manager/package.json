@@ -25,7 +25,6 @@
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
-    "server-log": "workspace:^",
     "server-user": "workspace:^"
   }
 }

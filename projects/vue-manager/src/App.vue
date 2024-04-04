@@ -1,17 +1,19 @@
 <script lang="ts" setup>
 import { useUser } from "@/stores";
-import { computed } from "vue";
+import { watch } from "vue";
 
 const userStore = useUser();
 
-const classes = computed(() => {
-  const result = ["root-view"];
-  if (userStore.isDarkTheme()) result.push("dark");
-  else result.push("light");
-  return result;
-});
+watch(
+  userStore.isDarkTheme,
+  () => {
+    const isDark = userStore.isDarkTheme();
+    document.body.className = isDark ? "dark" : "light";
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
-  <RouterView :class="classes"></RouterView>
+  <RouterView></RouterView>
 </template>

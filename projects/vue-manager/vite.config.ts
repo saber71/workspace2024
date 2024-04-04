@@ -42,11 +42,6 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/server-user/, ""),
       },
-      "^/server-log": {
-        target: "http://localhost:" + serverPortJson["server-log"].port,
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/server-log/, ""),
-      },
     },
   },
 });

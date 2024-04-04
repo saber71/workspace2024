@@ -3,7 +3,7 @@
 import { Session } from 'server';
 import { StoreCollection } from 'server-store';
 
-export declare function bootstrap(port: number, saveOnExit?: boolean, logPort?: number): Promise<void>;
+export declare function bootstrap(port: number, saveOnExit?: boolean, log?: boolean): Promise<void>;
 
 export declare const COLLECTION_ROLE = "role";
 

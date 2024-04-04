@@ -93,7 +93,7 @@ function createServerStoreFS(basePath = ".", saveOnExit = false) {
     }
     function saveCollectionChange() {
         if (needSaveCollectionNames.size) {
-            saveCollections(Array.from(needSaveCollectionNames), false);
+            saveCollections(Array.from(needSaveCollectionNames));
             needSaveCollectionNames.clear();
         }
     }

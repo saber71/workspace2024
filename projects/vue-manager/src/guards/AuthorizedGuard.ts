@@ -8,18 +8,16 @@ const whiteList = [LoginView.name];
 
 @RouterGuard({ matchTo: (path) => !whiteList.includes(path.name as string) })
 export class AuthorizedGuard extends VueRouterGuard {
-  private _isAuthenticated: boolean = false;
-
   async beforeEach(
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
     next: NavigationGuardNext,
   ) {
-    if (!this._isAuthenticated) {
-      const userStore = useUser();
+    const userStore = useUser();
+    if (!userStore.isAuth) {
       if (userStore.info._id) {
         await userApi("auth");
-        this._isAuthenticated = true;
+        userStore.isAuth = true;
       } else {
         return next({ name: LoginView.name });
       }

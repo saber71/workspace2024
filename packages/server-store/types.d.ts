@@ -12,8 +12,6 @@ declare type TransactionRecord =
 /* 保存数据的基础类型 */
 declare interface StoreItem {
   _id: string;
-
-  [key: string | symbol]: any;
 }
 
 declare type PartialStoreItem<T extends StoreItem> = Omit<T, "_id"> &
