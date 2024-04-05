@@ -41,6 +41,18 @@ export declare class ImproperDecoratorError extends ServerError {
     name: string;
 }
 
+export declare class JwtSession<T extends Record<string, any>> extends Session<T> {
+    constructor(req: ServerRequest, res: ServerResponse);
+    readonly tokenKey = "Authorized";
+    readonly secretKey = "Secret";
+    private _data?;
+    set<Key extends keyof T>(key: Key, value: T[Key]): this;
+    get<Key extends keyof T>(key: Key): T[Key] | undefined;
+    has<Key extends keyof T>(key: Key): boolean;
+    destroy(): void;
+    toString(): string;
+}
+
 export declare function Logger(): (clazz: Class<any>, ctx?: any) => void;
 
 export declare function MarkParseType(...clazz: Array<Class | null | undefined>): (target: any, propName?: any) => void;
@@ -91,6 +103,8 @@ export declare function ReqBody(option?: ParserAndValidator): (clazz: any, metho
 export declare function ReqFile(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
 export declare function ReqFiles(fieldName: string): (clazz: any, propName: any, index?: any) => void;
+
+export declare function ReqJwtSession(): (clazz: any, propName: any, index?: any) => void;
 
 export declare function ReqQuery(option?: ParserAndValidator): (clazz: any, methodName: any, index: number) => void;
 
@@ -197,7 +211,7 @@ export declare class Session<T extends Record<string, any>> {
     readonly req: ServerRequest;
     readonly res: ServerResponse;
     constructor(req: ServerRequest, res: ServerResponse);
-    deleteKey<Key extends keyof T>(key: Key): void;
+    deleteKey<Key extends keyof T>(key: Key): this;
     set<Key extends keyof T>(key: Key, value: T[Key]): this;
     get<Key extends keyof T>(key: Key): T[Key] | undefined;
     /**

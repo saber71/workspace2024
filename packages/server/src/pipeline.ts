@@ -4,7 +4,7 @@ import { ServerResponse } from "./response";
 import { ResponseBodyImpl } from "./response-body";
 import { RouteManager } from "./route-manager";
 import { Server } from "./server";
-import { Session } from "./session";
+import { JwtSession, Session } from "./session";
 
 /* 用来处理请求的管道 */
 export class RequestPipeline {
@@ -18,7 +18,8 @@ export class RequestPipeline {
       .bindValue(Container.name, this._container)
       .bindValue(ServerRequest.name, request)
       .bindValue(ServerResponse.name, response)
-      .bindGetter(Session.name, () => new Session(request, response));
+      .bindGetter(Session.name, () => new Session(request, response))
+      .bindGetter(JwtSession.name, () => new JwtSession(request, response));
   }
 
   /* 依赖注入容器 */

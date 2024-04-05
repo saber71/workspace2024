@@ -10,7 +10,7 @@ export class AuthorizedGuard implements GuardInterface {
   @Inject()
   guard(
     @ReqSession() session: Session<RegularSessionData>,
-    @Inject({ typeLabel: WHITE_LIST })
+    @Inject(WHITE_LIST)
     whiteList: string[],
     req: ServerRequest,
   ): void | Promise<void> {

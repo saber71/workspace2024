@@ -12,6 +12,8 @@ export default defineConfig({
         "class-validator",
         "chalk",
         "node:process",
+        "jsonwebtoken",
+        "common",
       ],
     },
     lib: {

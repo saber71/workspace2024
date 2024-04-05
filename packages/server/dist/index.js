@@ -2,6 +2,8 @@ import { validate as validate$1, NoValidationError } from 'class-validator';
 export * from 'class-validator';
 import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, Container, LoadableContainer } from 'dependency-injection';
 export * from 'dependency-injection';
+import { composeUrl } from 'common';
+import jwt from 'jsonwebtoken';
 import chalk from 'chalk';
 import * as process from 'node:process';
 
@@ -92,15 +94,6 @@ import * as process from 'node:process';
 /* Web服务器默认的监听端口 */ const DEFAULT_PORT = 4000;
 /* 环境名在依赖注入容器中的标签名，用于日志输出 */ const CONTEXT_LABEL = "ContextName";
 /* 鉴权白名单 */ const WHITE_LIST = "WhiteList";
-
-function removeHeadTailChar(str, char) {
-    while(str[0] === char)str = str.slice(1);
-    while(str[str.length - 1] === char)str = str.slice(0, str.length - 1);
-    return str;
-}
-/* 组装url */ function composeUrl(...items) {
-    return "/" + items.map((str)=>removeHeadTailChar(str, "/")).filter((str)=>str.length > 0).join("/");
-}
 
 var RouteManager;
 (function(RouteManager) {
@@ -479,16 +472,6 @@ const validatedKey = Symbol("validated");
     });
 }
 
-/* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
-    return MethodParameter({
-        ...option,
-        typeValueGetter: (container)=>container.getValue(ServerRequest).query,
-        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
-                isQuery: true
-            }
-    });
-}
-
 /* 读取/更新会话对象 */ class Session {
     req;
     res;
@@ -498,6 +481,7 @@ const validatedKey = Symbol("validated");
     }
     /* 删除session中指定的key */ deleteKey(key) {
         this.set(key, null);
+        return this;
     }
     /* 更新会话对象 */ set(key, value) {
         /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */ if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
@@ -513,7 +497,7 @@ const validatedKey = Symbol("validated");
    * @throws SessionKeyNotExistError 当在session上找不到key时抛出
    */ fetch(key) {
         if (!this.has(key)) throw new SessionKeyNotExistError(`在session上找不到key ` + key);
-        return this.req.session[key];
+        return this.get(key);
     }
     /* 判断会话上是否存在指定的key */ has(key) {
         if (!this.req.session) return false;
@@ -522,6 +506,63 @@ const validatedKey = Symbol("validated");
     /* 删除会话对象 */ destroy() {
         this.res.session = null;
     }
+}
+/* 使用jwt生成、验证、传输token */ class JwtSession extends Session {
+    constructor(req, res){
+        super(req, res);
+        const token = req.headers[this.tokenKey];
+        if (typeof token === "string") {
+            try {
+                const result = jwt.verify(token, this.secretKey);
+                if (result && typeof result === "object") this._data = result;
+            } catch (e) {}
+        }
+    }
+    tokenKey = "Authorized";
+    secretKey = "Secret";
+    _data;
+    set(key, value) {
+        if (!this._data) this._data = {};
+        if (value === null) delete this._data[key];
+        else this._data[key] = value;
+        this.res.headers[this.tokenKey] = this.toString();
+        return super.set(key, value);
+    }
+    get(key) {
+        return this._data?.[key];
+    }
+    has(key) {
+        if (!this._data) return false;
+        return key in this._data;
+    }
+    destroy() {
+        this._data = undefined;
+        super.destroy();
+    }
+    toString() {
+        return jwt.sign(this._data ?? {}, this.secretKey, {
+            expiresIn: "8h"
+        });
+    }
+}
+
+/* 属性/参数装饰器。为被装饰者注入JwtSession对象 */ function ReqJwtSession() {
+    return Inject({
+        typeValueGetter: (container)=>container.getValue(JwtSession),
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isSession: true
+            }
+    });
+}
+
+/* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
+    return MethodParameter({
+        ...option,
+        typeValueGetter: (container)=>container.getValue(ServerRequest).query,
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isQuery: true
+            }
+    });
 }
 
 /* 属性/参数装饰器。为被装饰者注入session对象 */ function ReqSession() {
@@ -579,9 +620,7 @@ class AuthorizedGuard {
 _ts_decorate$1([
     Inject(),
     _ts_param(0, ReqSession()),
-    _ts_param(1, Inject({
-        typeLabel: WHITE_LIST
-    })),
+    _ts_param(1, Inject(WHITE_LIST)),
     _ts_metadata$1("design:type", Function),
     _ts_metadata$1("design:paramtypes", [
         typeof Session === "undefined" ? Object : Session,
@@ -683,7 +722,7 @@ const filePath = Symbol("__FilePath__");
         this.request = request;
         this.response = response;
         this._container = server.createContainer();
-        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
+        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response)).bindGetter(JwtSession.name, ()=>new JwtSession(request, response));
     }
     /* 依赖注入容器 */ _container;
     /* 启动管道，开始处理请求 */ async start() {
@@ -793,4 +832,4 @@ class Server {
     }
 }
 
-export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, Get, Guard, ImproperDecoratorError, Logger, MODULE_NAME, MarkParseType, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, ParseFailedError, Parser, Post, RegularParser, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, Res, ResponseBodyImpl, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ToArray, ToBoolean, ToDate, ToMap, ToNumber, ToObject, ToRegExp, ToSet, ToString, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };
+export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, Get, Guard, ImproperDecoratorError, JwtSession, Logger, MODULE_NAME, MarkParseType, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, ParseFailedError, Parser, Post, RegularParser, Req, ReqBody, ReqFile, ReqFiles, ReqJwtSession, ReqQuery, ReqSession, Res, ResponseBodyImpl, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ToArray, ToBoolean, ToDate, ToMap, ToNumber, ToObject, ToRegExp, ToSet, ToString, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };
