@@ -511,6 +511,7 @@ const validatedKey = Symbol("validated");
     constructor(req, res){
         super(req, res);
         const token = req.headers[this.tokenKey];
+        res.headers[this.tokenKey] = token;
         if (typeof token === "string") {
             try {
                 const result = jwt.verify(token, this.secretKey);
@@ -537,12 +538,13 @@ const validatedKey = Symbol("validated");
     }
     destroy() {
         this._data = undefined;
+        this.res.headers[this.tokenKey] = this.toString();
         super.destroy();
     }
     toString() {
-        return jwt.sign(this._data ?? {}, this.secretKey, {
+        return this._data ? jwt.sign(this._data, this.secretKey, {
             expiresIn: "8h"
-        });
+        }) : "";
     }
 }
 
@@ -611,19 +613,21 @@ function _ts_param(paramIndex, decorator) {
     };
 }
 class AuthorizedGuard {
-    guard(session, whiteList, req) {
+    guard(session, jwtSession, whiteList, req) {
         if (whiteList.length === 0 || whiteList.includes("*")) return;
         if (whiteList.includes(req.path)) return;
-        if (!session.get("userId")) throw new UnauthorizedError();
+        if (!jwtSession.get("userId") && !session.get("userId")) throw new UnauthorizedError();
     }
 }
 _ts_decorate$1([
     Inject(),
     _ts_param(0, ReqSession()),
-    _ts_param(1, Inject(WHITE_LIST)),
+    _ts_param(1, ReqJwtSession()),
+    _ts_param(2, Inject(WHITE_LIST)),
     _ts_metadata$1("design:type", Function),
     _ts_metadata$1("design:paramtypes", [
         typeof Session === "undefined" ? Object : Session,
+        typeof JwtSession === "undefined" ? Object : JwtSession,
         Array,
         typeof ServerRequest === "undefined" ? Object : ServerRequest
     ]),
@@ -722,7 +726,7 @@ const filePath = Symbol("__FilePath__");
         this.request = request;
         this.response = response;
         this._container = server.createContainer();
-        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response)).bindGetter(JwtSession.name, ()=>new JwtSession(request, response));
+        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response)).bindValue(JwtSession.name, new JwtSession(request, response));
     }
     /* 依赖注入容器 */ _container;
     /* 启动管道，开始处理请求 */ async start() {

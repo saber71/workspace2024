@@ -1,5 +1,6 @@
 import "./styles/style.css";
 import "./styles/theme.css";
+import "./styles/ant-design.scss";
 import "ant-design-vue/dist/reset.css";
 import App from "@/App.vue";
 import { ROUTE_RECORDS } from "@/constant.ts";

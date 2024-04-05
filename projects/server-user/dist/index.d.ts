@@ -1,6 +1,6 @@
 /// <reference types="../types.d.ts" />
 
-import { Session } from 'server';
+import { JwtSession } from 'server';
 import { StoreCollection } from 'server-store';
 
 export declare function bootstrap(port: number, saveOnExit?: boolean, log?: boolean): Promise<void>;
@@ -73,9 +73,9 @@ export declare class UserController {
      * @throws NotFoundObjectError 当找不到roleId对应的Role对象时抛出
      */
     create(data: CreateUserDTO, collection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<string[]>;
-    login(data: LoginDTO, session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<UserInfo>;
-    logout(session: Session<RegularSessionData>): Promise<void>;
-    auth(session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<UserInfo>;
+    login(data: LoginDTO, session: JwtSession<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<UserInfo>;
+    logout(session: JwtSession<RegularSessionData>): Promise<void>;
+    auth(session: JwtSession<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<UserInfo>;
     updateUserData(data: UpdateUserDataDTO, collection: StoreCollection<UserModel>): Promise<void>;
 }
 

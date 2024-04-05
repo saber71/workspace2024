@@ -12,9 +12,10 @@ export const useUser = defineStore("user", () => {
   const info = useLocalStorage("user-info", {
     userData: {},
   } as any as UserInfo);
+  const token = useLocalStorage("token", "");
   const isAuth = ref(false);
 
-  if (!rememberMe.value) info.value._id = "";
+  if (!rememberMe.value) token.value = info.value._id = "";
 
   function isDarkTheme(): boolean {
     return !!info.value.userData?.[UserData.IsDarkTheme];
@@ -27,7 +28,7 @@ export const useUser = defineStore("user", () => {
     }
   }
 
-  return { info, rememberMe, isAuth, isDarkTheme, setDarkTheme };
+  return { info, rememberMe, isAuth, token, isDarkTheme, setDarkTheme };
 
   function updateUserData(key: string, value: any): void {
     info.value.userData[key] = value;

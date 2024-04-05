@@ -7,7 +7,7 @@ import { ParsedUrlQuery } from 'node:querystring';
 import { URL as URL_2 } from 'node:url';
 
 export declare class AuthorizedGuard implements GuardInterface {
-    guard(session: Session<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
+    guard(session: Session<RegularSessionData>, jwtSession: JwtSession<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
 }
 
 export declare class ConsoleLogger implements LoggerInterface {

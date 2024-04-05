@@ -43,7 +43,7 @@ export class RoleController {
       if (!role)
         throw new NotFoundObjectError(`找不到id为${body.id}的Role对象`);
       if (body.toDelete) {
-        await role.deleteOne();
+        await collection.delete({ _id: body.id });
         return;
       }
       if (body.putAuthorizations)

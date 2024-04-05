@@ -8,6 +8,8 @@
   --text-base: black;
   --text-secondary: rgba(0, 0, 0, 0.45);
   --text-dropdown: var(--text-base);
+  --text-input-placeholder:rgba(0,0,0,0.5);
+  --text-input-icon-hover:rgba(0,0,0,0.85);
 }
 
 .dark {
@@ -20,6 +22,8 @@
   --text-base: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.45);
   --text-dropdown: rgba(255, 255, 255, 0.95);
+  --text-input-placeholder:rgba(255,255,255,0.5);
+  --text-input-icon-hover:rgba(255,255,255,0.85);
 }
 
 body {

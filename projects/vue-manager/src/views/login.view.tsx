@@ -39,6 +39,7 @@ export class LoginInst extends VueComponent {
         const userStore = useUser();
         userStore.info = data.object;
         userStore.rememberMe = this.form.rememberMe;
+        userStore.isAuth = true;
         if (this.route.query.redirect) {
           window.open(this.route.query.redirect as string, "_self");
         } else {

@@ -1,0 +1,78 @@
+.dark {
+
+  .ant-breadcrumb a {
+    &:hover {
+      color: var(--text-base);
+      background-color: transparent;
+    }
+  }
+
+  .ant-breadcrumb a,
+  .ant-breadcrumb .not-link,
+  .ant-breadcrumb .ant-breadcrumb-separator {
+    color: var(--text-secondary);
+  }
+
+  .ant-breadcrumb .cur-path {
+    color: var(--text-base);
+  }
+
+  .ant-avatar {
+    background: var(--bg-avatar);
+
+  }
+
+  .ant-dropdown .ant-dropdown-menu, .ant-dropdown-menu-submenu .ant-dropdown-menu, .ant-dropdown .ant-dropdown-arrow::before {
+    background: var(--bg-dropdown);
+  }
+
+  .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-submenu-title {
+    color: var(--text-dropdown);
+  }
+
+  .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-item, .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-submenu-title, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-submenu-title,
+  .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item .ant-dropdown-menu-submenu-expand-icon .ant-dropdown-menu-submenu-arrow-icon, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-item .ant-dropdown-menu-submenu-expand-icon .ant-dropdown-menu-submenu-arrow-icon, .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-submenu-title .ant-dropdown-menu-submenu-expand-icon .ant-dropdown-menu-submenu-arrow-icon, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-submenu-title .ant-dropdown-menu-submenu-expand-icon .ant-dropdown-menu-submenu-arrow-icon {
+    color: var(--text-dropdown);
+  }
+
+  .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item:hover, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-item:hover, .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-submenu-title:hover, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-submenu-title:hover, .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item-active, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-item-active, .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-submenu-title-active, .ant-dropdown-menu-submenu .ant-dropdown-menu .ant-dropdown-menu-submenu-title-active {
+    background: var(--bg-dropdown-hover);
+  }
+
+  .ant-card-bordered {
+    border-color: var(--border-base);
+  }
+
+  .ant-card, .ant-card .ant-card-head {
+    color: var(--text-base);
+    border-color: var(--border-base);
+    background: var(--bg-secondary);
+  }
+
+  .ant-checkbox-wrapper {
+    color: var(--text-base);
+  }
+
+  .ant-input, .ant-input-affix-wrapper {
+    color: var(--text-base);
+    border-color: var(--border-base);
+    background: var(--bg-base);
+  }
+
+  .ant-input-affix-wrapper .anticon.ant-input-password-icon {
+    color: var(--text-secondary);
+  }
+
+  .ant-input-affix-wrapper .anticon.ant-input-password-icon:hover {
+    color: var(--text-input-icon-hover);
+  }
+
+  .ant-input::-webkit-input-placeholder {
+    color: var(--text-input-placeholder);
+  }
+
+  .ant-checkbox .ant-checkbox-inner {
+    border-color: var(--border-base);
+    background: var(--bg-base);
+  }
+}

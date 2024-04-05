@@ -59,6 +59,7 @@ export class JwtSession<T extends Record<string, any>> extends Session<T> {
   constructor(req: ServerRequest, res: ServerResponse) {
     super(req, res);
     const token = req.headers[this.tokenKey];
+    res.headers[this.tokenKey] = token;
     if (typeof token === "string") {
       try {
         const result = jwt.verify(token, this.secretKey) as any;
@@ -90,10 +91,13 @@ export class JwtSession<T extends Record<string, any>> extends Session<T> {
 
   destroy() {
     this._data = undefined;
+    this.res.headers[this.tokenKey] = this.toString();
     super.destroy();
   }
 
   toString() {
-    return jwt.sign(this._data ?? {}, this.secretKey, { expiresIn: "8h" });
+    return this._data
+      ? jwt.sign(this._data, this.secretKey, { expiresIn: "8h" })
+      : "";
   }
 }

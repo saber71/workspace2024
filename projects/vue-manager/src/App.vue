@@ -15,5 +15,7 @@ watch(
 </script>
 
 <template>
-  <RouterView></RouterView>
+  <AConfigProvider>
+    <RouterView></RouterView>
+  </AConfigProvider>
 </template>

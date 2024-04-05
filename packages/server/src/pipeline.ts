@@ -19,7 +19,7 @@ export class RequestPipeline {
       .bindValue(ServerRequest.name, request)
       .bindValue(ServerResponse.name, response)
       .bindGetter(Session.name, () => new Session(request, response))
-      .bindGetter(JwtSession.name, () => new JwtSession(request, response));
+      .bindValue(JwtSession.name, new JwtSession(request, response));
   }
 
   /* 依赖注入容器 */

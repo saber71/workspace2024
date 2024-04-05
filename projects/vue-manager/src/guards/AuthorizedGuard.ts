@@ -15,7 +15,7 @@ export class AuthorizedGuard extends VueRouterGuard {
   ) {
     const userStore = useUser();
     if (!userStore.isAuth) {
-      if (userStore.info._id) {
+      if (userStore.token) {
         await userApi("auth");
         userStore.isAuth = true;
       } else {

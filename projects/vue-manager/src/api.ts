@@ -20,12 +20,21 @@ export const roleApi =
   serverUserApiProvider.provider<RoleController>("RoleController");
 
 function createAxiosInstance(baseURL: string) {
+  const tokenKey = "Authorized";
   const instance = axios.create({
     baseURL,
     validateStatus: () => true,
   });
+  instance.interceptors.request.use((req) => {
+    const userStore = useUser();
+    req.headers[tokenKey] = userStore.token;
+    return req;
+  });
   instance.interceptors.response.use(
     (res: AxiosResponse<ResponseBody<any>>) => {
+      const userStore = useUser();
+      userStore.token = res.headers.authorized;
+      console.log(res);
       const body = res.data ?? {};
       if (!body.success) {
         message.error(body.msg || "操作失败");

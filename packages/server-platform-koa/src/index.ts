@@ -98,6 +98,14 @@ export function createServerRequest(
   ctx: Koa.ParameterizedContext,
   id: string,
 ): ServerRequest<Koa.Request> {
+  const headers = new Proxy(
+    {},
+    {
+      get(_: any, p: string): any {
+        return ctx.request.get(p);
+      },
+    },
+  );
   return {
     original: ctx.request,
     origin: ctx.origin,
@@ -105,7 +113,7 @@ export function createServerRequest(
     query: ctx.query,
     querystring: ctx.querystring,
     hostname: ctx.hostname,
-    headers: ctx.headers,
+    headers,
     host: ctx.host,
     href: ctx.href,
     path: ctx.path,
@@ -125,9 +133,23 @@ export function createServerResponse(
   ctx: ParameterizedContext,
   id: string,
 ): ServerResponse<Koa.Response> {
+  const headers = new Proxy(
+    {},
+    {
+      get(_: any, p: string): any {
+        return ctx.res.getHeader(p);
+      },
+      set(_: any, p: string, newValue: any): boolean {
+        if (newValue === undefined || newValue === null)
+          ctx.res.removeHeader(p);
+        else ctx.res.setHeader(p, newValue);
+        return true;
+      },
+    },
+  );
   return {
     original: ctx.response,
-    headers: ctx.response.headers,
+    headers,
 
     get id() {
       return id;
