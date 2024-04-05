@@ -2,8 +2,8 @@
 import {
   AfterCallMethod,
   type Container,
+  JwtSession,
   ServerRequest,
-  Session,
 } from "server";
 import { ServerStore } from "server-store";
 
@@ -18,7 +18,7 @@ export function ServerLog(
 ) {
   if (!options.creatorGetter)
     options.creatorGetter = (container: Container) =>
-      container.getValue(Session).get("userId");
+      container.getValue(JwtSession).get("userId");
   return AfterCallMethod((container, metadata, returnValue, args, error) => {
     if (error) return returnValue;
     if (container.hasLabel(SERVER_LOG_COLLECTION)) {

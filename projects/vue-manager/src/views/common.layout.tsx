@@ -59,30 +59,25 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
     return this.userStore.info.avatar;
   }
 
-  @Computed() get curRouteName() {
-    let result = "";
+  @Computed() get activeMenuItem() {
+    const result: any = [];
     let menus: any[] = this.menu;
     for (let breadcrumbItem of this.breadcrumbItems.slice(1)) {
-      if (breadcrumbItem.routeName) {
-        const subMenu = menus.find(
-          (item) => item.key === breadcrumbItem.routeName,
-        );
-        if (subMenu.children) menus = subMenu;
-        else {
-          result = breadcrumbItem.routeName;
-          break;
-        }
-      }
+      const subMenu = menus.find((item) => item.title === breadcrumbItem.title);
+      result.push(breadcrumbItem.routeName);
+      if (subMenu.children) menus = subMenu.children;
+      else break;
     }
-    return [result];
+    return result;
   }
 
   @Computed() get menu() {
-    return filter(
+    const menus = filter(
       this.routeRecords.children!.filter(
         (item) => item.name === CommonLayoutInst.name,
       )[0].children!,
     );
+    return menus.sort((a, b) => a.order - b.order);
 
     function filter(routes: RouteRecordRaw[]) {
       const result: any[] = [];
@@ -93,6 +88,8 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
             label: route.meta.title,
             key: route.name as string,
             title: route.meta.title as string,
+            //@ts-ignore
+            order: route.meta.order ?? 0,
           };
           if (route.children?.length)
             (item as any).children = filter(route.children);
@@ -104,7 +101,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
   }
 
   @Watcher<CommonLayoutInst>({
-    source: (instance) => instance.router.currentRoute.value.name,
+    source: (instance) => instance.route.name,
     option: { immediate: true },
   })
   updateBreadcrumb() {
@@ -129,7 +126,8 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
             result.unshift({
               title: item.meta.title as string,
               routeName: item.name as string,
-              enableJump: item.name !== curRouteName,
+              enableJump:
+                item.name !== curRouteName && !!item.name && !!item.component,
             });
           }
           break;
@@ -138,8 +136,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
     }
   }
 
-  @BindThis()
-  onClickUserDropdown({ key }: any) {
+  @BindThis() onClickUserDropdown({ key }: any) {
     switch (key) {
       case "logout":
         userApi("logout").then((data) => {
@@ -152,6 +149,12 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
       case "theme-dark":
         this.userStore.setDarkTheme(true);
         break;
+    }
+  }
+
+  @BindThis() onClickMenuItem({ key }: any) {
+    if (key !== this.route.name) {
+      this.router.push({ name: key });
     }
   }
 
@@ -168,7 +171,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
             <img src={"/vite.svg"} />
             {/*侧边栏收起时不显示系统名*/}
             {this.sideCollapsed ? null : (
-              <div class={"text-white whitespace-nowrap text-2xl ml-1"}>
+              <div class={"text-white whitespace-nowrap text-xl ml-1"}>
                 Vue-Manager
               </div>
             )}
@@ -176,9 +179,11 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
           {/*菜单栏*/}
           <Menu
             items={this.menu}
-            selectedKeys={this.curRouteName}
+            selectedKeys={this.activeMenuItem}
+            openKeys={this.activeMenuItem}
             mode={"inline"}
             theme={"dark"}
+            onClick={this.onClickMenuItem}
           ></Menu>
         </LayoutSider>
         <Layout>

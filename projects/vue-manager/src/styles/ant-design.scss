@@ -1,22 +1,29 @@
-.dark {
+.ant-checkbox-wrapper {
+  align-items: center;
+}
 
-  .ant-breadcrumb a {
-    &:hover {
-      color: var(--text-base);
-      background-color: transparent;
-    }
-  }
+.ant-btn-link {
+  padding: 0;
+}
 
-  .ant-breadcrumb a,
-  .ant-breadcrumb .not-link,
-  .ant-breadcrumb .ant-breadcrumb-separator {
-    color: var(--text-secondary);
-  }
-
-  .ant-breadcrumb .cur-path {
+.ant-breadcrumb a {
+  &:hover {
     color: var(--text-base);
+    background-color: transparent;
   }
+}
 
+.ant-breadcrumb a,
+.ant-breadcrumb .not-link,
+.ant-breadcrumb .ant-breadcrumb-separator {
+  color: var(--text-secondary);
+}
+
+.ant-breadcrumb .cur-path {
+  color: var(--text-base);
+}
+
+.dark {
   .ant-avatar {
     background: var(--bg-avatar);
 

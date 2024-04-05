@@ -34,7 +34,6 @@ function createAxiosInstance(baseURL: string) {
     (res: AxiosResponse<ResponseBody<any>>) => {
       const userStore = useUser();
       userStore.token = res.headers.authorized;
-      console.log(res);
       const body = res.data ?? {};
       if (!body.success) {
         message.error(body.msg || "操作失败");

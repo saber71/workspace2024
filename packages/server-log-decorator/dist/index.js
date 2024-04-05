@@ -1,10 +1,10 @@
-import { Session, AfterCallMethod, ServerRequest } from 'server';
+import { JwtSession, AfterCallMethod, ServerRequest } from 'server';
 import { ServerStore } from 'server-store';
 
 ///<reference types="../types.d.ts"/>
 const SERVER_LOG_COLLECTION = "server-log-collection";
 function ServerLog(description, options = {}) {
-    if (!options.creatorGetter) options.creatorGetter = (container)=>container.getValue(Session).get("userId");
+    if (!options.creatorGetter) options.creatorGetter = (container)=>container.getValue(JwtSession).get("userId");
     return AfterCallMethod((container, metadata, returnValue, args, error)=>{
         if (error) return returnValue;
         if (container.hasLabel(SERVER_LOG_COLLECTION)) {

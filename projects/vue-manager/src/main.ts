@@ -1,4 +1,4 @@
-import "./styles/style.css";
+import "./styles/tailwind.css";
 import "./styles/theme.css";
 import "./styles/ant-design.scss";
 import "ant-design-vue/dist/reset.css";
@@ -23,7 +23,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const routeRecords = await autoRoutes(
-  import.meta.glob("@/views/**/*.(view|layout).tsx"),
+  import.meta.glob("@/views/**/*.(view|layout).(tsx|ts)"),
   "/src/views",
 );
 
