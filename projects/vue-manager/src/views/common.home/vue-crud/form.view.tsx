@@ -1,10 +1,11 @@
-import type { VNodeChild } from "vue";
+import { type VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Mut,
 } from "vue-class";
 import { crudForm, crudComponent } from "vue-crud";
 import { Required } from "vue-form-rules";
@@ -13,14 +14,14 @@ import { Required } from "vue-form-rules";
 export class FormViewInst extends VueComponent {
   static readonly defineProps: ComponentProps<VueComponentBaseProps> = ["inst"];
 
-  readonly form = crudForm({
+  @Mut() form = crudForm({
     form: {
       labelAlign: "right",
       labelCol: { style: "width:70px" },
     },
     columns: [
       {
-        prop: "username",
+        name: "username",
         component: crudComponent.input({
           placeholder: "请输入用户名",
         }),
@@ -28,18 +29,18 @@ export class FormViewInst extends VueComponent {
         label: "用户名",
       },
       {
-        prop: "password",
+        name: "password",
         component: crudComponent.inputPassword(),
         rules: Required,
         label: "密码",
       },
       {
-        prop: "age",
+        name: "age",
         defaultValue: 20,
         component: crudComponent.inputNumber(),
       },
       {
-        prop: "rememberMe",
+        name: "rememberMe",
         defaultValue: true,
         wrapFormItem: false,
         component: crudComponent.checkbox({}, ["记住我"]),
@@ -53,6 +54,20 @@ export class FormViewInst extends VueComponent {
           ["登陆"],
         ),
         wrapFormItem: false,
+      },
+      {
+        component: crudComponent.submitButton(
+          {
+            onClick: () => {
+              this.form.model.age = 10;
+              this.form.option.columns.push({
+                component: crudComponent.button({}, ["被添加的"]),
+                wrapFormItem: false,
+              });
+            },
+          },
+          ["添加按钮"],
+        ),
       },
     ],
   });

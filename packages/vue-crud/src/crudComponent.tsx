@@ -30,12 +30,14 @@ export default {
     prop: FormItemProps & HTMLAttributes = {},
     children?: VNodeArray,
   ): Component {
+    prop = clone(prop);
     if (prop.validateFirst === undefined) prop.validateFirst = true;
     prop = Object.assign({}, prop);
     delete prop.prop;
     return () => <FormItem {...prop}>{...toVNodes(children)}</FormItem>;
   },
   input(prop: InputProps & HTMLAttributes = {}): Component {
+    prop = clone(prop);
     if (!prop.placeholder) prop.placeholder = "请输入";
     if (prop.allowClear === undefined) prop.allowClear = true;
     return (arg) => (
@@ -47,6 +49,7 @@ export default {
     );
   },
   inputNumber(prop: InputNumberProps & HTMLAttributes = {}): Component {
+    prop = clone(prop);
     if (!prop.placeholder) prop.placeholder = "请输入";
     return (arg) => (
       <InputNumber
@@ -57,6 +60,7 @@ export default {
     );
   },
   inputPassword(prop: InputProps & HTMLAttributes = {}): Component {
+    prop = clone(prop);
     if (!prop.placeholder) prop.placeholder = "请输入密码";
     if (prop.allowClear === undefined) prop.allowClear = true;
     return (arg) => (
@@ -94,6 +98,10 @@ export default {
     return this.button({ ...prop, htmlType: "submit" }, children);
   },
 };
+
+function clone<T>(obj: T): T {
+  return Object.assign({}, obj);
+}
 
 function toVNodes(vnodeArray?: VNodeArray): VNode[] {
   if (!vnodeArray) return [];

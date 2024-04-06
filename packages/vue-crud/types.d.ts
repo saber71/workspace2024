@@ -30,10 +30,11 @@ declare type FormItemOption = import("ant-design-vue").FormItemProps & {
 
 declare interface BaseColumnOption {
   component?: Component;
-  prop?: string;
 }
 
-declare interface FormColumnOption extends BaseColumnOption, FormItemOption {}
+declare interface FormColumnOption extends BaseColumnOption, FormItemOption {
+  name?: string;
+}
 
 declare interface ColumnOption extends BaseColumnOption {
   title?: string;
@@ -71,4 +72,5 @@ declare type FormOption = Partial<
 declare type CrudForm<T = any> = {
   render: () => import("vue").VNodeChild;
   model: T;
+  option: CrudFormOption;
 };

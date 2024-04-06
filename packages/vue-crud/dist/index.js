@@ -1,4 +1,4 @@
-import { createVNode, mergeProps, isVNode, reactive } from 'vue';
+import { createVNode, mergeProps, isVNode, reactive, ref, watch } from 'vue';
 import { Form, FormItem, Input, InputNumber, InputPassword, Checkbox, Button } from 'ant-design-vue';
 
 function _isSlot(s) {
@@ -15,6 +15,7 @@ const crudComponent = {
             });
     },
     formItem (prop = {}, children) {
+        prop = clone(prop);
         if (prop.validateFirst === undefined) prop.validateFirst = true;
         prop = Object.assign({}, prop);
         delete prop.prop;
@@ -25,6 +26,7 @@ const crudComponent = {
             });
     },
     input (prop = {}) {
+        prop = clone(prop);
         if (!prop.placeholder) prop.placeholder = "请输入";
         if (prop.allowClear === undefined) prop.allowClear = true;
         return (arg)=>createVNode(Input, mergeProps(prop, {
@@ -33,6 +35,7 @@ const crudComponent = {
             }), null);
     },
     inputNumber (prop = {}) {
+        prop = clone(prop);
         if (!prop.placeholder) prop.placeholder = "请输入";
         return (arg)=>createVNode(InputNumber, mergeProps(prop, {
                 "value": arg.value,
@@ -40,6 +43,7 @@ const crudComponent = {
             }), null);
     },
     inputPassword (prop = {}) {
+        prop = clone(prop);
         if (!prop.placeholder) prop.placeholder = "请输入密码";
         if (prop.allowClear === undefined) prop.allowClear = true;
         return (arg)=>createVNode(InputPassword, mergeProps(prop, {
@@ -77,6 +81,9 @@ const crudComponent = {
         }, children);
     }
 };
+function clone(obj) {
+    return Object.assign({}, obj);
+}
 function toVNodes(vnodeArray) {
     if (!vnodeArray) return [];
     if (typeof vnodeArray[0] === "function") return vnodeArray.map((fn)=>fn());
@@ -85,37 +92,57 @@ function toVNodes(vnodeArray) {
 
 function crudForm(option) {
     const model = reactive({});
-    const renderForm = crudComponent.form(option.form, option.columns.filter((col)=>col.show !== false).map((col)=>{
-        if (col.prop) {
-            col.name = col.prop;
-            if (!(col.prop in model)) model[col.prop] = col.defaultValue;
-        }
-        const render = ()=>col.component({
-                index: -1,
-                record: model,
-                value: col.prop ? model[col.prop] : undefined,
-                "onUpdate:value": (val)=>{
-                    if (col.prop) model[col.prop] = val;
-                }
-            });
-        if (col.wrapFormItem !== false) {
-            const formItem = crudComponent.formItem(col, [
-                render
-            ]);
-            return ()=>formItem({
-                    index: -1,
-                    record: model
-                });
-        }
-        return render;
-    }));
+    const forceUpdateCount = ref(0);
+    let renderForm = createRenderForm();
+    option = reactive(option);
+    const componentArg = {
+        index: -1,
+        record: model
+    };
+    watch(option, ()=>{
+        renderForm = createRenderForm();
+        forceUpdateCount.value++;
+    });
     return {
         model,
-        render: ()=>renderForm({
-                index: -1,
-                record: model
-            })
+        render: ()=>createVNode("div", null, [
+                renderForm(componentArg),
+                createVNode("span", {
+                    "style": {
+                        display: "none"
+                    }
+                }, [
+                    forceUpdateCount.value
+                ])
+            ]),
+        option
     };
+    function createRenderForm() {
+        const columns = option.columns.filter((col)=>col.show !== false).map((col)=>{
+            if (col.name) {
+                if (!(col.name in model)) model[col.name] = col.defaultValue;
+            }
+            const render = ()=>col.component({
+                    index: -1,
+                    record: model,
+                    value: col.name ? model[col.name] : undefined,
+                    "onUpdate:value": (val)=>{
+                        if (col.name) model[col.name] = val;
+                    }
+                });
+            if (col.wrapFormItem !== false) {
+                const formItem = crudComponent.formItem(col, [
+                    render
+                ]);
+                return ()=>formItem({
+                        index: -1,
+                        record: model
+                    });
+            }
+            return render;
+        });
+        return crudComponent.form(option.form, columns);
+    }
 }
 
 export { crudComponent, crudForm };
