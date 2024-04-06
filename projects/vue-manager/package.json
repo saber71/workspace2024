@@ -16,10 +16,10 @@
     "check-password-strength": "^2.0.10",
     "dayjs": "^1.11.10",
     "pinia": "^2.1.7",
-    "reflect-metadata": "^0.2.2",
     "server-api-provider": "workspace:^",
     "vue": "^3.4.21",
     "vue-auto-route": "workspace:^",
+    "vue-crud": "workspace:^",
     "vue-class": "workspace:^",
     "vue-form-rules": "workspace:^",
     "vue-router": "^4.3.0"
