@@ -1,3 +1,4 @@
+import { UserOutlined } from "@ant-design/icons-vue";
 import { type VNodeChild } from "vue";
 import {
   Component,
@@ -60,7 +61,11 @@ export class FormViewInst extends VueComponent {
             onClick: () => {
               this.form.model.age = 10;
               this.form.option.columns.push({
-                component: crudComponent.button({}, ["被添加的"]),
+                component: crudComponent.button({
+                  type: "text",
+                  icon: <UserOutlined />,
+                  ghost: true,
+                }),
                 wrapFormItem: false,
               });
               this.form.update();

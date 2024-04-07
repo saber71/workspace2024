@@ -196,7 +196,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
         <Layout>
           <header
             class={
-              "bg-secondary h-12 flex items-center flex-shrink-0 px-6 justify-between"
+              "bg-base h-12 flex items-center flex-shrink-0 px-6 justify-between"
             }
           >
             {/*头部左侧*/}
@@ -260,10 +260,12 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
               </Dropdown>
             </Space>
           </header>
-          <main class={"bg-base p-6 flex-grow"}>
-            <RouterView
-              class={"bg-secondary h-full p-6 box-border overflow-auto"}
-            />
+          <main class={"bg-secondary flex-grow relative"}>
+            <div class={"absolute top-0 left-0 w-full h-full p-6 box-border"}>
+              <RouterView
+                class={"bg-base h-full p-6 box-border overflow-auto"}
+              />
+            </div>
           </main>
         </Layout>
       </Layout>

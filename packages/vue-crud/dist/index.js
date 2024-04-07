@@ -1,5 +1,5 @@
 import { ref, reactive, createVNode, mergeProps, isVNode } from 'vue';
-import { Form, FormItem, Input, InputNumber, InputPassword, Checkbox, Button, Select, SelectOption, Table } from 'ant-design-vue';
+import { Space, Flex, Form, FormItem, Input, InputNumber, InputPassword, Checkbox, Button, Select, SelectOption, Table, Pagination } from 'ant-design-vue';
 
 function crudForm(option) {
     const forceUpdateCount = ref(0);
@@ -99,6 +99,7 @@ function crudTable(option) {
     function createRenderTable() {
         const columns = option.columns.map((col)=>{
             const result = Object.assign({}, col);
+            if (result.show === undefined) result.show = true;
             if (result.ellipsis === undefined) result.ellipsis = true;
             if (result.align === undefined) result.align = "center";
             if (!result.customRender) {
@@ -106,7 +107,7 @@ function crudTable(option) {
                 result.customRender = (data)=>result.component(data);
             }
             return result;
-        });
+        }).filter((col)=>col.show);
         return crudComponent.table({
             ...option.table,
             columns,
@@ -119,6 +120,46 @@ function _isSlot(s) {
     return typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !isVNode(s);
 }
 const crudComponent = {
+    commonLayout () {
+        return (arg)=>createVNode(Space, {
+                "direction": "vertical",
+                "style": {
+                    height: "100%"
+                }
+            }, {
+                default: ()=>[
+                        createVNode(Flex, {
+                            "justify": "space-between",
+                            "style": {
+                                flexShrink: 0
+                            }
+                        }, {
+                            default: ()=>[
+                                    arg.searchForm?.() ?? createVNode("div", null, null),
+                                    arg.buttons?.() ?? createVNode("div", null, null)
+                                ]
+                        }),
+                        createVNode("div", {
+                            "style": {
+                                flexGrow: 1
+                            }
+                        }, [
+                            arg.table?.()
+                        ]),
+                        createVNode(Flex, {
+                            "justify": "flex-end",
+                            "style": {
+                                flexShrink: 0
+                            }
+                        }, {
+                            default: ()=>[
+                                    arg.pagination?.()
+                                ]
+                        }),
+                        arg.default?.()
+                    ]
+            });
+    },
     crudForm (option, recordAsModel) {
         return (arg)=>{
             const model = recordAsModel ? arg.record : arg.value;
@@ -238,7 +279,7 @@ const crudComponent = {
             });
     },
     table (prop = {}, recordAsDataSource = true) {
-        prop = clone(prop);
+        if (prop.pagination === undefined) prop.pagination = false;
         if (prop.rowKey === undefined) prop.rowKey = "_id";
         return (arg)=>createVNode(Table, mergeProps(prop, {
                 "dataSource": recordAsDataSource ? arg.record : arg.value
@@ -253,6 +294,14 @@ const crudComponent = {
                 value
             ]);
         };
+    },
+    pagination (prop = {}) {
+        if (prop.showTotal === undefined) prop.showTotal = (total)=>`共 ${total} 项`;
+        return (arg)=>createVNode(Pagination, mergeProps(prop, {
+                "total": arg.record.total,
+                "showSizeChanger": true,
+                "onUpdate:pageSize": arg.record["onUpdate:pageSize"]
+            }), null);
     }
 };
 function clone(obj) {
@@ -269,4 +318,125 @@ function toVNodes(vnodeArray) {
     ];
 }
 
-export { crudComponent, crudForm, crudTable };
+function crud(option) {
+    let layoutComponentArg;
+    const searchFormModel = ref({});
+    const dataSource = ref([]);
+    const pagination = reactive({
+        curPage: 1,
+        pageSize: 10,
+        total: 0,
+        "onUpdate:pageSize": ()=>crud.notifySearch()
+    });
+    const crud = {
+        option,
+        update () {
+            if (!option.layout) option.layout = crudComponent.commonLayout();
+            layoutComponentArg = {};
+            createButtons();
+            createSearchForm();
+            createTable();
+            createPagination();
+        },
+        render: ()=>option.layout(layoutComponentArg),
+        notifySearch () {}
+    };
+    crud.update();
+    return crud;
+    function createPagination() {
+        if (option.pagination?.show !== false) {
+            const componentArg = {
+                index: -1,
+                record: pagination
+            };
+            const renderPagination = crudComponent.pagination(option.pagination);
+            layoutComponentArg.pagination = ()=>renderPagination(componentArg);
+        }
+    }
+    function createTable() {
+        const columns = option.columns.map((col)=>{
+            const result = Object.assign({
+                title: col.title,
+                dataIndex: col.prop,
+                show: true
+            }, col.table);
+            return result;
+        }).filter((col)=>col.show);
+        if (columns.length && option.table?.show !== false) {
+            if (option.tableOperation !== false) {
+                const operationColumn = Object.assign({
+                    title: "操作"
+                }, option.tableOperation);
+                columns.push(operationColumn);
+            }
+            const renderTable = crudComponent.crudTable({
+                columns,
+                table: {
+                    ...option.table,
+                    pagination: false
+                }
+            });
+            const componentArg = {
+                index: -1,
+                record: null,
+                get value () {
+                    return dataSource;
+                }
+            };
+            layoutComponentArg.table = ()=>renderTable(componentArg);
+        }
+    }
+    function createSearchForm() {
+        const formColumns = option.columns.map((col, index)=>{
+            const searchForm = Object.assign({
+                name: col.prop,
+                show: true,
+                component: crudComponent.input()
+            }, option.columns[index].form, col.searchForm);
+            return searchForm;
+        }).filter((col)=>col.show);
+        if (formColumns.length) {
+            const renderForm = crudComponent.crudForm({
+                columns: formColumns,
+                form: {
+                    layout: "inline",
+                    ...option.form,
+                    ...option.searchForm
+                }
+            }, true);
+            const componentArg = {
+                index: -1,
+                get record () {
+                    return searchFormModel.value;
+                }
+            };
+            layoutComponentArg.searchForm = ()=>renderForm(componentArg);
+        }
+    }
+    function createButtons() {
+        const addButtonOption = Object.assign({
+            show: true,
+            text: "新增",
+            type: "primary"
+        }, option.buttons?.add);
+        const deleteButtonOption = Object.assign({
+            show: true,
+            text: "批量删除",
+            danger: true
+        }, option.buttons?.delete);
+        if (addButtonOption.show || deleteButtonOption.show) {
+            const renderButtons = [];
+            if (addButtonOption.show) renderButtons.push(crudComponent.button(addButtonOption, addButtonOption.text));
+            if (deleteButtonOption.show) renderButtons.push(crudComponent.button(deleteButtonOption, deleteButtonOption.text));
+            const componentArg = {
+                record: null,
+                index: -1
+            };
+            layoutComponentArg.buttons = ()=>createVNode("div", null, [
+                    renderButtons.map((component)=>component(componentArg))
+                ]);
+        }
+    }
+}
+
+export { crud, crudComponent, crudForm, crudTable };

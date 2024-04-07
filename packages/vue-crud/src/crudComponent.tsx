@@ -3,6 +3,7 @@ import {
   type ButtonProps,
   Checkbox,
   type CheckboxProps,
+  Flex,
   Form,
   FormItem,
   type FormItemProps,
@@ -12,9 +13,12 @@ import {
   type InputNumberProps,
   InputPassword,
   type InputProps,
+  Pagination,
+  type PaginationProps,
   Select,
   SelectOption,
   type SelectProps,
+  Space,
   Table,
   type TableProps,
 } from "ant-design-vue";
@@ -23,6 +27,21 @@ import { crudForm } from "./crudForm.tsx";
 import { crudTable } from "./crudTable.tsx";
 
 export default {
+  commonLayout(): LayoutComponent {
+    return (arg) => (
+      <Space direction="vertical" style={{ height: "100%" }}>
+        <Flex justify="space-between" style={{ flexShrink: 0 }}>
+          {arg.searchForm?.() ?? <div></div>}
+          {arg.buttons?.() ?? <div></div>}
+        </Flex>
+        <div style={{ flexGrow: 1 }}>{arg.table?.()}</div>
+        <Flex justify={"flex-end"} style={{ flexShrink: 0 }}>
+          {arg.pagination?.()}
+        </Flex>
+        {arg.default?.()}
+      </Space>
+    );
+  },
   crudForm(
     option: Omit<CrudFormOption, "model">,
     recordAsModel?: boolean,
@@ -146,7 +165,7 @@ export default {
     prop: TableProps & HTMLAttributes = {},
     recordAsDataSource: boolean = true,
   ): Component {
-    prop = clone(prop);
+    if (prop.pagination === undefined) prop.pagination = false;
     if (prop.rowKey === undefined) prop.rowKey = "_id";
     return (arg) => (
       <Table
@@ -166,6 +185,18 @@ export default {
       else value = arg.value;
       return <span {...attr}>{value}</span>;
     };
+  },
+  pagination(prop: PaginationProps & HTMLAttributes = {}): Component {
+    if (prop.showTotal === undefined)
+      prop.showTotal = (total) => `共 ${total} 项`;
+    return (arg) => (
+      <Pagination
+        {...prop}
+        total={arg.record.total}
+        showSizeChanger
+        onUpdate:pageSize={arg.record["onUpdate:pageSize"]}
+      ></Pagination>
+    );
   },
 };
 

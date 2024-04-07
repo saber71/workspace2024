@@ -67,7 +67,7 @@ export class TableViewInst extends VueComponent {
       },
     ],
     table: {
-      // bordered: true,
+      bordered: true,
     },
   });
 

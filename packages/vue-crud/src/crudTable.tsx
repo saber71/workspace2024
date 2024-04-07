@@ -36,17 +36,24 @@ export function crudTable(option: CrudTableOption): CrudTable {
   }
 
   function createRenderTable() {
-    const columns = option.columns.map((col) => {
-      const result = Object.assign({}, col);
-      if (result.ellipsis === undefined) result.ellipsis = true;
-      if (result.align === undefined) result.align = "center";
-      if (!result.customRender) {
-        if (!result.component)
-          result.component = crudComponent.renderPlaceholder();
-        result.customRender = (data) => result.component!(data);
-      }
-      return result;
+    const columns = option.columns
+      .map((col) => {
+        const result = Object.assign({}, col);
+        if (result.show === undefined) result.show = true;
+        if (result.ellipsis === undefined) result.ellipsis = true;
+        if (result.align === undefined) result.align = "center";
+        if (!result.customRender) {
+          if (!result.component)
+            result.component = crudComponent.renderPlaceholder();
+          result.customRender = (data) => result.component!(data);
+        }
+        return result;
+      })
+      .filter((col) => col.show);
+    return crudComponent.table({
+      ...option.table,
+      columns,
+      dataSource,
     });
-    return crudComponent.table({ ...option.table, columns, dataSource });
   }
 }

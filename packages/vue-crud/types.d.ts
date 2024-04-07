@@ -12,6 +12,18 @@ declare type ComponentArg<T = any> = {
   "onUpdate:value"?: (value: any) => void;
 };
 
+declare interface LayoutComponentArg {
+  searchForm?: () => import("vue").VNodeChild;
+  buttons?: () => import("vue").VNodeChild;
+  table?: () => import("vue").VNodeChild;
+  pagination?: () => import("vue").VNodeChild;
+  default?: () => import("vue").VNodeChild;
+}
+
+declare type LayoutComponent = (
+  arg: LayoutComponentArg,
+) => import("vue").VNodeChild;
+
 declare type Component<Data = any> = (
   arg: ComponentArg<Data>,
 ) => import("vue").VNodeChild;
@@ -23,17 +35,17 @@ declare interface SelectOptionData {
 }
 
 declare type TableColumnOption = Partial<
-  import("ant-design-vue").TableColumnType & { component: Component }
+  import("ant-design-vue").TableColumnType &
+    import("vue").HTMLAttributes & { component: Component; show: boolean }
 >;
 
-declare type FormItemOption = import("ant-design-vue").FormItemProps & {
-  show?: boolean;
-  style?: import("vue").CSSProperties;
-  class?: string;
-  component?: Component;
-  wrapFormItem?: boolean;
-  defaultValue?: any;
-};
+declare type FormItemOption = import("ant-design-vue").FormItemProps &
+  import("vue").HTMLAttributes & {
+    show?: boolean;
+    component?: Component;
+    wrapFormItem?: boolean;
+    defaultValue?: any;
+  };
 
 declare interface BaseColumnOption {
   component?: Component;
@@ -43,28 +55,59 @@ declare interface FormColumnOption extends BaseColumnOption, FormItemOption {
   name?: string;
 }
 
-declare interface ColumnOption extends BaseColumnOption {
-  title?: string;
-  form?: FormItemOption;
-  tableColumn?: TableColumnOption;
-  searchForm?: FormItemOption;
-  addForm?: FormItemOption;
-  editForm?: FormItemOption;
-}
-
 declare type TableOption = Partial<
   import("ant-design-vue").TableProps &
     import("vue").HTMLAttributes & { show: boolean }
 >;
 
+declare interface TableOperation extends TableColumnOption {
+  edit?: boolean;
+  delete?: boolean;
+}
+
+declare interface ColumnOption extends BaseColumnOption {
+  title?: string;
+  prop?: string;
+  table?: TableColumnOption;
+  form?: FormItemOption;
+  searchForm?: FormItemOption;
+  addForm?: FormItemOption;
+  editForm?: FormItemOption;
+}
+
 declare interface CrudOption {
+  request: {
+    search(query: any): Promise<{
+      data: any[];
+      curPage: number;
+      total: number;
+      pageSize: number;
+    }>;
+    add(): Promise<void>;
+    delete(items: any[]): Promise<void>;
+    update(items: any[]): Promise<void>;
+  };
+  layout?: LayoutComponent;
   columns: ColumnOption[];
-  table?: TableOption;
+  table?: Omit<TableOption, "pagination">;
+  tableOperation?: TableOperation | false;
+  pagination?: import("vue").HTMLAttributes &
+    import("ant-design-vue").PaginationProps & { show?: boolean };
   form?: FormOption;
   searchForm?: FormOption;
   addForm?: FormOption;
   editForm?: FormOption;
+  buttons?: {
+    add?: ButtonOption;
+    delete?: ButtonOption;
+  };
 }
+
+declare type ButtonOption = import("ant-design-vue").ButtonProps &
+  import("vue").HTMLAttributes & {
+    show?: boolean;
+    text?: string;
+  };
 
 declare interface CrudFormOption {
   columns: FormColumnOption[];
@@ -74,9 +117,10 @@ declare interface CrudFormOption {
 }
 
 declare type FormOption = Partial<
-  import("ant-design-vue").FormProps & {
-    show: boolean;
-  }
+  import("ant-design-vue").FormProps &
+    import("vue").HTMLAttributes & {
+      show: boolean;
+    }
 >;
 
 declare type CrudForm<Model = any> = Readonly<{
@@ -98,4 +142,11 @@ declare type CrudTable<Data = any> = Readonly<{
   dataSource: Data[];
   option: CrudTableOption;
   update: () => void;
+}>;
+
+declare type Crud = Readonly<{
+  option: CrudOption;
+  render(): import("vue").VNodeChild;
+  update(): void;
+  notifySearch(): void;
 }>;
