@@ -3,7 +3,7 @@ import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-enum UserData {
+export enum UserData {
   IsDarkTheme = "isDarkTheme",
 }
 

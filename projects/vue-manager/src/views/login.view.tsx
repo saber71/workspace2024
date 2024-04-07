@@ -1,4 +1,4 @@
-import { userApi } from "@/api.ts";
+import { isMock, userApi } from "@/api.ts";
 import { useUser } from "@/stores";
 import {
   Button,
@@ -40,6 +40,7 @@ export class LoginInst extends VueComponent {
         userStore.info = data.object;
         userStore.rememberMe = this.form.rememberMe;
         userStore.isAuth = true;
+        if (isMock) userStore.token = "123";
         if (this.route.query.redirect) {
           window.open(this.route.query.redirect as string, "_self");
         } else {

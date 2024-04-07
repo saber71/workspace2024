@@ -1,4 +1,6 @@
+import { mockRoleController, mockUserController } from "@/mock";
 import { useUser } from "@/stores";
+import * as process from "process";
 import { ROUTER } from "vue-class";
 import LoginView from "@/views/login.view.tsx";
 import { message } from "ant-design-vue";
@@ -9,9 +11,17 @@ import type { UserController, RoleController } from "server-user";
 import { VueClass } from "vue-class";
 import type { Router } from "vue-router";
 
+export const isMock = !!import.meta.env.VITE_MOCK;
+
 const serverUserApiProvider = new ServerApiProvider(
   serverUserJson as any,
-  createAxiosInstance("/server-user"),
+  isMock
+    ? {
+        isMock: true,
+        UserController: mockUserController,
+        RoleController: mockRoleController,
+      }
+    : createAxiosInstance("/server-user"),
 );
 
 export const userApi =
@@ -40,7 +50,7 @@ function createAxiosInstance(baseURL: string) {
         if (body.code === 401) {
           const userStore = useUser();
           userStore.isAuth = false;
-          userStore.info._id = "";
+          userStore.token = "";
           const router = VueClass.dependencyInjection.getValue(
             ROUTER,
           ) as Router;

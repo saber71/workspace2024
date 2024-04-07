@@ -24,16 +24,16 @@ import {
 } from "ant-design-vue";
 import type { VNodeChild } from "vue";
 import {
+  BindThis,
   Component,
   type ComponentProps,
-  type VueComponentBaseProps,
+  Computed,
+  Inject,
+  Mut,
   toNative,
   VueComponent,
-  Computed,
-  Mut,
+  type VueComponentBaseProps,
   Watcher,
-  Inject,
-  BindThis,
 } from "vue-class";
 import { type RouteRecordRaw, RouterLink, RouterView } from "vue-router";
 
@@ -72,12 +72,11 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
   }
 
   @Computed() get menu() {
-    const menus = filter(
+    return filter(
       this.routeRecords.children!.filter(
         (item) => item.name === CommonLayoutInst.name,
       )[0].children!,
     );
-    return menus.sort((a, b) => a.order - b.order);
 
     function filter(routes: RouteRecordRaw[]) {
       const result: any[] = [];
@@ -96,7 +95,11 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
           result.push(item);
         }
       }
-      return result;
+      return result.sort((a, b) => {
+        const result = a.order - b.order;
+        if (result === 0) return a.title.localeCompare(b.title);
+        return result;
+      });
     }
   }
 
@@ -140,7 +143,11 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
     switch (key) {
       case "logout":
         userApi("logout").then((data) => {
-          if (data.success) this.router.push({ name: LoginView.name });
+          if (data.success) {
+            this.userStore.token = "";
+            this.userStore.isAuth = false;
+            this.router.push({ name: LoginView.name });
+          }
         });
         break;
       case "theme-light":
