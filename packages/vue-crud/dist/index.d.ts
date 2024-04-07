@@ -13,7 +13,7 @@ import { TableProps } from 'ant-design-vue';
 export declare const crudComponent: {
     crudForm(option: Omit<CrudFormOption, "model">, recordAsModel?: boolean): Component;
     crudTable(option: Omit<CrudTableOption, "dataSource">): Component;
-    form(prop?: FormProps & HTMLAttributes, children?: VNodeArray): Component;
+    form(prop?: FormProps & HTMLAttributes, children?: VNodeArray, recordAsModel?: boolean): Component;
     formItem(prop?: FormItemProps & HTMLAttributes, children?: VNodeArray): Component;
     input(prop?: InputProps & HTMLAttributes): Component;
     inputNumber(prop?: InputNumberProps & HTMLAttributes): Component;

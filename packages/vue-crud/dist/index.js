@@ -1,21 +1,16 @@
-import { ref, reactive, watch, createVNode, mergeProps, isVNode } from 'vue';
+import { ref, reactive, createVNode, mergeProps, isVNode } from 'vue';
 import { Form, FormItem, Input, InputNumber, InputPassword, Checkbox, Button, Select, SelectOption, Table } from 'ant-design-vue';
 
 function crudForm(option) {
     const forceUpdateCount = ref(0);
     const forceUpdate = ()=>forceUpdateCount.value++;
     let model = reactive(option.model ?? {});
+    option.model = model;
     let renderForm = createRenderForm();
-    option = reactive(option);
     const componentArg = {
         index: -1,
         record: model
     };
-    watch(option, ()=>{
-        model = reactive(option.model ?? model);
-        renderForm = createRenderForm();
-        forceUpdate();
-    });
     return {
         get model () {
             return model;
@@ -31,7 +26,11 @@ function crudForm(option) {
                 ])
             ]),
         option,
-        forceUpdate
+        update () {
+            option.model = model = reactive(option.model ?? model);
+            renderForm = createRenderForm();
+            forceUpdate();
+        }
     };
     function createRenderForm() {
         const columns = option.columns.filter((col)=>col.show !== false).map((col)=>{
@@ -57,28 +56,19 @@ function crudForm(option) {
             }
             return render;
         });
-        return crudComponent.form(option.form, columns);
+        return crudComponent.form(option.form, columns, true);
     }
 }
 
 function crudTable(option) {
     const forceUpdateCount = ref(0);
     const forceUpdate = ()=>forceUpdateCount.value++;
-    option = reactive(option);
     let dataSource = setDataSource();
     const componentArg = {
         index: -1,
         record: dataSource
     };
     let renderTable = createRenderTable();
-    watch([
-        option,
-        dataSource
-    ], ()=>{
-        dataSource = setDataSource();
-        renderTable = createRenderTable();
-        forceUpdate();
-    });
     return {
         option,
         render: ()=>createVNode("div", option.attr, [
@@ -91,7 +81,11 @@ function crudTable(option) {
                     forceUpdateCount.value
                 ])
             ]),
-        forceUpdate,
+        update () {
+            dataSource = setDataSource();
+            renderTable = createRenderTable();
+            forceUpdate();
+        },
         get dataSource () {
             return dataSource;
         }
@@ -109,11 +103,7 @@ function crudTable(option) {
             if (result.align === undefined) result.align = "center";
             if (!result.customRender) {
                 if (!result.component) result.component = crudComponent.renderPlaceholder();
-                result.customRender = (data)=>result.component({
-                        value: data.value,
-                        record: data.record,
-                        index: data.index
-                    });
+                result.customRender = (data)=>result.component(data);
             }
             return result;
         });
@@ -130,50 +120,50 @@ function _isSlot(s) {
 }
 const crudComponent = {
     crudForm (option, recordAsModel) {
-        let form;
         return (arg)=>{
-            if (!form) {
-                const model = recordAsModel ? arg.record : arg.value;
-                form = crudForm({
-                    ...option,
-                    model
-                });
-            }
+            const model = recordAsModel ? arg.record : arg.value;
+            const form = crudForm({
+                ...option,
+                model
+            });
             return form.render();
         };
     },
     crudTable (option) {
-        let table;
         return (arg)=>{
-            if (!table) {
-                const dataSource = arg.value;
-                table = crudTable({
-                    ...option,
-                    dataSource
-                });
-            }
+            const dataSource = arg.value;
+            const table = crudTable({
+                ...option,
+                dataSource
+            });
             return table.render();
         };
     },
-    form (prop = {}, children) {
-        return (arg)=>createVNode(Form, mergeProps(prop, {
-                "model": arg.record
-            }), {
+    form (prop = {}, children, recordAsModel) {
+        return (arg)=>{
+            let _slot;
+            return createVNode(Form, mergeProps(prop, {
+                "model": recordAsModel ? arg.record : arg.value
+            }), _isSlot(_slot = toVNodes(children)) ? _slot : {
                 default: ()=>[
-                        ...toVNodes(children)
+                        _slot
                     ]
             });
+        };
     },
     formItem (prop = {}, children) {
         prop = clone(prop);
         if (prop.validateFirst === undefined) prop.validateFirst = true;
         prop = Object.assign({}, prop);
         delete prop.prop;
-        return ()=>createVNode(FormItem, prop, {
+        return ()=>{
+            let _slot2;
+            return createVNode(FormItem, prop, _isSlot(_slot2 = toVNodes(children)) ? _slot2 : {
                 default: ()=>[
-                        ...toVNodes(children)
+                        _slot2
                     ]
             });
+        };
     },
     input (prop = {}) {
         prop = clone(prop);
@@ -203,23 +193,23 @@ const crudComponent = {
     },
     checkbox (prop = {}, children) {
         return (arg)=>{
-            let _slot;
+            let _slot3;
             return createVNode(Checkbox, mergeProps(prop, {
                 "checked": arg.value,
                 "onUpdate:checked": arg["onUpdate:value"]
-            }), _isSlot(_slot = toVNodes(children)) ? _slot : {
+            }), _isSlot(_slot3 = toVNodes(children)) ? _slot3 : {
                 default: ()=>[
-                        _slot
+                        _slot3
                     ]
             });
         };
     },
     button (prop = {}, children) {
-        return ()=>{
-            let _slot2;
-            return createVNode(Button, prop, _isSlot(_slot2 = toVNodes(children)) ? _slot2 : {
+        return (arg)=>{
+            let _slot4;
+            return createVNode(Button, prop, _isSlot(_slot4 = toVNodes(children ?? arg.value)) ? _slot4 : {
                 default: ()=>[
-                        _slot2
+                        _slot4
                     ]
             });
         };
@@ -230,25 +220,22 @@ const crudComponent = {
             htmlType: "submit"
         }, children);
     },
-    select (prop = {}, options = []) {
-        return (arg)=>{
-            let _slot3;
-            return createVNode(Select, mergeProps(prop, {
+    select (prop = {}, options) {
+        return (arg)=>createVNode(Select, mergeProps(prop, {
                 "value": arg.value,
                 "onUpdate:value": arg["onUpdate:value"]
-            }), _isSlot(_slot3 = options.map((item)=>createVNode(SelectOption, {
-                    "value": item.value,
-                    "disabled": item.disabled
-                }, {
-                    default: ()=>[
-                            item.label
-                        ]
-                }))) ? _slot3 : {
+            }), {
                 default: ()=>[
-                        _slot3
+                        options?.map((item)=>createVNode(SelectOption, {
+                                "value": item.value,
+                                "disabled": item.disabled
+                            }, {
+                                default: ()=>[
+                                        item.label
+                                    ]
+                            }))
                     ]
             });
-        };
     },
     table (prop = {}, recordAsDataSource = true) {
         prop = clone(prop);
@@ -272,9 +259,14 @@ function clone(obj) {
     return Object.assign({}, obj);
 }
 function toVNodes(vnodeArray) {
-    if (!vnodeArray) return [];
-    if (typeof vnodeArray[0] === "function") return vnodeArray.map((fn)=>fn());
-    return vnodeArray;
+    if (!vnodeArray) return null;
+    if (vnodeArray instanceof Array) {
+        if (typeof vnodeArray[0] === "function") return vnodeArray.map((fn)=>fn());
+        return vnodeArray;
+    }
+    return [
+        vnodeArray
+    ];
 }
 
 export { crudComponent, crudForm, crudTable };

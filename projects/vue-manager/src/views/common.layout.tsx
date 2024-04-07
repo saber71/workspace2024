@@ -253,8 +253,10 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
               </Dropdown>
             </Space>
           </header>
-          <main class={"bg-base p-6 flex-grow overflow-auto"}>
-            <RouterView class={"bg-secondary h-full p-6 box-border"} />
+          <main class={"bg-base p-6 flex-grow"}>
+            <RouterView
+              class={"bg-secondary h-full p-6 box-border overflow-auto"}
+            />
           </main>
         </Layout>
       </Layout>

@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 
 declare type VNodeArray =
+  | import("vue").VNodeChild
   | Array<import("vue").VNodeChild>
   | Array<() => import("vue").VNodeChild>;
 
@@ -82,7 +83,7 @@ declare type CrudForm<Model = any> = Readonly<{
   render: () => import("vue").VNodeChild;
   model: Model;
   option: CrudFormOption;
-  forceUpdate: () => void;
+  update: () => void;
 }>;
 
 declare interface CrudTableOption {
@@ -96,5 +97,5 @@ declare type CrudTable<Data = any> = Readonly<{
   render: () => import("vue").VNodeChild;
   dataSource: Data[];
   option: CrudTableOption;
-  forceUpdate: () => void;
+  update: () => void;
 }>;

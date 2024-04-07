@@ -24,21 +24,212 @@
 }
 
 .dark {
-  .ant-avatar {
-    background: var(--bg-avatar);
+  .ant-table-wrapper
+    .ant-table-thead
+    > tr
+    > th:not(:last-child):not(.ant-table-selection-column):not(
+      .ant-table-row-expand-icon-cell
+    ):not([colspan])::before,
+  .ant-table-wrapper
+    .ant-table-thead
+    > tr
+    > td:not(:last-child):not(.ant-table-selection-column):not(
+      .ant-table-row-expand-icon-cell
+    ):not([colspan])::before {
+    background: var(--border-base);
+  }
+
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-number:focus,
+  .ant-input-number-focused,
+  .ant-btn-primary,
+  .ant-input-affix-wrapper:focus,
+  .ant-input-affix-wrapper-focused,
+  .ant-input-affix-wrapper-status-error:not(
+      .ant-input-affix-wrapper-disabled
+    ):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper:focus,
+  .ant-input-affix-wrapper-status-error:not(
+      .ant-input-affix-wrapper-disabled
+    ):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper-focused {
+    box-shadow: 0 0 0 2px rgb(230, 244, 255, 0.1);
+  }
+
+  .ant-table-wrapper
+    .ant-table:not(.ant-table-bordered)
+    .ant-table-tbody
+    > tr
+    > td {
+    border-top-color: var(--border-base);
+  }
+
+  .ant-table-wrapper .ant-table {
+    background: var(--bg-table);
+  }
+
+  .ant-table-wrapper .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table-thead > tr > td {
+    background: var(--bg-table-header);
+  }
+
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-content
+    > table
+    > thead
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-header
+    > table
+    > thead
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-body
+    > table
+    > thead
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-summary
+    > table
+    > thead
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-content
+    > table
+    > tbody
+    > tr
+    > td,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-header
+    > table
+    > tbody
+    > tr
+    > td,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-body
+    > table
+    > tbody
+    > tr
+    > td,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-summary
+    > table
+    > tbody
+    > tr
+    > td,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-content
+    > table
+    > tfoot
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-header
+    > table
+    > tfoot
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-body
+    > table
+    > tfoot
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-summary
+    > table
+    > tfoot
+    > tr
+    > th,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-content
+    > table
+    > tfoot
+    > tr
+    > td,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-header
+    > table
+    > tfoot
+    > tr
+    > td,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-body
+    > table
+    > tfoot
+    > tr
+    > td,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-summary
+    > table
+    > tfoot
+    > tr
+    > td {
+    border-inline-end-color: var(--border-base);
+  }
+
+  .ant-table-wrapper .ant-table.ant-table-bordered > .ant-table-container {
+    border-inline-start-color: var(--border-base);
+  }
+
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-content
+    > table,
+  .ant-table-wrapper
+    .ant-table.ant-table-bordered
+    > .ant-table-container
+    > .ant-table-header
+    > table {
+    border-top-color: var(--border-base);
+  }
+
+  .ant-table-wrapper .ant-table.ant-table-bordered .ant-table-tbody > tr > td,
+  .ant-table-wrapper .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table-thead > tr > td {
+    border-bottom-color: var(--border-base);
   }
 
   .ant-dropdown .ant-dropdown-menu,
   .ant-dropdown-menu-submenu .ant-dropdown-menu,
   .ant-dropdown .ant-dropdown-arrow::before {
     background: var(--bg-dropdown);
-  }
-
-  .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item,
-  .ant-dropdown-menu-submenu
-    .ant-dropdown-menu
-    .ant-dropdown-menu-submenu-title {
-    color: var(--text-dropdown);
   }
 
   .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item,
@@ -94,33 +285,5 @@
     color: var(--text-base);
     border-color: var(--border-base);
     background: var(--bg-secondary);
-  }
-
-  .ant-checkbox-wrapper {
-    color: var(--text-base);
-  }
-
-  .ant-input,
-  .ant-input-affix-wrapper {
-    color: var(--text-base);
-    border-color: var(--border-base);
-    background: var(--bg-base);
-  }
-
-  .ant-input-affix-wrapper .anticon.ant-input-password-icon {
-    color: var(--text-secondary);
-  }
-
-  .ant-input-affix-wrapper .anticon.ant-input-password-icon:hover {
-    color: var(--text-input-icon-hover);
-  }
-
-  .ant-input::-webkit-input-placeholder {
-    color: var(--text-input-placeholder);
-  }
-
-  .ant-checkbox .ant-checkbox-inner {
-    border-color: var(--border-base);
-    background: var(--bg-base);
   }
 }

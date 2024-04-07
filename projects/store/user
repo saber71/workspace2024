@@ -1,1 +1,1 @@
-[{"_id":"0","name":"默认","loginName":"default-user","password":"123456","roleId":"0","email":"default-user@example.com","userData":{},"createTime":1712201238556}]
+[{"_id":"0","name":"默认","loginName":"default-user","password":"123456","roleId":"0","email":"default-user@example.com","userData":{"isDarkTheme":true},"createTime":1712201238556}]

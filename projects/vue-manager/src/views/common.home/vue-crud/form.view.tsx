@@ -13,7 +13,7 @@ import { Required } from "vue-form-rules";
 export class FormViewInst extends VueComponent {
   static readonly defineProps: ComponentProps<VueComponentBaseProps> = ["inst"];
 
-  form = crudForm({
+  readonly form = crudForm({
     form: {
       labelAlign: "right",
       labelCol: { style: "width:70px" },
@@ -63,6 +63,7 @@ export class FormViewInst extends VueComponent {
                 component: crudComponent.button({}, ["被添加的"]),
                 wrapFormItem: false,
               });
+              this.form.update();
             },
           },
           ["添加按钮"],

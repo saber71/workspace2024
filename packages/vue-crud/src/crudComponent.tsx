@@ -18,7 +18,7 @@ import {
   Table,
   type TableProps,
 } from "ant-design-vue";
-import type { HTMLAttributes, VNode } from "vue";
+import type { HTMLAttributes, VNodeChild } from "vue";
 import { crudForm } from "./crudForm.tsx";
 import { crudTable } from "./crudTable.tsx";
 
@@ -27,32 +27,27 @@ export default {
     option: Omit<CrudFormOption, "model">,
     recordAsModel?: boolean,
   ): Component {
-    let form: CrudForm | undefined;
     return (arg) => {
-      if (!form) {
-        const model = recordAsModel ? arg.record : arg.value;
-        form = crudForm({ ...option, model });
-      }
+      const model = recordAsModel ? arg.record : arg.value;
+      const form: CrudForm = crudForm({ ...option, model });
       return form.render();
     };
   },
   crudTable(option: Omit<CrudTableOption, "dataSource">): Component {
-    let table: CrudTable | undefined;
     return (arg) => {
-      if (!table) {
-        const dataSource = arg.value;
-        table = crudTable({ ...option, dataSource });
-      }
+      const dataSource = arg.value;
+      const table = crudTable({ ...option, dataSource });
       return table.render();
     };
   },
   form(
     prop: FormProps & HTMLAttributes = {},
     children?: VNodeArray,
+    recordAsModel?: boolean,
   ): Component {
     return (arg) => (
-      <Form {...prop} model={arg.record}>
-        {...toVNodes(children)}
+      <Form {...prop} model={recordAsModel ? arg.record : arg.value}>
+        {toVNodes(children)}
       </Form>
     );
   },
@@ -64,7 +59,7 @@ export default {
     if (prop.validateFirst === undefined) prop.validateFirst = true;
     prop = Object.assign({}, prop);
     delete prop.prop;
-    return () => <FormItem {...prop}>{...toVNodes(children)}</FormItem>;
+    return () => <FormItem {...prop}>{toVNodes(children)}</FormItem>;
   },
   input(prop: InputProps & HTMLAttributes = {}): Component {
     prop = clone(prop);
@@ -119,7 +114,9 @@ export default {
     prop: ButtonProps & HTMLAttributes = {},
     children?: VNodeArray,
   ): Component {
-    return () => <Button {...prop}>{toVNodes(children)}</Button>;
+    return (arg) => (
+      <Button {...prop}>{toVNodes(children ?? arg.value)}</Button>
+    );
   },
   submitButton(
     prop: ButtonProps & HTMLAttributes = {},
@@ -129,7 +126,7 @@ export default {
   },
   select(
     prop: SelectProps & HTMLAttributes = {},
-    options: Array<SelectOptionData> = [],
+    options?: Array<SelectOptionData>,
   ): Component {
     return (arg) => (
       <Select
@@ -137,7 +134,7 @@ export default {
         value={arg.value}
         onUpdate:value={arg["onUpdate:value"]}
       >
-        {options.map((item) => (
+        {options?.map((item) => (
           <SelectOption value={item.value} disabled={item.disabled}>
             {item.label}
           </SelectOption>
@@ -176,9 +173,12 @@ function clone<T>(obj: T): T {
   return Object.assign({}, obj);
 }
 
-function toVNodes(vnodeArray?: VNodeArray): VNode[] {
-  if (!vnodeArray) return [];
-  if (typeof vnodeArray[0] === "function")
-    return vnodeArray.map((fn) => (fn as Function)());
-  return vnodeArray as VNode[];
+function toVNodes(vnodeArray?: VNodeArray): VNodeChild[] | null {
+  if (!vnodeArray) return null;
+  if (vnodeArray instanceof Array) {
+    if (typeof vnodeArray[0] === "function")
+      return vnodeArray.map((fn) => (fn as Function)());
+    return vnodeArray as VNodeChild[];
+  }
+  return [vnodeArray];
 }
