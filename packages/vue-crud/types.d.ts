@@ -15,6 +15,12 @@ declare type Component<Data = any> = (
   arg: ComponentArg<Data>,
 ) => import("vue").VNodeChild;
 
+declare interface SelectOptionData {
+  label: string;
+  value: any;
+  disabled?: boolean;
+}
+
 declare type TableColumnOption = Partial<
   import("ant-design-vue").TableColumnType & { component: Component }
 >;
@@ -46,7 +52,8 @@ declare interface ColumnOption extends BaseColumnOption {
 }
 
 declare type TableOption = Partial<
-  import("ant-design-vue").TableProps & { show: boolean }
+  import("ant-design-vue").TableProps &
+    import("vue").HTMLAttributes & { show: boolean }
 >;
 
 declare interface CrudOption {
@@ -61,6 +68,8 @@ declare interface CrudOption {
 declare interface CrudFormOption {
   columns: FormColumnOption[];
   form?: FormOption;
+  model?: any;
+  attr?: import("vue").HTMLAttributes;
 }
 
 declare type FormOption = Partial<
@@ -69,8 +78,23 @@ declare type FormOption = Partial<
   }
 >;
 
-declare type CrudForm<T = any> = {
+declare type CrudForm<Model = any> = Readonly<{
   render: () => import("vue").VNodeChild;
-  model: T;
+  model: Model;
   option: CrudFormOption;
-};
+  forceUpdate: () => void;
+}>;
+
+declare interface CrudTableOption {
+  columns: TableColumnOption[];
+  table?: TableOption;
+  dataSource: any[] | { data: any[] };
+  attr?: import("vue").HTMLAttributes;
+}
+
+declare type CrudTable<Data = any> = Readonly<{
+  render: () => import("vue").VNodeChild;
+  dataSource: Data[];
+  option: CrudTableOption;
+  forceUpdate: () => void;
+}>;

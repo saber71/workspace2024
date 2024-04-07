@@ -2,4 +2,5 @@
 import crudComponent from "./crudComponent.tsx";
 
 export * from "./crudForm.tsx";
+export * from "./crudTable.tsx";
 export { crudComponent };

@@ -5,7 +5,6 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
-  Mut,
 } from "vue-class";
 import { crudForm, crudComponent } from "vue-crud";
 import { Required } from "vue-form-rules";
@@ -14,7 +13,7 @@ import { Required } from "vue-form-rules";
 export class FormViewInst extends VueComponent {
   static readonly defineProps: ComponentProps<VueComponentBaseProps> = ["inst"];
 
-  @Mut() form = crudForm({
+  form = crudForm({
     form: {
       labelAlign: "right",
       labelCol: { style: "width:70px" },

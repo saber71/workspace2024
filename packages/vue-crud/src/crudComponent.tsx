@@ -12,10 +12,40 @@ import {
   type InputNumberProps,
   InputPassword,
   type InputProps,
+  Select,
+  SelectOption,
+  type SelectProps,
+  Table,
+  type TableProps,
 } from "ant-design-vue";
 import type { HTMLAttributes, VNode } from "vue";
+import { crudForm } from "./crudForm.tsx";
+import { crudTable } from "./crudTable.tsx";
 
 export default {
+  crudForm(
+    option: Omit<CrudFormOption, "model">,
+    recordAsModel?: boolean,
+  ): Component {
+    let form: CrudForm | undefined;
+    return (arg) => {
+      if (!form) {
+        const model = recordAsModel ? arg.record : arg.value;
+        form = crudForm({ ...option, model });
+      }
+      return form.render();
+    };
+  },
+  crudTable(option: Omit<CrudTableOption, "dataSource">): Component {
+    let table: CrudTable | undefined;
+    return (arg) => {
+      if (!table) {
+        const dataSource = arg.value;
+        table = crudTable({ ...option, dataSource });
+      }
+      return table.render();
+    };
+  },
   form(
     prop: FormProps & HTMLAttributes = {},
     children?: VNodeArray,
@@ -96,6 +126,49 @@ export default {
     children?: VNodeArray,
   ): Component {
     return this.button({ ...prop, htmlType: "submit" }, children);
+  },
+  select(
+    prop: SelectProps & HTMLAttributes = {},
+    options: Array<SelectOptionData> = [],
+  ): Component {
+    return (arg) => (
+      <Select
+        {...prop}
+        value={arg.value}
+        onUpdate:value={arg["onUpdate:value"]}
+      >
+        {options.map((item) => (
+          <SelectOption value={item.value} disabled={item.disabled}>
+            {item.label}
+          </SelectOption>
+        ))}
+      </Select>
+    );
+  },
+  table(
+    prop: TableProps & HTMLAttributes = {},
+    recordAsDataSource: boolean = true,
+  ): Component {
+    prop = clone(prop);
+    if (prop.rowKey === undefined) prop.rowKey = "_id";
+    return (arg) => (
+      <Table
+        {...prop}
+        dataSource={recordAsDataSource ? arg.record : arg.value}
+      ></Table>
+    );
+  },
+  renderPlaceholder(
+    attr: HTMLAttributes = {},
+    placeholder: string = "--",
+  ): Component {
+    return (arg) => {
+      let value;
+      if (arg.value === undefined || arg.value === null || arg.value === "")
+        value = placeholder;
+      else value = arg.value;
+      return <span {...attr}>{value}</span>;
+    };
   },
 };
 

@@ -2,8 +2,9 @@ import { reactive, ref, watch } from "vue";
 import crudComponent from "./crudComponent.tsx";
 
 export function crudForm<T = any>(option: CrudFormOption): CrudForm<T> {
-  const model: any = reactive({});
   const forceUpdateCount = ref(0);
+  const forceUpdate = () => forceUpdateCount.value++;
+  let model: any = reactive(option.model ?? {});
   let renderForm = createRenderForm();
   option = reactive(option) as any;
   const componentArg: ComponentArg<T> = {
@@ -11,19 +12,23 @@ export function crudForm<T = any>(option: CrudFormOption): CrudForm<T> {
     record: model,
   };
   watch(option, () => {
+    model = reactive(option.model ?? model);
     renderForm = createRenderForm();
-    forceUpdateCount.value++;
+    forceUpdate();
   });
   return {
-    model,
+    get model() {
+      return model;
+    },
     render: () => (
-      <div>
+      <div {...option.attr}>
         {renderForm(componentArg)}
         {/*不知为何，往表单新增FormItem即使触发重绘了，新增内容也不会出现页面上，所以加了这个，就一切正常了*/}
         <span style={{ display: "none" }}>{forceUpdateCount.value}</span>
       </div>
     ),
     option,
+    forceUpdate,
   };
 
   function createRenderForm(): Component {
