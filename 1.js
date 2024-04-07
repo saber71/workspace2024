@@ -9,3 +9,5 @@
 // grid.forEach((hex) => {
 //   console.log(hex.q, hex.r, hex.row, hex.col, hex.corners);
 // });
+
+console.log(process.argv);

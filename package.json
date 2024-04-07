@@ -2,6 +2,9 @@
   "name": "workspace2024",
   "private": true,
   "type": "module",
+  "scripts": {
+    "run": "node 1.js true false 1"
+  },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.24.1",
     "@babel/plugin-transform-class-properties": "^7.24.1",
