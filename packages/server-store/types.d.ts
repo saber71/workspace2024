@@ -38,13 +38,13 @@ declare interface StoreAdapter {
   /* 更新数据 */
   update<T extends StoreItem = StoreItem>(
     collectionName: string,
-    ...items: Partial<T>[]
+    ...items: PartialStoreItem<T>[]
   ): Promise<void>;
 
   /* 查询数据。查询条件为空返回所有数据 */
   search<T extends StoreItem = StoreItem>(
     collectionName: string,
-    condition?: FilterCondition<T>,
+    condition?: FilterCondition<T> | null,
     sortOrders?: SortOrders<T>,
   ): Promise<T[]>;
 

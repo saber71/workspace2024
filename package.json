@@ -8,7 +8,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.24.1",
     "@babel/plugin-transform-class-properties": "^7.24.1",
-    "@swc/core": "^1.4.12",
+    "@swc/core": "^1.4.13",
     "@types/d3-shape": "^3.1.6",
     "@types/deep-equal": "^1.0.4",
     "@types/express": "^4.17.21",
@@ -21,7 +21,7 @@
     "@types/koa-send": "^4.1.6",
     "@types/koa-session": "^6.4.5",
     "@types/koa-static": "^4.0.4",
-    "@types/node": "^20.12.5",
+    "@types/node": "^20.12.7",
     "@types/svg-intersections": "^0.4.4",
     "@types/terminal-kit": "^2.5.6",
     "@types/tough-cookie": "^4.0.5",
@@ -39,11 +39,11 @@
     "tailwindcss": "^3.4.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4",
-    "unplugin-swc": "^1.4.4",
+    "unplugin-swc": "^1.4.5",
     "vite": "^5.2.8",
     "vite-plugin-dts": "^3.8.1",
     "vitest": "^1.4.0",
-    "vue-tsc": "^2.0.10",
+    "vue-tsc": "^2.0.11",
     "webdriverio": "^8.35.1"
   }
 }

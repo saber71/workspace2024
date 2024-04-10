@@ -115,12 +115,12 @@ export class StoreCollection<T extends StoreItem> {
   }
 
   async save(data: PartialStoreItem<T>): Promise<T> {
-    const exist = data._id ? !!(await this.getById(data._id)) : false;
+    const exist = data._id ? await this.getById(data._id) : false;
     if (!exist) {
       const ids = await this.add(data);
       data._id = ids[0];
     } else {
-      await this.update(data as T);
+      await this.update(Object.assign(exist, data));
     }
     return data as T;
   }
