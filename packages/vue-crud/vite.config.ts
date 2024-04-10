@@ -18,7 +18,7 @@ export default defineConfig({
       ],
     },
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: resolve(__dirname, "src/index.tsx"),
       fileName: "index",
       formats: ["es"],
     },

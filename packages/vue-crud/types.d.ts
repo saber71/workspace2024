@@ -1,152 +1,99 @@
 /// <reference types="vite/client" />
 
-declare type VNodeArray =
-  | import("vue").VNodeChild
-  | Array<import("vue").VNodeChild>
-  | Array<() => import("vue").VNodeChild>;
-
-declare type ComponentArg<T = any> = {
-  record: T;
-  index: number;
-  value?: any;
-  "onUpdate:value"?: (value: any) => void;
-};
-
-declare interface LayoutComponentArg {
-  searchForm?: () => import("vue").VNodeChild;
-  buttons?: () => import("vue").VNodeChild;
-  table?: () => import("vue").VNodeChild;
-  pagination?: () => import("vue").VNodeChild;
-  default?: () => import("vue").VNodeChild;
+declare interface AntComponentPropsMap {
+  AutoComplete: import("ant-design-vue").AutoCompleteProps;
+  Input: import("ant-design-vue").InputProps;
+  InputPassword: import("ant-design-vue").InputProps;
+  InputNumber: import("ant-design-vue").InputNumberProps;
+  Form: import("ant-design-vue").FormProps;
+  FormItem: import("ant-design-vue").FormItemProps;
+  Table: import("ant-design-vue").TableProps;
+  Select: import("ant-design-vue").SelectProps;
+  Button: import("ant-design-vue").ButtonProps;
+  Checkbox: import("ant-design-vue").CheckboxProps;
+  Pagination: import("ant-design-vue").PaginationProps;
+  Radio: import("ant-design-vue").RadioProps;
+  Slider: import("ant-design-vue").SliderProps;
+  Switch: import("ant-design-vue").SwitchProps;
+  TimePicker: import("ant-design-vue").TimePickerProps;
+  TimeRangePicker: import("ant-design-vue").TimeRangePickerProps;
+  Cascader: import("ant-design-vue").CascaderProps;
+  DatePicker: import("ant-design-vue").DatePickerProps;
+  Mentions: import("ant-design-vue").MentionsProps;
+  Rate: import("ant-design-vue").RateProps;
+  Transfer: import("ant-design-vue").TransferProps;
+  TreeSelect: import("ant-design-vue").TreeSelectProps;
+  Upload: import("ant-design-vue").UploadProps;
 }
 
-declare type LayoutComponent = (
-  arg: LayoutComponentArg,
-) => import("vue").VNodeChild;
-
-declare type Component<Data = any> = (
-  arg: ComponentArg<Data>,
-) => import("vue").VNodeChild;
-
-declare interface SelectOptionData {
-  label: string;
-  value: any;
-  disabled?: boolean;
+declare interface TableOptions {
+  show?: boolean;
+  componentProps?: Omit<import("ant-design-vue").TableProps, "pagination">;
+  tableColumnType?: import("ant-design-vue").TableColumnType;
 }
 
-declare type TableColumnOption = Partial<
-  import("ant-design-vue").TableColumnType &
-    import("vue").HTMLAttributes & { component: Component; show: boolean }
->;
-
-declare type FormItemOption = import("ant-design-vue").FormItemProps &
-  import("vue").HTMLAttributes & {
-    show?: boolean;
-    component?: Component;
-    wrapFormItem?: boolean;
-    defaultValue?: any;
-  };
-
-declare interface BaseColumnOption {
-  component?: Component;
+declare interface TableColumnOption {
+  componentProps?: import("ant-design-vue").TableColumnType;
+  show?: boolean;
 }
 
-declare interface FormColumnOption extends BaseColumnOption, FormItemOption {
-  name?: string;
-}
-
-declare type TableOption = Partial<
-  import("ant-design-vue").TableProps &
-    import("vue").HTMLAttributes & { show: boolean }
->;
-
-declare interface TableOperation extends TableColumnOption {
-  edit?: boolean;
-  delete?: boolean;
-}
-
-declare interface ColumnOption extends BaseColumnOption {
+declare interface CrudColumnOption<
+  ComponentType extends keyof AntComponentPropsMap,
+> {
+  formOption?: FormColumnOption;
+  searchFormOption?: FormColumnOption;
+  addFormOption?: FormColumnOption;
+  editFormOption?: FormColumnOption;
+  tableOption?: TableColumnOption;
   title?: string;
-  prop?: string;
-  table?: TableColumnOption;
-  form?: FormItemOption;
-  searchForm?: FormItemOption;
-  addForm?: FormItemOption;
-  editForm?: FormItemOption;
+  component?: ComponentType | import("vue").Component;
+  componentProps?: AntComponentPropsMap[ComponentType];
 }
 
-declare interface CrudOption {
-  request: {
-    search(query: any): Promise<{
-      data: any[];
-      curPage: number;
-      total: number;
-      pageSize: number;
-    }>;
-    add(): Promise<void>;
-    delete(items: any[]): Promise<void>;
-    update(items: any[]): Promise<void>;
-  };
-  layout?: LayoutComponent;
-  columns: ColumnOption[];
-  table?: Omit<TableOption, "pagination">;
-  tableOperation?: TableOperation | false;
-  pagination?: import("vue").HTMLAttributes &
-    import("ant-design-vue").PaginationProps & { show?: boolean };
-  form?: FormOption;
-  searchForm?: FormOption;
-  addForm?: FormOption;
-  editForm?: FormOption;
-  buttons?: {
-    add?: ButtonOption;
-    delete?: ButtonOption;
-  };
+declare interface CrudColumnOptions {
+  [key: string]: CrudColumnOption;
 }
 
-declare type ButtonOption = import("ant-design-vue").ButtonProps &
-  import("vue").HTMLAttributes & {
-    show?: boolean;
-    text?: string;
-  };
-
-declare interface CrudFormOption {
-  columns: FormColumnOption[];
-  form?: FormOption;
-  model?: any;
-  attr?: import("vue").HTMLAttributes;
+declare interface FormColumnOption {
+  componentProps: import("ant-design-vue").FormItemProps;
+  show?: boolean;
+  value?: any;
 }
 
-declare type FormOption = Partial<
-  import("ant-design-vue").FormProps &
-    import("vue").HTMLAttributes & {
-      show: boolean;
-    }
->;
-
-declare type CrudForm<Model = any> = Readonly<{
-  render: () => import("vue").VNodeChild;
-  model: Model;
-  option: CrudFormOption;
-  update: () => void;
-}>;
-
-declare interface CrudTableOption {
-  columns: TableColumnOption[];
-  table?: TableOption;
-  dataSource: any[] | { data: any[] };
-  attr?: import("vue").HTMLAttributes;
+declare interface FormOption {
+  componentProps?: import("ant-design-vue").FormProps;
+  formItemComponentProps?: import("ant-design-vue").FormItemProps;
+  show?: boolean;
 }
 
-declare type CrudTable<Data = any> = Readonly<{
-  render: () => import("vue").VNodeChild;
-  dataSource: Data[];
-  option: CrudTableOption;
-  update: () => void;
-}>;
+declare interface PaginationResult<T = any> {
+  data: T[];
+  curPage: number;
+  pageSize: number;
+  total: number;
+}
 
-declare type Crud = Readonly<{
-  option: CrudOption;
-  render(): import("vue").VNodeChild;
-  update(): void;
-  notifySearch(): void;
-}>;
+declare interface RequestOption {
+  add(data: any): Promise<void>;
+
+  search(query: any): Promise<PaginationResult>;
+
+  delete(ids: any[]): Promise<void>;
+
+  edit(data: any): Promise<void>;
+
+  info?(): Promise<any>;
+}
+
+declare interface CrudOptions {
+  layout?:
+    | import("vue").Component
+    | import("vue").ShallowRef<import("vue").Component>;
+  request?: RequestOption;
+  crudColumnOptions: CrudColumnOptions;
+  formOption?: FormOption;
+  searchFormOption?: FormOption;
+  addFormOption?: FormOption;
+  editFormOption?: FormOption;
+  tableOption?: TableOptions;
+}
