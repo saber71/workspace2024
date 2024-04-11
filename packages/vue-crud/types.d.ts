@@ -26,38 +26,52 @@ declare interface AntComponentPropsMap {
   Upload: import("ant-design-vue").UploadProps;
 }
 
+declare interface PaginationOption {
+  show?: boolean;
+  componentProps?: import("ant-design-vue").PaginationProps;
+}
+
 declare interface TableOptions {
   show?: boolean;
   componentProps?: Omit<import("ant-design-vue").TableProps, "pagination">;
   tableColumnType?: import("ant-design-vue").TableColumnType;
+  paginationOption?: PaginationOption;
 }
 
-declare interface TableColumnOption {
-  componentProps?: import("ant-design-vue").TableColumnType;
+declare interface TableColumnOption<
+  ComponentType extends keyof AntComponentPropsMap = any,
+> extends ColumnComponentOption {
+  tableColumnProps?: import("ant-design-vue").TableColumnType;
   show?: boolean;
 }
 
-declare interface CrudColumnOption<
-  ComponentType extends keyof AntComponentPropsMap,
+declare interface ColumnComponentOption<
+  ComponentType extends keyof AntComponentPropsMap = any,
 > {
+  component?: ComponentType | import("vue").Component;
+  componentProps?: AntComponentPropsMap[ComponentType];
+}
+
+declare interface CrudColumnOption {
   formOption?: FormColumnOption;
   searchFormOption?: FormColumnOption;
   addFormOption?: FormColumnOption;
   editFormOption?: FormColumnOption;
   tableOption?: TableColumnOption;
   title?: string;
-  component?: ComponentType | import("vue").Component;
-  componentProps?: AntComponentPropsMap[ComponentType];
 }
 
 declare interface CrudColumnOptions {
   [key: string]: CrudColumnOption;
 }
 
-declare interface FormColumnOption {
-  componentProps: import("ant-design-vue").FormItemProps;
+declare interface FormColumnOption<
+  ComponentType extends keyof AntComponentPropsMap = any,
+> extends ColumnComponentOption<ComponentType> {
+  formItemProps: import("ant-design-vue").FormItemProps;
   show?: boolean;
   value?: any;
+  wrapFormItem?: boolean;
 }
 
 declare interface FormOption {

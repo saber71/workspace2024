@@ -1,38 +1,84 @@
 /// <reference types="../types.d.ts" />
 
-import { ButtonProps } from 'ant-design-vue';
-import { CheckboxProps } from 'ant-design-vue';
-import { FormItemProps } from 'ant-design-vue';
-import { FormProps } from 'ant-design-vue';
-import { HTMLAttributes } from 'vue';
-import { InputNumberProps } from 'ant-design-vue';
-import { InputProps } from 'ant-design-vue';
+import { Component } from 'vue';
+import { ComponentProps } from 'vue-class';
+import { DefineSetupFnComponent } from 'vue';
 import { PaginationProps } from 'ant-design-vue';
-import { SelectProps } from 'ant-design-vue';
-import { TableProps } from 'ant-design-vue';
+import { PublicProps } from 'vue';
+import { TableColumnProps } from 'ant-design-vue';
+import { VNodeChild } from 'vue';
+import { VueComponent } from 'vue-class';
+import { VueComponentBaseProps } from 'vue-class';
 
-export declare function crud(option: CrudOption): Crud;
+export declare class CrudInst extends VueComponent<CrudProps> {
+    static readonly defineProps: ComponentProps<CrudProps>;
+    layout: Component;
+    formModel: any;
+    searchFormModel: any;
+    addFormModel: any;
+    editFormModel: any;
+    dataSource: any[];
+    tableColumnOptions: TableColumnProps[];
+    curPage: number;
+    pageSize: number;
+    total: number;
+    paginationOption?: PaginationProps;
+    renderDefault?: RenderElement;
+    renderButtons?: RenderElement;
+    renderFormElements: Array<RenderElement>;
+    renderSearchFormElements: Array<RenderElement>;
+    renderAddFormElements: Array<RenderElement>;
+    renderEditFormElements: Array<RenderElement>;
+    visibleAddForm: boolean;
+    visibleEditForm: boolean;
+    get renderPagination(): RenderElement | undefined;
+    get renderTable(): RenderElement | undefined;
+    get renderForm(): RenderElement | undefined;
+    get renderAddForm(): RenderElement | undefined;
+    get renderEditForm(): RenderElement | undefined;
+    get renderSearchForm(): RenderElement | undefined;
+    get showPagination(): boolean;
+    get showForm(): boolean;
+    get showAddForm(): boolean;
+    get showEditForm(): boolean;
+    get showSearchForm(): boolean;
+    get showTable(): boolean;
+    buildPagination(): void;
+    buildTableColumnOptions(): void;
+    buildFormModel(): void;
+    buildAddFormModel(): void;
+    buildEditFormModel(): void;
+    buildSearchFormModel(): void;
+    setDataSource(): void;
+    setLayout(): void;
+    render(): VNodeChild;
+}
 
-export declare const crudComponent: {
-    commonLayout(): LayoutComponent;
-    crudForm(option: Omit<CrudFormOption, "model">, recordAsModel?: boolean): Component;
-    crudTable(option: Omit<CrudTableOption, "dataSource">): Component;
-    form(prop?: FormProps & HTMLAttributes, children?: VNodeArray, recordAsModel?: boolean): Component;
-    formItem(prop?: FormItemProps & HTMLAttributes, children?: VNodeArray): Component;
-    input(prop?: InputProps & HTMLAttributes): Component;
-    inputNumber(prop?: InputNumberProps & HTMLAttributes): Component;
-    inputPassword(prop?: InputProps & HTMLAttributes): Component;
-    checkbox(prop?: CheckboxProps & HTMLAttributes, children?: VNodeArray): Component;
-    button(prop?: ButtonProps & HTMLAttributes, children?: VNodeArray): Component;
-    submitButton(prop?: ButtonProps & HTMLAttributes, children?: VNodeArray): Component;
-    select(prop?: SelectProps & HTMLAttributes, options?: Array<SelectOptionData>): Component;
-    table(prop?: TableProps & HTMLAttributes, recordAsDataSource?: boolean): Component;
-    renderPlaceholder(attr?: HTMLAttributes, placeholder?: string): Component;
-    pagination(prop?: PaginationProps & HTMLAttributes): Component;
-};
+export declare interface CrudProps extends VueComponentBaseProps {
+    option: CrudOptions;
+    dataSource?: any[] | PaginationResult;
+}
 
-export declare function crudForm<T = any>(option: CrudFormOption): CrudForm<T>;
+declare const _default: DefineSetupFnComponent<CrudProps, {}, {}, CrudProps & {}, PublicProps>;
+export default _default;
 
-export declare function crudTable(option: CrudTableOption): CrudTable;
+export declare const DefaultComponentProps: Partial<AntComponentPropsMap>;
+
+export declare class LayoutInst extends VueComponent<LayoutProps> {
+    static readonly defineProps: ComponentProps<LayoutProps>;
+    render(): VNodeChild;
+}
+
+export declare interface LayoutProps extends VueComponentBaseProps {
+    searchForm?: () => VNodeChild;
+    buttons?: () => VNodeChild;
+    table?: () => VNodeChild;
+    pagination?: () => VNodeChild;
+    default?: () => VNodeChild;
+}
+
+export declare function mergeDefaultComponentProps(componentName: string | undefined, ...props: Array<any | undefined>): any;
+
+declare type RenderElement = () => VNodeChild;
 
 export { }

@@ -1,5 +1,4 @@
 ///<reference types="dependency-injection/types.d.ts"/>
-///<reference types="server/types.d.ts"/>
 ///<reference types="filter/types.d.ts"/>
 
 declare type TransactionRecord =

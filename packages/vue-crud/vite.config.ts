@@ -6,7 +6,22 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 import dtsPlugin from "vite-plugin-dts";
 
 export default defineConfig({
-  plugins: [vue(), vueJsx(), dtsPlugin({ rollupTypes: true }), swc.vite()],
+  plugins: [
+    vue(),
+    vueJsx({
+      babelPlugins: [
+        [
+          "@babel/plugin-proposal-decorators",
+          {
+            version: "legacy",
+          },
+        ],
+        ["@babel/plugin-transform-class-properties"],
+      ],
+    }),
+    dtsPlugin({ rollupTypes: true }),
+    swc.vite(),
+  ],
   build: {
     rollupOptions: {
       external: [

@@ -33,14 +33,20 @@ export class LayoutInst extends VueComponent<LayoutProps> {
     return (
       <Space direction={"vertical"}>
         {searchForm || buttons ? (
-          <Flex justify={"space-between"}>
+          <Flex justify={"space-between"} style={"flex-shrink:0;"}>
             <div>{searchForm?.()}</div>
             <div>{buttons?.()}</div>
           </Flex>
         ) : null}
-        {table ? <div>{table()}</div> : null}
-        {pagination ? <div>{pagination()}</div> : null}
-        {defaults ? <div>{defaults()}</div> : null}
+        {table ? (
+          <div style={"flex-grow:1;position:relative;"}>{table()}</div>
+        ) : null}
+        {pagination ? (
+          <Flex justify={"flex-end"} style={"flex-shrink:0;"}>
+            {pagination()}
+          </Flex>
+        ) : null}
+        {defaults ? <div style={"position:absolute;"}>{defaults()}</div> : null}
       </Space>
     );
   }

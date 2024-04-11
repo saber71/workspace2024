@@ -174,7 +174,7 @@ export declare function Watcher<T extends VueComponent>(option?: {
     option?: WatchOptions;
 }): (target: object, arg: any) => void;
 
-export declare type WatcherTarget<T extends VueComponent> = string | ((instance: T) => any);
+export declare type WatcherTarget<T extends VueComponent> = string|keyof T| ((instance: T) => any);
 
 export declare type WithSlotTypes<Emit extends EmitsOptions, T extends {}> = Omit<SetupContext<Emit>, "slots"> & {
     slots: NonNullable<VueComponentProps<T>["v-slots"]>;
