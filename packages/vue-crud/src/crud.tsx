@@ -75,12 +75,12 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() visibleAddForm: boolean = false;
   @Mut() visibleEditForm: boolean = false;
 
-  @Mut() get renderDefault(): RenderElement | undefined {
-    const { renderForm } = this;
+  @Computed() get renderDefault(): RenderElement | undefined {
+    const renderForm = this.renderForm;
     if (!this.showTable && this.showForm) return renderForm;
   }
 
-  @Mut() get renderPagination(): RenderElement | undefined {
+  @Computed() get renderPagination(): RenderElement | undefined {
     if (this.paginationOption)
       return () => (
         <Pagination
@@ -109,6 +109,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     if (this.renderFormElements.length)
       return () => (
         <Form
+          model={this.formModel}
           {...mergeDefaultComponentProps(
             "Form",
             this.props.option.formOption?.componentProps,
@@ -123,6 +124,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     if (this.renderAddFormElements.length)
       return () => (
         <Form
+          model={this.addFormModel}
           {...mergeDefaultComponentProps(
             "Form",
             this.props.option.formOption?.componentProps,
@@ -138,6 +140,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     if (this.renderEditFormElements.length)
       return () => (
         <Form
+          model={this.editFormModel}
           {...mergeDefaultComponentProps(
             "Form",
             this.props.option.formOption?.componentProps,
@@ -153,6 +156,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     if (this.renderSearchFormElements.length)
       return () => (
         <Form
+          model={this.searchFormModel}
           {...mergeDefaultComponentProps(
             "Form",
             this.props.option.formOption?.componentProps,
@@ -218,6 +222,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       let componentName = columnOption.tableOption?.component;
       const componentProps = columnOption.tableOption?.componentProps;
       if (columnOption.tableOption?.show === false) continue;
+      const slots = columnOption.tableOption?.slots;
       const dict = columnOption.tableOption?.dict ?? columnOption.dict;
       const dataPropName = columnOption.tableOption?.dataPropName ?? "data";
       this.tableColumnOptions.push({
@@ -228,6 +233,7 @@ export class CrudInst extends VueComponent<CrudProps> {
             return createVNode(
               componentName,
               Object.assign({}, componentProps, { [dataPropName]: data }),
+              slots,
             );
           let value = data.value;
           if (dict) {
@@ -354,6 +360,7 @@ export class CrudInst extends VueComponent<CrudProps> {
             ? (AntComponent as any)[componentName]
             : componentName;
         const vModal = formOption?.vModal ?? columnOption.formOption?.vModal;
+        const slots = formOption?.slots ?? columnOption.formOption?.slots;
         const dict = formOption?.dict ?? columnOption.dict;
         const dictOption =
           formOption?.dictOption ?? columnOption.dictOption ?? "options";
@@ -368,6 +375,7 @@ export class CrudInst extends VueComponent<CrudProps> {
               componentProps,
               CrudInst._getModal(form, propName, componentName, vModal),
             ),
+            slots,
           );
         };
         if (

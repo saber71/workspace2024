@@ -263,7 +263,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
           <main class={"bg-secondary flex-grow relative"}>
             <div class={"absolute top-0 left-0 w-full h-full p-6 box-border"}>
               <RouterView
-                class={"bg-base h-full p-6 box-border overflow-auto"}
+                class={"bg-base h-full w-full p-6 box-border overflow-auto"}
               />
             </div>
           </main>

@@ -203,7 +203,7 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
 function _isSlot(s) {
     return typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !isVNode(s);
 }
-let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mut(), _dec5 = Mut(), _dec6 = Mut(), _dec7 = Mut(), _dec8 = Mut(), _dec9 = Mut(), _dec10 = Mut(), _dec11 = Mut(), _dec12 = Mut(), _dec13 = Mut(), _dec14 = Mut(), _dec15 = Mut(), _dec16 = Mut(), _dec17 = Mut(), _dec18 = Mut(), _dec19 = Mut(), _dec20 = Mut(), _dec21 = Mut(), _dec22 = Computed(), _dec23 = Computed(), _dec24 = Computed(), _dec25 = Computed(), _dec26 = Computed(), _dec27 = PropsWatcher({
+let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mut(), _dec5 = Mut(), _dec6 = Mut(), _dec7 = Mut(), _dec8 = Mut(), _dec9 = Mut(), _dec10 = Mut(), _dec11 = Mut(), _dec12 = Mut(), _dec13 = Mut(), _dec14 = Mut(), _dec15 = Mut(), _dec16 = Mut(), _dec17 = Mut(), _dec18 = Mut(), _dec19 = Mut(), _dec20 = Computed(), _dec21 = Computed(), _dec22 = Computed(), _dec23 = Computed(), _dec24 = Computed(), _dec25 = Computed(), _dec26 = Computed(), _dec27 = PropsWatcher({
     immediate: true
 }), _dec28 = Watcher({
     source: [
@@ -256,7 +256,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
         };
     }
     get renderDefault() {
-        const { renderForm } = this;
+        const renderForm = this.renderForm;
         if (!this.showTable && this.showForm) return renderForm;
     }
     get renderPagination() {
@@ -273,7 +273,9 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     get renderForm() {
         if (this.renderFormElements.length) return ()=>{
             let _slot;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps), _isSlot(_slot = this.renderFormElements.map((fn)=>fn())) ? _slot : {
+            return createVNode(Form, mergeProps({
+                "model": this.formModel
+            }, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps)), _isSlot(_slot = this.renderFormElements.map((fn)=>fn())) ? _slot : {
                 default: ()=>[
                         _slot
                     ]
@@ -283,7 +285,9 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     get renderAddForm() {
         if (this.renderAddFormElements.length) return ()=>{
             let _slot2;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.addFormOption?.componentProps), _isSlot(_slot2 = this.renderAddFormElements.map((fn)=>fn())) ? _slot2 : {
+            return createVNode(Form, mergeProps({
+                "model": this.addFormModel
+            }, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.addFormOption?.componentProps)), _isSlot(_slot2 = this.renderAddFormElements.map((fn)=>fn())) ? _slot2 : {
                 default: ()=>[
                         _slot2
                     ]
@@ -293,7 +297,9 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     get renderEditForm() {
         if (this.renderEditFormElements.length) return ()=>{
             let _slot3;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.editFormOption?.componentProps), _isSlot(_slot3 = this.renderEditFormElements.map((fn)=>fn())) ? _slot3 : {
+            return createVNode(Form, mergeProps({
+                "model": this.editFormModel
+            }, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.editFormOption?.componentProps)), _isSlot(_slot3 = this.renderEditFormElements.map((fn)=>fn())) ? _slot3 : {
                 default: ()=>[
                         _slot3
                     ]
@@ -303,7 +309,9 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     get renderSearchForm() {
         if (this.renderSearchFormElements.length) return ()=>{
             let _slot4;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.searchFormOption?.componentProps), _isSlot(_slot4 = this.renderSearchFormElements.map((fn)=>fn())) ? _slot4 : {
+            return createVNode(Form, mergeProps({
+                "model": this.searchFormModel
+            }, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.searchFormOption?.componentProps)), _isSlot(_slot4 = this.renderSearchFormElements.map((fn)=>fn())) ? _slot4 : {
                 default: ()=>[
                         _slot4
                     ]
@@ -353,6 +361,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             let componentName = columnOption.tableOption?.component;
             const componentProps = columnOption.tableOption?.componentProps;
             if (columnOption.tableOption?.show === false) continue;
+            const slots = columnOption.tableOption?.slots;
             const dict = columnOption.tableOption?.dict ?? columnOption.dict;
             const dataPropName = columnOption.tableOption?.dataPropName ?? "data";
             this.tableColumnOptions.push({
@@ -361,7 +370,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
                 customRender (data) {
                     if (componentName) return createVNode(componentName, Object.assign({}, componentProps, {
                         [dataPropName]: data
-                    }));
+                    }), slots);
                     let value = data.value;
                     if (dict) {
                         const target = dict.data.value.find((item)=>item.value === value);
@@ -446,12 +455,13 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
                 let componentProps = formOption?.componentProps ?? columnOption.formOption?.componentProps;
                 const componentFn = typeof componentName === "string" ? AntComponent[componentName] : componentName;
                 const vModal = formOption?.vModal ?? columnOption.formOption?.vModal;
+                const slots = formOption?.slots ?? columnOption.formOption?.slots;
                 const dict = formOption?.dict ?? columnOption.dict;
                 const dictOption = formOption?.dictOption ?? columnOption.dictOption ?? "options";
                 const createComponent = ()=>{
                     return createVNode(componentFn, mergeDefaultComponentProps(componentName, {
                         [dictOption]: dict?.data.value
-                    }, componentProps, CrudInst._getModal(form, propName, componentName, vModal)));
+                    }, componentProps, CrudInst._getModal(form, propName, componentName, vModal)), slots);
                 };
                 if ((formOption?.wrapFormItem ?? columnOption.formOption?.wrapFormItem) !== false) {
                     renderElements.push(()=>{

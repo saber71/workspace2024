@@ -1,5 +1,12 @@
 /// <reference types="vite/client" />
 
+declare type SlotBasicType = () => string | number | boolean;
+
+declare type Slots = {
+  default?: import("vue").Slot | SlotBasicType;
+  [key: string]: import("vue").Slot | SlotBasicType;
+};
+
 declare interface AntComponentPropsMap {
   AutoComplete: import("ant-design-vue").AutoCompleteProps;
   Input: import("ant-design-vue").InputProps;
@@ -54,9 +61,11 @@ declare interface ColumnComponentOption<
   ComponentType extends keyof AntComponentPropsMap = any,
 > extends UseDict {
   component?: ComponentType | import("vue").Component;
-  componentProps?: AntComponentPropsMap[ComponentType];
+  componentProps?: AntComponentPropsMap[ComponentType] &
+    import("vue").HTMLAttributes;
   vModal?: string;
   dataPropName?: string;
+  slots?: Slots;
 }
 
 declare interface CrudColumnOption extends UseDict {
@@ -75,7 +84,7 @@ declare interface CrudColumnOptions {
 declare interface FormColumnOption<
   ComponentType extends keyof AntComponentPropsMap = any,
 > extends ColumnComponentOption<ComponentType> {
-  formItemProps: import("ant-design-vue").FormItemProps;
+  formItemProps?: import("ant-design-vue").FormItemProps;
   show?: boolean;
   value?: any;
   wrapFormItem?: boolean;
@@ -123,10 +132,12 @@ declare interface DictOption {
   data?: any[];
   label?: string;
   value?: string;
+
   getData?(): Promise<any[]>;
 }
 
 declare interface DictInstance {
   reload(): void;
+
   data: import("vue").Ref<any[]>;
 }

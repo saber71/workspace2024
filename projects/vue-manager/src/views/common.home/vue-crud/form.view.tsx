@@ -1,4 +1,3 @@
-import { UserOutlined } from "@ant-design/icons-vue";
 import { type VNodeChild } from "vue";
 import {
   Component,
@@ -6,79 +5,67 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Link,
+  Hook,
 } from "vue-class";
-import { crudForm, crudComponent } from "vue-crud";
+import Crud, { CrudInst } from "vue-crud/src/crud.tsx";
 import { Required } from "vue-form-rules";
 
 @Component()
 export class FormViewInst extends VueComponent {
   static readonly defineProps: ComponentProps<VueComponentBaseProps> = ["inst"];
 
-  readonly form = crudForm({
-    form: {
-      labelAlign: "right",
-      labelCol: { style: "width:70px" },
+  @Link() readonly crud: CrudInst;
+
+  readonly options: CrudOptions = {
+    tableOption: {
+      show: false,
     },
-    columns: [
-      {
-        name: "username",
-        component: crudComponent.input({
-          placeholder: "请输入用户名",
-        }),
-        rules: Required,
-        label: "用户名",
+    crudColumnOptions: {
+      name: {
+        title: "名字",
+        formOption: {
+          formItemProps: {
+            rules: Required,
+          },
+        },
       },
-      {
-        name: "password",
-        component: crudComponent.inputPassword(),
-        rules: Required,
-        label: "密码",
+      password: {
+        title: "密码",
+        formOption: {
+          component: "InputPassword",
+        },
       },
-      {
-        name: "age",
-        defaultValue: 20,
-        component: crudComponent.inputNumber(),
+      remember: {
+        formOption: {
+          component: "Checkbox",
+          wrapFormItem: false,
+          slots: { default: () => "记住我" },
+        },
       },
-      {
-        name: "rememberMe",
-        defaultValue: true,
-        wrapFormItem: false,
-        component: crudComponent.checkbox({}, ["记住我"]),
-      },
-      {
-        component: crudComponent.submitButton(
-          {
-            class: "block w-full",
+      button: {
+        formOption: {
+          wrapFormItem: false,
+          component: "Button",
+          componentProps: {
             type: "primary",
+            class: "block w-full",
           },
-          ["登陆"],
-        ),
-        wrapFormItem: false,
+          slots: { default: () => "登陆" },
+        },
       },
-      {
-        component: crudComponent.submitButton(
-          {
-            onClick: () => {
-              this.form.model.age = 10;
-              this.form.option.columns.push({
-                component: crudComponent.button({
-                  type: "text",
-                  icon: <UserOutlined />,
-                  ghost: true,
-                }),
-                wrapFormItem: false,
-              });
-              this.form.update();
-            },
-          },
-          ["添加按钮"],
-        ),
-      },
-    ],
-  });
+    },
+  };
+
+  @Hook("onMounted")
+  mounted() {
+    console.log(this.crud);
+    //@ts-ignore
+    window.crud = this.crud;
+  }
 
   render(): VNodeChild {
-    return <div>{this.form.render()}</div>;
+    return <Crud option={this.options} inst={"crud"}></Crud>;
   }
 }
 
