@@ -22,7 +22,7 @@ import {
   Computed,
   Watcher,
 } from "vue-class";
-import { mergeDefaultComponentProps } from "./component.ts";
+import { ComponentVModal, mergeDefaultComponentProps } from "./component.ts";
 import Layout from "./layout.tsx";
 import * as AntComponent from "ant-design-vue";
 
@@ -41,6 +41,21 @@ export class CrudInst extends VueComponent<CrudProps> {
     "dataSource",
   ];
 
+  private static _getModal(
+    formModel: any,
+    propName: string,
+    componentName: string | undefined,
+    modalName?: string,
+  ) {
+    if (!componentName) return {};
+    if (!modalName)
+      modalName = (ComponentVModal as any)[componentName] || "value";
+    return {
+      [modalName!]: formModel[propName],
+      [`onUpdate:${modalName}`]: (val: any) => (formModel[propName] = val),
+    };
+  }
+
   @Mut(true) layout: ComponentType;
   @Mut() formModel: any;
   @Mut() searchFormModel: any;
@@ -52,7 +67,6 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() pageSize: number = 10;
   @Mut() total: number = 0;
   @Mut() paginationOption?: PaginationProps;
-  @Mut() renderDefault?: RenderElement;
   @Mut() renderButtons?: RenderElement;
   @Mut() renderFormElements: Array<RenderElement> = [];
   @Mut() renderSearchFormElements: Array<RenderElement> = [];
@@ -60,6 +74,11 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() renderEditFormElements: Array<RenderElement> = [];
   @Mut() visibleAddForm: boolean = false;
   @Mut() visibleEditForm: boolean = false;
+
+  @Mut() get renderDefault(): RenderElement | undefined {
+    const { renderForm } = this;
+    if (!this.showTable && this.showForm) return renderForm;
+  }
 
   @Mut() get renderPagination(): RenderElement | undefined {
     if (this.paginationOption)
@@ -71,6 +90,7 @@ export class CrudInst extends VueComponent<CrudProps> {
   }
 
   @Computed() get renderTable(): RenderElement | undefined {
+    const dataSource = this.dataSource;
     if (this.tableColumnOptions.length)
       return () => (
         <Table
@@ -79,7 +99,7 @@ export class CrudInst extends VueComponent<CrudProps> {
             this.props.option.tableOption?.componentProps,
           )}
           columns={this.tableColumnOptions}
-          dataSource={this.dataSource}
+          dataSource={dataSource}
           style={"position: absolute;left: 0;top: 0;"}
         ></Table>
       );
@@ -91,7 +111,7 @@ export class CrudInst extends VueComponent<CrudProps> {
         <Form
           {...mergeDefaultComponentProps(
             "Form",
-            this.props.option.formOption?.formItemComponentProps,
+            this.props.option.formOption?.componentProps,
           )}
         >
           {this.renderFormElements.map((fn) => fn())}
@@ -105,8 +125,8 @@ export class CrudInst extends VueComponent<CrudProps> {
         <Form
           {...mergeDefaultComponentProps(
             "Form",
-            this.props.option.formOption?.formItemComponentProps,
-            this.props.option.addFormOption?.formItemComponentProps,
+            this.props.option.formOption?.componentProps,
+            this.props.option.addFormOption?.componentProps,
           )}
         >
           {this.renderAddFormElements.map((fn) => fn())}
@@ -120,8 +140,8 @@ export class CrudInst extends VueComponent<CrudProps> {
         <Form
           {...mergeDefaultComponentProps(
             "Form",
-            this.props.option.formOption?.formItemComponentProps,
-            this.props.option.editFormOption?.formItemComponentProps,
+            this.props.option.formOption?.componentProps,
+            this.props.option.editFormOption?.componentProps,
           )}
         >
           {this.renderEditFormElements.map((fn) => fn())}
@@ -135,8 +155,8 @@ export class CrudInst extends VueComponent<CrudProps> {
         <Form
           {...mergeDefaultComponentProps(
             "Form",
-            this.props.option.formOption?.formItemComponentProps,
-            this.props.option.searchFormOption?.formItemComponentProps,
+            this.props.option.formOption?.componentProps,
+            this.props.option.searchFormOption?.componentProps,
           )}
         >
           {this.renderSearchFormElements.map((fn) => fn())}
@@ -198,6 +218,8 @@ export class CrudInst extends VueComponent<CrudProps> {
       let componentName = columnOption.tableOption?.component;
       const componentProps = columnOption.tableOption?.componentProps;
       if (columnOption.tableOption?.show === false) continue;
+      const dict = columnOption.tableOption?.dict ?? columnOption.dict;
+      const dataPropName = columnOption.tableOption?.dataPropName ?? "data";
       this.tableColumnOptions.push({
         title: columnOption.title,
         dataIndex: propName,
@@ -205,9 +227,14 @@ export class CrudInst extends VueComponent<CrudProps> {
           if (componentName)
             return createVNode(
               componentName,
-              Object.assign({}, componentProps, { data }),
+              Object.assign({}, componentProps, { [dataPropName]: data }),
             );
-          return <div>{data.value ?? "--"}</div>;
+          let value = data.value;
+          if (dict) {
+            const target = dict.data.value.find((item) => item.value === value);
+            if (target) value = target.label;
+          }
+          return <div>{value ?? "--"}</div>;
         },
         ...this.props.option.tableOption?.tableColumnType,
         ...columnOption.tableOption?.tableColumnProps,
@@ -223,45 +250,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       return;
     }
     if (!this.formModel) this.formModel = {};
-    const result = this.formModel;
-    const { crudColumnOptions } = this.props.option;
-    for (let propName in crudColumnOptions) {
-      const columnOption: CrudColumnOption = crudColumnOptions[propName];
-      let componentName = columnOption.formOption?.component;
-      const componentProps = columnOption.formOption?.componentProps;
-      if (columnOption.formOption?.show === false) {
-        delete result[propName];
-      } else {
-        if (!(propName in result))
-          result[propName] = columnOption.formOption?.value;
-        if (!componentName) componentName = "Input";
-      }
-      if (componentName) {
-        const componentFn = (AntComponent as any)[componentName];
-        if (columnOption.formOption?.wrapFormItem !== false) {
-          this.renderFormElements.push(() => (
-            <FormItem
-              {...mergeDefaultComponentProps(
-                "FormItem",
-                columnOption.formOption?.formItemProps,
-              )}
-            >
-              {createVNode(
-                componentFn,
-                mergeDefaultComponentProps(componentName, componentProps),
-              )}
-            </FormItem>
-          ));
-        } else {
-          this.renderFormElements.push(() =>
-            createVNode(
-              componentFn,
-              mergeDefaultComponentProps(componentName, componentProps),
-            ),
-          );
-        }
-      }
-    }
+    this._buildFormModel(this.formModel, "formOption", this.renderFormElements);
   }
 
   @PropsWatcher({ immediate: true })
@@ -272,57 +261,11 @@ export class CrudInst extends VueComponent<CrudProps> {
       return;
     }
     if (!this.addFormModel) this.addFormModel = {};
-    const result = this.addFormModel;
-    const { crudColumnOptions } = this.props.option;
-    for (let propName in crudColumnOptions) {
-      const columnOption: CrudColumnOption = crudColumnOptions[propName];
-      let componentName =
-        columnOption.addFormOption?.component ??
-        columnOption.formOption?.component;
-      const componentProps =
-        columnOption.addFormOption?.componentProps ??
-        columnOption.formOption?.componentProps;
-      if (
-        (columnOption.addFormOption?.show ?? columnOption.formOption?.show) ===
-        false
-      ) {
-        delete result[propName];
-      } else {
-        if (!(propName in result))
-          result[propName] =
-            columnOption.addFormOption?.value ?? columnOption.formOption?.value;
-        if (!componentName) componentName = "Input";
-      }
-      if (componentName) {
-        const componentFn = (AntComponent as any)[componentName];
-        if (
-          (columnOption.addFormOption?.wrapFormItem ??
-            columnOption.formOption?.wrapFormItem) !== false
-        ) {
-          this.renderAddFormElements.push(() => (
-            <FormItem
-              {...mergeDefaultComponentProps(
-                "FormItem",
-                columnOption.formOption?.formItemProps,
-                columnOption.addFormOption?.formItemProps,
-              )}
-            >
-              {createVNode(
-                componentFn,
-                mergeDefaultComponentProps(componentName, componentProps),
-              )}
-            </FormItem>
-          ));
-        } else {
-          this.renderAddFormElements.push(() =>
-            createVNode(
-              componentFn,
-              mergeDefaultComponentProps(componentName, componentProps),
-            ),
-          );
-        }
-      }
-    }
+    this._buildFormModel(
+      this.addFormModel,
+      "addFormOption",
+      this.renderAddFormElements,
+    );
   }
 
   @PropsWatcher({ immediate: true })
@@ -333,58 +276,11 @@ export class CrudInst extends VueComponent<CrudProps> {
       return;
     }
     if (!this.editFormModel) this.editFormModel = {};
-    const result = this.editFormModel;
-    const { crudColumnOptions } = this.props.option;
-    for (let propName in crudColumnOptions) {
-      const columnOption: CrudColumnOption = crudColumnOptions[propName];
-      let componentName =
-        columnOption.editFormOption?.component ??
-        columnOption.formOption?.component;
-      const componentProps =
-        columnOption.editFormOption?.componentProps ??
-        columnOption.formOption?.componentProps;
-      if (
-        (columnOption.editFormOption?.show ?? columnOption.formOption?.show) ===
-        false
-      ) {
-        delete result[propName];
-      } else {
-        if (!(propName in result))
-          result[propName] =
-            columnOption.editFormOption?.value ??
-            columnOption.formOption?.value;
-        if (!componentName) componentName = "Input";
-      }
-      if (componentName) {
-        const componentFn = (AntComponent as any)[componentName];
-        if (
-          (columnOption.editFormOption?.wrapFormItem ??
-            columnOption.formOption?.wrapFormItem) !== false
-        ) {
-          this.renderEditFormElements.push(() => (
-            <FormItem
-              {...mergeDefaultComponentProps(
-                "FormItem",
-                columnOption.formOption?.formItemProps,
-                columnOption.editFormOption?.formItemProps,
-              )}
-            >
-              {createVNode(
-                componentFn,
-                mergeDefaultComponentProps(componentName, componentProps),
-              )}
-            </FormItem>
-          ));
-        } else {
-          this.renderEditFormElements.push(() =>
-            createVNode(
-              componentFn,
-              mergeDefaultComponentProps(componentName, componentProps),
-            ),
-          );
-        }
-      }
-    }
+    this._buildFormModel(
+      this.editFormModel,
+      "editFormOption",
+      this.renderEditFormElements,
+    );
   }
 
   @PropsWatcher({ immediate: true })
@@ -395,58 +291,11 @@ export class CrudInst extends VueComponent<CrudProps> {
       return;
     }
     if (!this.searchFormModel) this.searchFormModel = {};
-    const result = this.searchFormModel;
-    const { crudColumnOptions } = this.props.option;
-    for (let propName in crudColumnOptions) {
-      const columnOption: CrudColumnOption = crudColumnOptions[propName];
-      let componentName =
-        columnOption.searchFormOption?.component ??
-        columnOption.formOption?.component;
-      const componentProps =
-        columnOption.searchFormOption?.componentProps ??
-        columnOption.formOption?.componentProps;
-      if (
-        (columnOption.searchFormOption?.show ??
-          columnOption.formOption?.show) === false
-      ) {
-        delete result[propName];
-      } else {
-        if (!(propName in result))
-          result[propName] =
-            columnOption.searchFormOption?.value ??
-            columnOption.formOption?.value;
-        if (!componentName) componentName = "Input";
-      }
-      if (componentName) {
-        const componentFn = (AntComponent as any)[componentName];
-        if (
-          (columnOption.searchFormOption?.wrapFormItem ??
-            columnOption.formOption?.wrapFormItem) !== false
-        ) {
-          this.renderSearchFormElements.push(() => (
-            <FormItem
-              {...mergeDefaultComponentProps(
-                "FormItem",
-                columnOption.formOption?.formItemProps,
-                columnOption.searchFormOption?.formItemProps,
-              )}
-            >
-              {createVNode(
-                componentFn,
-                mergeDefaultComponentProps(componentName, componentProps),
-              )}
-            </FormItem>
-          ));
-        } else {
-          this.renderSearchFormElements.push(() =>
-            createVNode(
-              componentFn,
-              mergeDefaultComponentProps(componentName, componentProps),
-            ),
-          );
-        }
-      }
-    }
+    this._buildFormModel(
+      this.searchFormModel,
+      "searchFormOption",
+      this.renderSearchFormElements,
+    );
   }
 
   @PropsWatcher({ immediate: true })
@@ -473,6 +322,76 @@ export class CrudInst extends VueComponent<CrudProps> {
       pagination: this.renderPagination,
       default: this.renderDefault,
     });
+  }
+
+  private _buildFormModel(
+    form: any,
+    formOptionName:
+      | "addFormOption"
+      | "searchFormOption"
+      | "editFormOption"
+      | "formOption",
+    renderElements: RenderElement[],
+  ) {
+    const { crudColumnOptions } = this.props.option;
+    for (let propName in crudColumnOptions) {
+      const columnOption: CrudColumnOption = crudColumnOptions[propName];
+      const formOption = columnOption[formOptionName];
+      let componentName =
+        formOption?.component ?? columnOption.formOption?.component;
+      if ((formOption?.show ?? columnOption.formOption?.show) === false) {
+        delete form[propName];
+      } else {
+        if (!(propName in form))
+          form[propName] = formOption?.value ?? columnOption.formOption?.value;
+        if (!componentName) componentName = "Input";
+      }
+      if (componentName) {
+        let componentProps =
+          formOption?.componentProps ?? columnOption.formOption?.componentProps;
+        const componentFn =
+          typeof componentName === "string"
+            ? (AntComponent as any)[componentName]
+            : componentName;
+        const vModal = formOption?.vModal ?? columnOption.formOption?.vModal;
+        const dict = formOption?.dict ?? columnOption.dict;
+        const dictOption =
+          formOption?.dictOption ?? columnOption.dictOption ?? "options";
+        const createComponent = () => {
+          return createVNode(
+            componentFn,
+            mergeDefaultComponentProps(
+              componentName,
+              {
+                [dictOption]: dict?.data.value,
+              },
+              componentProps,
+              CrudInst._getModal(form, propName, componentName, vModal),
+            ),
+          );
+        };
+        if (
+          (formOption?.wrapFormItem ??
+            columnOption.formOption?.wrapFormItem) !== false
+        ) {
+          renderElements.push(() => (
+            <FormItem
+              name={propName}
+              label={columnOption.title}
+              {...mergeDefaultComponentProps(
+                "FormItem",
+                columnOption.formOption?.formItemProps,
+                formOption?.formItemProps,
+              )}
+            >
+              {createComponent()}
+            </FormItem>
+          ));
+        } else {
+          renderElements.push(createComponent);
+        }
+      }
+    }
   }
 }
 

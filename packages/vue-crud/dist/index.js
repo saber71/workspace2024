@@ -1,4 +1,4 @@
-import { createVNode, isVNode, mergeProps } from 'vue';
+import { createVNode, isVNode, mergeProps, ref } from 'vue';
 import * as AntComponent from 'ant-design-vue';
 import { Space, Flex, Pagination, Table, Form, FormItem } from 'ant-design-vue';
 import { Component, toNative, VueComponent, Mut, Computed, PropsWatcher, Watcher } from 'vue-class';
@@ -21,6 +21,31 @@ const DefaultComponentProps = {
     Table: {
         pagination: false
     }
+};
+const ComponentVModal = {
+    Input: "value",
+    InputPassword: "value",
+    InputNumber: "value",
+    Cascader: "value",
+    Checkbox: "checked",
+    AutoComplete: "value",
+    Radio: "checked",
+    Rate: "value",
+    TimeRangePicker: "value",
+    Table: "value",
+    TimePicker: "value",
+    Transfer: "selectedKeys",
+    TreeSelect: "value",
+    Select: "value",
+    Slider: "value",
+    Switch: "checked",
+    Button: "",
+    FormItem: "",
+    Form: "",
+    Pagination: "",
+    DatePicker: "value",
+    Upload: "fileList",
+    Mentions: "value"
 };
 function mergeDefaultComponentProps(componentName, ...props) {
     if (!componentName) return Object.assign({}, ...props);
@@ -114,7 +139,7 @@ let LayoutInst = (_dec$1 = Component(), _dec$1(_class$1 = (_LayoutInst = class L
 ]), _LayoutInst)) || _class$1);
 const Layout = toNative(LayoutInst);
 
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _dec26, _dec27, _dec28, _dec29, _dec30, _dec31, _dec32, _dec33, _dec34, _dec35, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _descriptor19, _CrudInst;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _dec26, _dec27, _dec28, _dec29, _dec30, _dec31, _dec32, _dec33, _dec34, _dec35, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _CrudInst;
 function _initializerDefineProperty(target, property, descriptor, context) {
     if (!descriptor) return;
     Object.defineProperty(target, property, {
@@ -214,29 +239,41 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
         _initializerDefineProperty(this, "pageSize", _descriptor9, this);
         _initializerDefineProperty(this, "total", _descriptor10, this);
         _initializerDefineProperty(this, "paginationOption", _descriptor11, this);
-        _initializerDefineProperty(this, "renderDefault", _descriptor12, this);
-        _initializerDefineProperty(this, "renderButtons", _descriptor13, this);
-        _initializerDefineProperty(this, "renderFormElements", _descriptor14, this);
-        _initializerDefineProperty(this, "renderSearchFormElements", _descriptor15, this);
-        _initializerDefineProperty(this, "renderAddFormElements", _descriptor16, this);
-        _initializerDefineProperty(this, "renderEditFormElements", _descriptor17, this);
-        _initializerDefineProperty(this, "visibleAddForm", _descriptor18, this);
-        _initializerDefineProperty(this, "visibleEditForm", _descriptor19, this);
+        _initializerDefineProperty(this, "renderButtons", _descriptor12, this);
+        _initializerDefineProperty(this, "renderFormElements", _descriptor13, this);
+        _initializerDefineProperty(this, "renderSearchFormElements", _descriptor14, this);
+        _initializerDefineProperty(this, "renderAddFormElements", _descriptor15, this);
+        _initializerDefineProperty(this, "renderEditFormElements", _descriptor16, this);
+        _initializerDefineProperty(this, "visibleAddForm", _descriptor17, this);
+        _initializerDefineProperty(this, "visibleEditForm", _descriptor18, this);
+    }
+    static _getModal(formModel, propName, componentName, modalName) {
+        if (!componentName) return {};
+        if (!modalName) modalName = ComponentVModal[componentName] || "value";
+        return {
+            [modalName]: formModel[propName],
+            [`onUpdate:${modalName}`]: (val)=>formModel[propName] = val
+        };
+    }
+    get renderDefault() {
+        const { renderForm } = this;
+        if (!this.showTable && this.showForm) return renderForm;
     }
     get renderPagination() {
         if (this.paginationOption) return ()=>createVNode(Pagination, mergeDefaultComponentProps("Pagination", this.paginationOption), null);
     }
     get renderTable() {
+        const dataSource = this.dataSource;
         if (this.tableColumnOptions.length) return ()=>createVNode(Table, mergeProps(mergeDefaultComponentProps("Table", this.props.option.tableOption?.componentProps), {
                 "columns": this.tableColumnOptions,
-                "dataSource": this.dataSource,
+                "dataSource": dataSource,
                 "style": "position: absolute;left: 0;top: 0;"
             }), null);
     }
     get renderForm() {
         if (this.renderFormElements.length) return ()=>{
             let _slot;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.formItemComponentProps), _isSlot(_slot = this.renderFormElements.map((fn)=>fn())) ? _slot : {
+            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps), _isSlot(_slot = this.renderFormElements.map((fn)=>fn())) ? _slot : {
                 default: ()=>[
                         _slot
                     ]
@@ -246,7 +283,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     get renderAddForm() {
         if (this.renderAddFormElements.length) return ()=>{
             let _slot2;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.formItemComponentProps, this.props.option.addFormOption?.formItemComponentProps), _isSlot(_slot2 = this.renderAddFormElements.map((fn)=>fn())) ? _slot2 : {
+            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.addFormOption?.componentProps), _isSlot(_slot2 = this.renderAddFormElements.map((fn)=>fn())) ? _slot2 : {
                 default: ()=>[
                         _slot2
                     ]
@@ -256,7 +293,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     get renderEditForm() {
         if (this.renderEditFormElements.length) return ()=>{
             let _slot3;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.formItemComponentProps, this.props.option.editFormOption?.formItemComponentProps), _isSlot(_slot3 = this.renderEditFormElements.map((fn)=>fn())) ? _slot3 : {
+            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.editFormOption?.componentProps), _isSlot(_slot3 = this.renderEditFormElements.map((fn)=>fn())) ? _slot3 : {
                 default: ()=>[
                         _slot3
                     ]
@@ -266,7 +303,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     get renderSearchForm() {
         if (this.renderSearchFormElements.length) return ()=>{
             let _slot4;
-            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.formItemComponentProps, this.props.option.searchFormOption?.formItemComponentProps), _isSlot(_slot4 = this.renderSearchFormElements.map((fn)=>fn())) ? _slot4 : {
+            return createVNode(Form, mergeDefaultComponentProps("Form", this.props.option.formOption?.componentProps, this.props.option.searchFormOption?.componentProps), _isSlot(_slot4 = this.renderSearchFormElements.map((fn)=>fn())) ? _slot4 : {
                 default: ()=>[
                         _slot4
                     ]
@@ -316,15 +353,22 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             let componentName = columnOption.tableOption?.component;
             const componentProps = columnOption.tableOption?.componentProps;
             if (columnOption.tableOption?.show === false) continue;
+            const dict = columnOption.tableOption?.dict ?? columnOption.dict;
+            const dataPropName = columnOption.tableOption?.dataPropName ?? "data";
             this.tableColumnOptions.push({
                 title: columnOption.title,
                 dataIndex: propName,
                 customRender (data) {
                     if (componentName) return createVNode(componentName, Object.assign({}, componentProps, {
-                        data
+                        [dataPropName]: data
                     }));
+                    let value = data.value;
+                    if (dict) {
+                        const target = dict.data.value.find((item)=>item.value === value);
+                        if (target) value = target.label;
+                    }
                     return createVNode("div", null, [
-                        data.value ?? "--"
+                        value ?? "--"
                     ]);
                 },
                 ...this.props.option.tableOption?.tableColumnType,
@@ -339,34 +383,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             return;
         }
         if (!this.formModel) this.formModel = {};
-        const result = this.formModel;
-        const { crudColumnOptions } = this.props.option;
-        for(let propName in crudColumnOptions){
-            const columnOption = crudColumnOptions[propName];
-            let componentName = columnOption.formOption?.component;
-            const componentProps = columnOption.formOption?.componentProps;
-            if (columnOption.formOption?.show === false) {
-                delete result[propName];
-            } else {
-                if (!(propName in result)) result[propName] = columnOption.formOption?.value;
-                if (!componentName) componentName = "Input";
-            }
-            if (componentName) {
-                const componentFn = AntComponent[componentName];
-                if (columnOption.formOption?.wrapFormItem !== false) {
-                    this.renderFormElements.push(()=>{
-                        let _slot5;
-                        return createVNode(FormItem, mergeDefaultComponentProps("FormItem", columnOption.formOption?.formItemProps), _isSlot(_slot5 = createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps))) ? _slot5 : {
-                            default: ()=>[
-                                    _slot5
-                                ]
-                        });
-                    });
-                } else {
-                    this.renderFormElements.push(()=>createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps)));
-                }
-            }
-        }
+        this._buildFormModel(this.formModel, "formOption", this.renderFormElements);
     }
     buildAddFormModel() {
         this.renderAddFormElements.length = 0;
@@ -375,34 +392,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             return;
         }
         if (!this.addFormModel) this.addFormModel = {};
-        const result = this.addFormModel;
-        const { crudColumnOptions } = this.props.option;
-        for(let propName in crudColumnOptions){
-            const columnOption = crudColumnOptions[propName];
-            let componentName = columnOption.addFormOption?.component ?? columnOption.formOption?.component;
-            const componentProps = columnOption.addFormOption?.componentProps ?? columnOption.formOption?.componentProps;
-            if ((columnOption.addFormOption?.show ?? columnOption.formOption?.show) === false) {
-                delete result[propName];
-            } else {
-                if (!(propName in result)) result[propName] = columnOption.addFormOption?.value ?? columnOption.formOption?.value;
-                if (!componentName) componentName = "Input";
-            }
-            if (componentName) {
-                const componentFn = AntComponent[componentName];
-                if ((columnOption.addFormOption?.wrapFormItem ?? columnOption.formOption?.wrapFormItem) !== false) {
-                    this.renderAddFormElements.push(()=>{
-                        let _slot6;
-                        return createVNode(FormItem, mergeDefaultComponentProps("FormItem", columnOption.formOption?.formItemProps, columnOption.addFormOption?.formItemProps), _isSlot(_slot6 = createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps))) ? _slot6 : {
-                            default: ()=>[
-                                    _slot6
-                                ]
-                        });
-                    });
-                } else {
-                    this.renderAddFormElements.push(()=>createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps)));
-                }
-            }
-        }
+        this._buildFormModel(this.addFormModel, "addFormOption", this.renderAddFormElements);
     }
     buildEditFormModel() {
         this.renderEditFormElements.length = 0;
@@ -411,34 +401,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             return;
         }
         if (!this.editFormModel) this.editFormModel = {};
-        const result = this.editFormModel;
-        const { crudColumnOptions } = this.props.option;
-        for(let propName in crudColumnOptions){
-            const columnOption = crudColumnOptions[propName];
-            let componentName = columnOption.editFormOption?.component ?? columnOption.formOption?.component;
-            const componentProps = columnOption.editFormOption?.componentProps ?? columnOption.formOption?.componentProps;
-            if ((columnOption.editFormOption?.show ?? columnOption.formOption?.show) === false) {
-                delete result[propName];
-            } else {
-                if (!(propName in result)) result[propName] = columnOption.editFormOption?.value ?? columnOption.formOption?.value;
-                if (!componentName) componentName = "Input";
-            }
-            if (componentName) {
-                const componentFn = AntComponent[componentName];
-                if ((columnOption.editFormOption?.wrapFormItem ?? columnOption.formOption?.wrapFormItem) !== false) {
-                    this.renderEditFormElements.push(()=>{
-                        let _slot7;
-                        return createVNode(FormItem, mergeDefaultComponentProps("FormItem", columnOption.formOption?.formItemProps, columnOption.editFormOption?.formItemProps), _isSlot(_slot7 = createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps))) ? _slot7 : {
-                            default: ()=>[
-                                    _slot7
-                                ]
-                        });
-                    });
-                } else {
-                    this.renderEditFormElements.push(()=>createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps)));
-                }
-            }
-        }
+        this._buildFormModel(this.editFormModel, "editFormOption", this.renderEditFormElements);
     }
     buildSearchFormModel() {
         this.renderSearchFormElements.length = 0;
@@ -447,34 +410,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             return;
         }
         if (!this.searchFormModel) this.searchFormModel = {};
-        const result = this.searchFormModel;
-        const { crudColumnOptions } = this.props.option;
-        for(let propName in crudColumnOptions){
-            const columnOption = crudColumnOptions[propName];
-            let componentName = columnOption.searchFormOption?.component ?? columnOption.formOption?.component;
-            const componentProps = columnOption.searchFormOption?.componentProps ?? columnOption.formOption?.componentProps;
-            if ((columnOption.searchFormOption?.show ?? columnOption.formOption?.show) === false) {
-                delete result[propName];
-            } else {
-                if (!(propName in result)) result[propName] = columnOption.searchFormOption?.value ?? columnOption.formOption?.value;
-                if (!componentName) componentName = "Input";
-            }
-            if (componentName) {
-                const componentFn = AntComponent[componentName];
-                if ((columnOption.searchFormOption?.wrapFormItem ?? columnOption.formOption?.wrapFormItem) !== false) {
-                    this.renderSearchFormElements.push(()=>{
-                        let _slot8;
-                        return createVNode(FormItem, mergeDefaultComponentProps("FormItem", columnOption.formOption?.formItemProps, columnOption.searchFormOption?.formItemProps), _isSlot(_slot8 = createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps))) ? _slot8 : {
-                            default: ()=>[
-                                    _slot8
-                                ]
-                        });
-                    });
-                } else {
-                    this.renderSearchFormElements.push(()=>createVNode(componentFn, mergeDefaultComponentProps(componentName, componentProps)));
-                }
-            }
-        }
+        this._buildFormModel(this.searchFormModel, "searchFormOption", this.renderSearchFormElements);
     }
     setDataSource() {
         if (this.props.dataSource) {
@@ -493,6 +429,47 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             pagination: this.renderPagination,
             default: this.renderDefault
         });
+    }
+    _buildFormModel(form, formOptionName, renderElements) {
+        const { crudColumnOptions } = this.props.option;
+        for(let propName in crudColumnOptions){
+            const columnOption = crudColumnOptions[propName];
+            const formOption = columnOption[formOptionName];
+            let componentName = formOption?.component ?? columnOption.formOption?.component;
+            if ((formOption?.show ?? columnOption.formOption?.show) === false) {
+                delete form[propName];
+            } else {
+                if (!(propName in form)) form[propName] = formOption?.value ?? columnOption.formOption?.value;
+                if (!componentName) componentName = "Input";
+            }
+            if (componentName) {
+                let componentProps = formOption?.componentProps ?? columnOption.formOption?.componentProps;
+                const componentFn = typeof componentName === "string" ? AntComponent[componentName] : componentName;
+                const vModal = formOption?.vModal ?? columnOption.formOption?.vModal;
+                const dict = formOption?.dict ?? columnOption.dict;
+                const dictOption = formOption?.dictOption ?? columnOption.dictOption ?? "options";
+                const createComponent = ()=>{
+                    return createVNode(componentFn, mergeDefaultComponentProps(componentName, {
+                        [dictOption]: dict?.data.value
+                    }, componentProps, CrudInst._getModal(form, propName, componentName, vModal)));
+                };
+                if ((formOption?.wrapFormItem ?? columnOption.formOption?.wrapFormItem) !== false) {
+                    renderElements.push(()=>{
+                        let _slot5;
+                        return createVNode(FormItem, mergeProps({
+                            "name": propName,
+                            "label": columnOption.title
+                        }, mergeDefaultComponentProps("FormItem", columnOption.formOption?.formItemProps, formOption?.formItemProps)), _isSlot(_slot5 = createComponent()) ? _slot5 : {
+                            default: ()=>[
+                                    _slot5
+                                ]
+                        });
+                    });
+                } else {
+                    renderElements.push(createComponent);
+                }
+            }
+        }
     }
 }, _defineProperty(_CrudInst, "defineProps", [
     "inst",
@@ -585,21 +562,23 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     enumerable: true,
     writable: true,
     initializer: null
-}), _descriptor12 = _applyDecoratedDescriptor(_class2.prototype, "renderDefault", [
+}), _descriptor12 = _applyDecoratedDescriptor(_class2.prototype, "renderButtons", [
     _dec13
 ], {
     configurable: true,
     enumerable: true,
     writable: true,
     initializer: null
-}), _descriptor13 = _applyDecoratedDescriptor(_class2.prototype, "renderButtons", [
+}), _descriptor13 = _applyDecoratedDescriptor(_class2.prototype, "renderFormElements", [
     _dec14
 ], {
     configurable: true,
     enumerable: true,
     writable: true,
-    initializer: null
-}), _descriptor14 = _applyDecoratedDescriptor(_class2.prototype, "renderFormElements", [
+    initializer: function() {
+        return [];
+    }
+}), _descriptor14 = _applyDecoratedDescriptor(_class2.prototype, "renderSearchFormElements", [
     _dec15
 ], {
     configurable: true,
@@ -608,7 +587,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     initializer: function() {
         return [];
     }
-}), _descriptor15 = _applyDecoratedDescriptor(_class2.prototype, "renderSearchFormElements", [
+}), _descriptor15 = _applyDecoratedDescriptor(_class2.prototype, "renderAddFormElements", [
     _dec16
 ], {
     configurable: true,
@@ -617,7 +596,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     initializer: function() {
         return [];
     }
-}), _descriptor16 = _applyDecoratedDescriptor(_class2.prototype, "renderAddFormElements", [
+}), _descriptor16 = _applyDecoratedDescriptor(_class2.prototype, "renderEditFormElements", [
     _dec17
 ], {
     configurable: true,
@@ -626,16 +605,16 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     initializer: function() {
         return [];
     }
-}), _descriptor17 = _applyDecoratedDescriptor(_class2.prototype, "renderEditFormElements", [
+}), _descriptor17 = _applyDecoratedDescriptor(_class2.prototype, "visibleAddForm", [
     _dec18
 ], {
     configurable: true,
     enumerable: true,
     writable: true,
     initializer: function() {
-        return [];
+        return false;
     }
-}), _descriptor18 = _applyDecoratedDescriptor(_class2.prototype, "visibleAddForm", [
+}), _descriptor18 = _applyDecoratedDescriptor(_class2.prototype, "visibleEditForm", [
     _dec19
 ], {
     configurable: true,
@@ -644,16 +623,9 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
     initializer: function() {
         return false;
     }
-}), _descriptor19 = _applyDecoratedDescriptor(_class2.prototype, "visibleEditForm", [
+}), _applyDecoratedDescriptor(_class2.prototype, "renderDefault", [
     _dec20
-], {
-    configurable: true,
-    enumerable: true,
-    writable: true,
-    initializer: function() {
-        return false;
-    }
-}), _applyDecoratedDescriptor(_class2.prototype, "renderPagination", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderDefault"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderPagination", [
     _dec21
 ], Object.getOwnPropertyDescriptor(_class2.prototype, "renderPagination"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderTable", [
     _dec22
@@ -685,6 +657,28 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
 ], Object.getOwnPropertyDescriptor(_class2.prototype, "setLayout"), _class2.prototype), _class2)) || _class);
 const Crud = toNative(CrudInst);
 
+function dict(option) {
+    return {
+        reload () {
+            if (option.getData) {
+                option.getData().then((data)=>this.data.value = wrapData(data));
+            } else if (option.data) {
+                this.data.value = wrapData(option.data);
+            } else {
+                this.data.value.length = 0;
+            }
+            function wrapData(data) {
+                if (option.label || option.value) return data.map((item)=>({
+                        label: item[option.label || "label"],
+                        value: item[option.value || "value"]
+                    }));
+                return data;
+            }
+        },
+        data: ref([])
+    };
+}
+
 ///<reference types="../types.d.ts"/>
 
-export { CrudInst, DefaultComponentProps, LayoutInst, Crud as default, mergeDefaultComponentProps };
+export { ComponentVModal, CrudInst, DefaultComponentProps, LayoutInst, Crud as default, dict, mergeDefaultComponentProps };

@@ -10,8 +10,11 @@ import { VNodeChild } from 'vue';
 import { VueComponent } from 'vue-class';
 import { VueComponentBaseProps } from 'vue-class';
 
+export declare const ComponentVModal: Record<keyof AntComponentPropsMap, any>;
+
 export declare class CrudInst extends VueComponent<CrudProps> {
     static readonly defineProps: ComponentProps<CrudProps>;
+    private static _getModal;
     layout: Component;
     formModel: any;
     searchFormModel: any;
@@ -23,7 +26,6 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     pageSize: number;
     total: number;
     paginationOption?: PaginationProps;
-    renderDefault?: RenderElement;
     renderButtons?: RenderElement;
     renderFormElements: Array<RenderElement>;
     renderSearchFormElements: Array<RenderElement>;
@@ -31,6 +33,7 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     renderEditFormElements: Array<RenderElement>;
     visibleAddForm: boolean;
     visibleEditForm: boolean;
+    get renderDefault(): RenderElement | undefined;
     get renderPagination(): RenderElement | undefined;
     get renderTable(): RenderElement | undefined;
     get renderForm(): RenderElement | undefined;
@@ -52,6 +55,7 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     setDataSource(): void;
     setLayout(): void;
     render(): VNodeChild;
+    private _buildFormModel;
 }
 
 export declare interface CrudProps extends VueComponentBaseProps {
@@ -63,6 +67,8 @@ declare const _default: DefineSetupFnComponent<CrudProps, {}, {}, CrudProps & {}
 export default _default;
 
 export declare const DefaultComponentProps: Partial<AntComponentPropsMap>;
+
+export declare function dict(option: DictOption): DictInstance;
 
 export declare class LayoutInst extends VueComponent<LayoutProps> {
     static readonly defineProps: ComponentProps<LayoutProps>;
@@ -77,7 +83,7 @@ export declare interface LayoutProps extends VueComponentBaseProps {
     default?: () => VNodeChild;
 }
 
-export declare function mergeDefaultComponentProps(componentName: string | undefined, ...props: Array<any | undefined>): any;
+export declare function mergeDefaultComponentProps(componentName: string | undefined, ...props: Array<object | undefined>): any;
 
 declare type RenderElement = () => VNodeChild;
 

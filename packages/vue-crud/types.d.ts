@@ -45,14 +45,21 @@ declare interface TableColumnOption<
   show?: boolean;
 }
 
-declare interface ColumnComponentOption<
-  ComponentType extends keyof AntComponentPropsMap = any,
-> {
-  component?: ComponentType | import("vue").Component;
-  componentProps?: AntComponentPropsMap[ComponentType];
+declare interface UseDict {
+  dict?: DictInstance;
+  dictOption?: string;
 }
 
-declare interface CrudColumnOption {
+declare interface ColumnComponentOption<
+  ComponentType extends keyof AntComponentPropsMap = any,
+> extends UseDict {
+  component?: ComponentType | import("vue").Component;
+  componentProps?: AntComponentPropsMap[ComponentType];
+  vModal?: string;
+  dataPropName?: string;
+}
+
+declare interface CrudColumnOption extends UseDict {
   formOption?: FormColumnOption;
   searchFormOption?: FormColumnOption;
   addFormOption?: FormColumnOption;
@@ -110,4 +117,16 @@ declare interface CrudOptions {
   addFormOption?: FormOption;
   editFormOption?: FormOption;
   tableOption?: TableOptions;
+}
+
+declare interface DictOption {
+  data?: any[];
+  label?: string;
+  value?: string;
+  getData?(): Promise<any[]>;
+}
+
+declare interface DictInstance {
+  reload(): void;
+  data: import("vue").Ref<any[]>;
 }
