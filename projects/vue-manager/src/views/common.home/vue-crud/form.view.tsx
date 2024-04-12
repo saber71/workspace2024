@@ -1,3 +1,4 @@
+import { Button } from "ant-design-vue";
 import { type VNodeChild } from "vue";
 import {
   Component,
@@ -45,13 +46,8 @@ export class FormViewInst extends VueComponent {
       },
       button: {
         formOption: {
-          wrapFormItem: false,
-          component: "Button",
-          componentProps: {
-            type: "primary",
-            class: "block w-full",
-          },
-          slots: { default: () => "登陆" },
+          show: false,
+          component: <Button>login</Button>,
         },
       },
     },

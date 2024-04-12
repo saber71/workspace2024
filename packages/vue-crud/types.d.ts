@@ -60,7 +60,7 @@ declare interface UseDict {
 declare interface ColumnComponentOption<
   ComponentType extends keyof AntComponentPropsMap = any,
 > extends UseDict {
-  component?: ComponentType | import("vue").Component;
+  component?: ComponentType | import("vue").Component | import("vue").VNode;
   componentProps?: AntComponentPropsMap[ComponentType] &
     import("vue").HTMLAttributes;
   vModal?: string;

@@ -10,6 +10,7 @@ import {
   type VNodeChild,
   type Component as ComponentType,
   createVNode,
+  isVNode,
 } from "vue";
 import {
   Component,
@@ -219,9 +220,13 @@ export class CrudInst extends VueComponent<CrudProps> {
     const { crudColumnOptions } = this.props.option;
     for (let propName in crudColumnOptions) {
       const columnOption: CrudColumnOption = crudColumnOptions[propName];
-      let componentName = columnOption.tableOption?.component;
-      const componentProps = columnOption.tableOption?.componentProps;
       if (columnOption.tableOption?.show === false) continue;
+      const componentName = columnOption.tableOption?.component;
+      const componentFn =
+        typeof componentName === "string"
+          ? (AntComponent as any)[componentName]
+          : componentName;
+      const componentProps = columnOption.tableOption?.componentProps;
       const slots = columnOption.tableOption?.slots;
       const dict = columnOption.tableOption?.dict ?? columnOption.dict;
       const dataPropName = columnOption.tableOption?.dataPropName ?? "data";
@@ -229,12 +234,15 @@ export class CrudInst extends VueComponent<CrudProps> {
         title: columnOption.title,
         dataIndex: propName,
         customRender(data) {
-          if (componentName)
-            return createVNode(
-              componentName,
-              Object.assign({}, componentProps, { [dataPropName]: data }),
-              slots,
-            );
+          if (componentFn) {
+            return isVNode(componentFn)
+              ? componentFn
+              : createVNode(
+                  componentFn,
+                  Object.assign({}, componentProps, { [dataPropName]: data }),
+                  slots,
+                );
+          }
           let value = data.value;
           if (dict) {
             const target = dict.data.value.find((item) => item.value === value);
@@ -345,7 +353,9 @@ export class CrudInst extends VueComponent<CrudProps> {
       const formOption = columnOption[formOptionName];
       let componentName =
         formOption?.component ?? columnOption.formOption?.component;
-      if ((formOption?.show ?? columnOption.formOption?.show) === false) {
+      const showInForm =
+        formOption?.show ?? columnOption.formOption?.show ?? true;
+      if (!showInForm) {
         delete form[propName];
       } else {
         if (!(propName in form))
@@ -365,22 +375,25 @@ export class CrudInst extends VueComponent<CrudProps> {
         const dictOption =
           formOption?.dictOption ?? columnOption.dictOption ?? "options";
         const createComponent = () => {
-          return createVNode(
-            componentFn,
-            mergeDefaultComponentProps(
-              componentName,
-              {
-                [dictOption]: dict?.data.value,
-              },
-              componentProps,
-              CrudInst._getModal(form, propName, componentName, vModal),
-            ),
-            slots,
-          );
+          return isVNode(componentFn)
+            ? componentFn
+            : createVNode(
+                componentFn,
+                mergeDefaultComponentProps(
+                  componentName,
+                  {
+                    [dictOption]: dict?.data.value,
+                  },
+                  componentProps,
+                  CrudInst._getModal(form, propName, componentName, vModal),
+                ),
+                slots,
+              );
         };
         if (
-          (formOption?.wrapFormItem ??
-            columnOption.formOption?.wrapFormItem) !== false
+          formOption?.wrapFormItem ??
+          columnOption.formOption?.wrapFormItem ??
+          showInForm
         ) {
           renderElements.push(() => (
             <FormItem
