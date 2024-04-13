@@ -9,6 +9,7 @@ import { createApp } from "vue";
 import antd from "ant-design-vue";
 import { autoRoutes } from "vue-auto-route";
 import { VueClass } from "vue-class";
+import "vue-crud/index.css";
 import { createRouter, createWebHashHistory } from "vue-router";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";

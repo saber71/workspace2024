@@ -9,7 +9,7 @@ import {
   Link,
   Hook,
 } from "vue-class";
-import Crud, { CrudInst } from "vue-crud/src/crud.tsx";
+import Crud, { CrudInst } from "vue-crud";
 import { Required } from "vue-form-rules";
 
 @Component()

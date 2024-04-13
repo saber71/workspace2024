@@ -34,3 +34,10 @@ watch(
     <RouterView></RouterView>
   </AConfigProvider>
 </template>
+
+<style lang="scss">
+body {
+  scrollbar-color: #898989 transparent;
+  scrollbar-width: thin;
+}
+</style>

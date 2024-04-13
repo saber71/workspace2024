@@ -1,6 +1,6 @@
 import { createVNode, isVNode, mergeProps, ref } from 'vue';
 import * as AntComponent from 'ant-design-vue';
-import { Space, Flex, Pagination, Table, Form, FormItem } from 'ant-design-vue';
+import { Flex, Pagination, Table, Form, FormItem } from 'ant-design-vue';
 import { Component, toNative, VueComponent, Mut, Computed, PropsWatcher, Watcher } from 'vue-class';
 
 const DefaultComponentProps = {
@@ -19,7 +19,8 @@ const DefaultComponentProps = {
         validateFirst: true
     },
     Table: {
-        pagination: false
+        pagination: false,
+        sticky: true
     }
 };
 const ComponentVModal = {
@@ -86,48 +87,94 @@ function _toPrimitive$1(t, r) {
 function _isSlot$1(s) {
     return typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !isVNode(s);
 }
+const styles = {
+    layoutContainer: {
+        display: "flex",
+        height: "100%",
+        flexDirection: "column",
+        gap: "8px"
+    },
+    topArea: {
+        flexShrink: 0,
+        width: "100%"
+    },
+    tableContainer: {
+        position: "relative",
+        width: "100%",
+        flexGrow: 1
+    },
+    wrapTable: {
+        position: "absolute",
+        left: 0,
+        top: 0,
+        width: "100%",
+        height: "100%",
+        overflow: "auto"
+    },
+    paginationContainer: {
+        flexShrink: 0,
+        width: "100%"
+    },
+    defaults: {
+        position: "absolute"
+    },
+    form: {
+        width: "100%",
+        height: "100%"
+    }
+};
 let LayoutInst = (_dec$1 = Component(), _dec$1(_class$1 = (_LayoutInst = class LayoutInst extends VueComponent {
     render() {
         let _slot;
-        const { searchForm, buttons, table, pagination } = this.props;
+        const { searchForm, form, buttons, table, pagination } = this.props;
         const defaults = this.props.default;
-        return createVNode(Space, {
-            "direction": "vertical"
-        }, {
-            default: ()=>[
-                    searchForm || buttons ? createVNode(Flex, {
-                        "justify": "space-between",
-                        "style": "flex-shrink:0;"
-                    }, {
-                        default: ()=>[
-                                createVNode("div", null, [
-                                    searchForm?.()
-                                ]),
-                                createVNode("div", null, [
-                                    buttons?.()
-                                ])
-                            ]
-                    }) : null,
-                    table ? createVNode("div", {
-                        "style": "flex-grow:1;position:relative;"
-                    }, [
-                        table()
-                    ]) : null,
-                    pagination ? createVNode(Flex, {
-                        "justify": "flex-end",
-                        "style": "flex-shrink:0;"
-                    }, _isSlot$1(_slot = pagination()) ? _slot : {
-                        default: ()=>[
-                                _slot
-                            ]
-                    }) : null,
-                    defaults ? createVNode("div", {
-                        "style": "position:absolute;"
-                    }, [
-                        defaults()
-                    ]) : null
-                ]
-        });
+        return createVNode("div", {
+            "style": styles.layoutContainer
+        }, [
+            searchForm || buttons ? createVNode(Flex, {
+                "justify": "space-between",
+                "style": styles.topArea
+            }, {
+                default: ()=>[
+                        createVNode("div", {
+                            "class": "search-form"
+                        }, [
+                            searchForm?.()
+                        ]),
+                        createVNode("div", null, [
+                            buttons?.()
+                        ])
+                    ]
+            }) : null,
+            table ? createVNode("div", {
+                "style": styles.tableContainer,
+                "class": "table-container"
+            }, [
+                createVNode("div", {
+                    "style": styles.wrapTable
+                }, [
+                    table()
+                ])
+            ]) : null,
+            pagination ? createVNode(Flex, {
+                "justify": "flex-end",
+                "style": styles.paginationContainer
+            }, _isSlot$1(_slot = pagination()) ? _slot : {
+                default: ()=>[
+                        _slot
+                    ]
+            }) : null,
+            defaults ? createVNode("div", {
+                "style": styles.defaults
+            }, [
+                defaults()
+            ]) : null,
+            form ? createVNode("div", {
+                "style": styles.form
+            }, [
+                form()
+            ]) : null
+        ]);
     }
 }, _defineProperty$1(_LayoutInst, "defineProps", [
     "inst",
@@ -135,7 +182,8 @@ let LayoutInst = (_dec$1 = Component(), _dec$1(_class$1 = (_LayoutInst = class L
     "buttons",
     "table",
     "pagination",
-    "default"
+    "default",
+    "form"
 ]), _LayoutInst)) || _class$1);
 const Layout = toNative(LayoutInst);
 
@@ -256,8 +304,9 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
         };
     }
     get renderDefault() {
-        const renderForm = this.renderForm;
-        if (!this.showTable && this.showForm) return renderForm;
+        // const renderForm = this.renderForm;
+        // if (!this.showTable && this.showForm) return renderForm;
+        return undefined;
     }
     get renderPagination() {
         if (this.paginationOption) return ()=>createVNode(Pagination, mergeDefaultComponentProps("Pagination", this.paginationOption), null);
@@ -266,8 +315,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
         const dataSource = this.dataSource;
         if (this.tableColumnOptions.length) return ()=>createVNode(Table, mergeProps(mergeDefaultComponentProps("Table", this.props.option.tableOption?.componentProps), {
                 "columns": this.tableColumnOptions,
-                "dataSource": dataSource,
-                "style": "position: absolute;left: 0;top: 0;"
+                "dataSource": dataSource
             }), null);
     }
     get renderForm() {
@@ -365,12 +413,16 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             const slots = columnOption.tableOption?.slots;
             const dict = columnOption.tableOption?.dict ?? columnOption.dict;
             const dataPropName = columnOption.tableOption?.dataPropName ?? "data";
+            const vModal = columnOption.tableOption?.vModal ?? (ComponentVModal[componentName] || "value");
             this.tableColumnOptions.push({
                 title: columnOption.title,
                 dataIndex: propName,
                 customRender (data) {
                     if (componentFn) {
-                        return isVNode(componentFn) ? componentFn : createVNode(componentFn, Object.assign({}, componentProps, {
+                        return isVNode(componentFn) ? componentFn : createVNode(componentFn, Object.assign({
+                            [vModal]: data.value,
+                            [`onUpdate:${vModal}`]: (val)=>data.record[propName] = val
+                        }, componentProps, {
                             [dataPropName]: data
                         }), slots);
                     }
@@ -380,7 +432,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
                         if (target) value = target.label;
                     }
                     return createVNode("div", null, [
-                        value ?? "--"
+                        value || "--"
                     ]);
                 },
                 ...this.props.option.tableOption?.tableColumnType,
@@ -422,7 +474,7 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             return;
         }
         if (!this.searchFormModel) this.searchFormModel = {};
-        this._buildFormModel(this.searchFormModel, "searchFormOption", this.renderSearchFormElements);
+        this._buildFormModel(this.searchFormModel, "searchFormOption", this.renderSearchFormElements, false);
     }
     setDataSource() {
         if (this.props.dataSource) {
@@ -439,16 +491,17 @@ let CrudInst = (_dec = Component(), _dec2 = Mut(true), _dec3 = Mut(), _dec4 = Mu
             buttons: this.renderButtons,
             table: this.renderTable,
             pagination: this.renderPagination,
-            default: this.renderDefault
+            default: this.renderDefault,
+            form: this.renderForm
         });
     }
-    _buildFormModel(form, formOptionName, renderElements) {
+    _buildFormModel(form, formOptionName, renderElements, defaultShowInForm = true) {
         const { crudColumnOptions } = this.props.option;
         for(let propName in crudColumnOptions){
             const columnOption = crudColumnOptions[propName];
             const formOption = columnOption[formOptionName];
             let componentName = formOption?.component ?? columnOption.formOption?.component;
-            const showInForm = formOption?.show ?? columnOption.formOption?.show ?? true;
+            const showInForm = formOption?.show ?? columnOption.formOption?.show ?? defaultShowInForm;
             if (!showInForm) {
                 delete form[propName];
             } else {

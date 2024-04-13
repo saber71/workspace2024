@@ -77,8 +77,9 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() visibleEditForm: boolean = false;
 
   @Computed() get renderDefault(): RenderElement | undefined {
-    const renderForm = this.renderForm;
-    if (!this.showTable && this.showForm) return renderForm;
+    // const renderForm = this.renderForm;
+    // if (!this.showTable && this.showForm) return renderForm;
+    return undefined;
   }
 
   @Computed() get renderPagination(): RenderElement | undefined {
@@ -101,7 +102,6 @@ export class CrudInst extends VueComponent<CrudProps> {
           )}
           columns={this.tableColumnOptions}
           dataSource={dataSource}
-          style={"position: absolute;left: 0;top: 0;"}
         ></Table>
       );
   }
@@ -230,6 +230,9 @@ export class CrudInst extends VueComponent<CrudProps> {
       const slots = columnOption.tableOption?.slots;
       const dict = columnOption.tableOption?.dict ?? columnOption.dict;
       const dataPropName = columnOption.tableOption?.dataPropName ?? "data";
+      const vModal =
+        columnOption.tableOption?.vModal ??
+        ((ComponentVModal as any)[componentName] || "value");
       this.tableColumnOptions.push({
         title: columnOption.title,
         dataIndex: propName,
@@ -239,7 +242,15 @@ export class CrudInst extends VueComponent<CrudProps> {
               ? componentFn
               : createVNode(
                   componentFn,
-                  Object.assign({}, componentProps, { [dataPropName]: data }),
+                  Object.assign(
+                    {
+                      [vModal]: data.value,
+                      [`onUpdate:${vModal}`]: (val: any) =>
+                        ((data.record as any)[propName] = val),
+                    },
+                    componentProps,
+                    { [dataPropName]: data },
+                  ),
                   slots,
                 );
           }
@@ -248,7 +259,7 @@ export class CrudInst extends VueComponent<CrudProps> {
             const target = dict.data.value.find((item) => item.value === value);
             if (target) value = target.label;
           }
-          return <div>{value ?? "--"}</div>;
+          return <div>{value || "--"}</div>;
         },
         ...this.props.option.tableOption?.tableColumnType,
         ...columnOption.tableOption?.tableColumnProps,
@@ -309,6 +320,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       this.searchFormModel,
       "searchFormOption",
       this.renderSearchFormElements,
+      false,
     );
   }
 
@@ -335,6 +347,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       table: this.renderTable,
       pagination: this.renderPagination,
       default: this.renderDefault,
+      form: this.renderForm,
     });
   }
 
@@ -346,6 +359,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       | "editFormOption"
       | "formOption",
     renderElements: RenderElement[],
+    defaultShowInForm: boolean = true,
   ) {
     const { crudColumnOptions } = this.props.option;
     for (let propName in crudColumnOptions) {
@@ -354,7 +368,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       let componentName =
         formOption?.component ?? columnOption.formOption?.component;
       const showInForm =
-        formOption?.show ?? columnOption.formOption?.show ?? true;
+        formOption?.show ?? columnOption.formOption?.show ?? defaultShowInForm;
       if (!showInForm) {
         delete form[propName];
       } else {

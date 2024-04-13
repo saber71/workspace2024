@@ -3,7 +3,7 @@ export const DefaultComponentProps: Partial<AntComponentPropsMap> = {
   InputNumber: { placeholder: "请输入" },
   InputPassword: { allowClear: true, placeholder: "请输入" },
   FormItem: { validateFirst: true },
-  Table: { pagination: false },
+  Table: { pagination: false, sticky: true },
 };
 
 export const ComponentVModal: Record<keyof AntComponentPropsMap, any> = {

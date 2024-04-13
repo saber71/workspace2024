@@ -77,6 +77,7 @@ export declare class LayoutInst extends VueComponent<LayoutProps> {
 
 export declare interface LayoutProps extends VueComponentBaseProps {
     searchForm?: () => VNodeChild;
+    form?: () => VNodeChild;
     buttons?: () => VNodeChild;
     table?: () => VNodeChild;
     pagination?: () => VNodeChild;
