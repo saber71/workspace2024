@@ -18,6 +18,7 @@ import timezone from "dayjs/plugin/timezone";
 import dayjs from "dayjs";
 import "./guards";
 
+dayjs.locale("zh-cn");
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
 dayjs.extend(utc);

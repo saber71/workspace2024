@@ -6,7 +6,8 @@ import {
   toNative,
   VueComponent,
 } from "vue-class";
-import Crud from "vue-crud";
+import Crud from "vue-crud/src/index";
+import { Required } from "vue-form-rules";
 
 @Component()
 export class TableViewInst extends VueComponent {
@@ -27,9 +28,20 @@ export class TableViewInst extends VueComponent {
         searchFormOption: {
           show: true,
         },
+        addFormOption: {
+          formItemProps: {
+            rules: Required,
+          },
+        },
       },
       password: {
         title: "密码",
+      },
+    },
+    name: "用户",
+    addFormOption: {
+      componentProps: {
+        labelCol: { span: 3 },
       },
     },
   };

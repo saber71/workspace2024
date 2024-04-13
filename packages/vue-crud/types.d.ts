@@ -2,6 +2,8 @@
 
 declare type SlotBasicType = () => string | number | boolean;
 
+declare type RenderElement = () => import("vue").VNodeChild;
+
 declare type Slots = {
   default?: import("vue").Slot | SlotBasicType;
   [key: string]: import("vue").Slot | SlotBasicType;
@@ -115,6 +117,10 @@ declare interface RequestOption {
   info?(): Promise<any>;
 }
 
+declare interface ToolButtonOption extends ColumnComponentOption {
+  text: string | import("vue").VNode | RenderElement;
+}
+
 declare interface CrudOptions {
   layout?:
     | import("vue").Component
@@ -126,6 +132,8 @@ declare interface CrudOptions {
   addFormOption?: FormOption;
   editFormOption?: FormOption;
   tableOption?: TableOptions;
+  name?: string;
+  toolButtons?: Record<string | "add" | "batchDelete", ToolButtonOption>;
 }
 
 declare interface DictOption {

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useUser } from "@/stores";
 import { nextTick, ref, watch } from "vue";
+import zhCN from "ant-design-vue/es/locale/zh_CN";
 
 const userStore = useUser();
 const theme = ref({
@@ -30,7 +31,7 @@ watch(
 </script>
 
 <template>
-  <AConfigProvider :theme="theme">
+  <AConfigProvider :locale="zhCN" :theme="theme">
     <RouterView></RouterView>
   </AConfigProvider>
 </template>

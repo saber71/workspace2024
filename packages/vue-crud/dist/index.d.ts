@@ -15,6 +15,7 @@ export declare const ComponentVModal: Record<keyof AntComponentPropsMap, any>;
 export declare class CrudInst extends VueComponent<CrudProps> {
     static readonly defineProps: ComponentProps<CrudProps>;
     private static _getModal;
+    readonly layoutInst: VueComponent;
     layout: Component;
     formModel: any;
     searchFormModel: any;
@@ -26,14 +27,17 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     pageSize: number;
     total: number;
     paginationOption?: PaginationProps;
-    renderButtons?: RenderElement;
     renderFormElements: Array<RenderElement>;
     renderSearchFormElements: Array<RenderElement>;
     renderAddFormElements: Array<RenderElement>;
     renderEditFormElements: Array<RenderElement>;
+    renderToolButtonElements: Array<RenderElement>;
     visibleAddForm: boolean;
     visibleEditForm: boolean;
-    get renderDefault(): RenderElement | undefined;
+    get openModal(): boolean;
+    get renderToolButtons(): RenderElement | undefined;
+    get modalName(): string;
+    get renderModal(): RenderElement | undefined;
     get renderPagination(): RenderElement | undefined;
     get renderTable(): RenderElement | undefined;
     get renderForm(): RenderElement | undefined;
@@ -48,6 +52,7 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     get showTable(): boolean;
     buildPagination(): void;
     buildTableColumnOptions(): void;
+    buildToolButtons(): void;
     buildFormModel(): void;
     buildAddFormModel(): void;
     buildEditFormModel(): void;
@@ -55,6 +60,8 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     setDataSource(): void;
     setLayout(): void;
     render(): VNodeChild;
+    private _handleAdd;
+    private _handleEdit;
     private _buildFormModel;
 }
 
@@ -78,14 +85,12 @@ export declare class LayoutInst extends VueComponent<LayoutProps> {
 export declare interface LayoutProps extends VueComponentBaseProps {
     searchForm?: () => VNodeChild;
     form?: () => VNodeChild;
-    buttons?: () => VNodeChild;
+    toolButtons?: () => VNodeChild;
     table?: () => VNodeChild;
     pagination?: () => VNodeChild;
-    default?: () => VNodeChild;
+    modal?: () => VNodeChild;
 }
 
 export declare function mergeDefaultComponentProps(componentName: string | undefined, ...props: Array<object | undefined>): any;
-
-declare type RenderElement = () => VNodeChild;
 
 export { }

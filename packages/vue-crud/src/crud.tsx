@@ -1,8 +1,11 @@
 import {
   Form,
+  type FormInstance,
   FormItem,
+  Modal,
   Pagination,
   type PaginationProps,
+  Space,
   Table,
   type TableColumnProps,
 } from "ant-design-vue";
@@ -22,6 +25,8 @@ import {
   PropsWatcher,
   Computed,
   Watcher,
+  BindThis,
+  Link,
 } from "vue-class";
 import { ComponentVModal, mergeDefaultComponentProps } from "./component.ts";
 import Layout from "./layout.tsx";
@@ -31,8 +36,6 @@ export interface CrudProps extends VueComponentBaseProps {
   option: CrudOptions;
   dataSource?: any[] | PaginationResult;
 }
-
-type RenderElement = () => VNodeChild;
 
 @Component()
 export class CrudInst extends VueComponent<CrudProps> {
@@ -57,6 +60,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     };
   }
 
+  @Link() readonly layoutInst: VueComponent;
   @Mut(true) layout: ComponentType;
   @Mut() formModel: any;
   @Mut() searchFormModel: any;
@@ -68,18 +72,49 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() pageSize: number = 10;
   @Mut() total: number = 0;
   @Mut() paginationOption?: PaginationProps;
-  @Mut() renderButtons?: RenderElement;
   @Mut() renderFormElements: Array<RenderElement> = [];
   @Mut() renderSearchFormElements: Array<RenderElement> = [];
   @Mut() renderAddFormElements: Array<RenderElement> = [];
   @Mut() renderEditFormElements: Array<RenderElement> = [];
+  @Mut() renderToolButtonElements: Array<RenderElement> = [];
   @Mut() visibleAddForm: boolean = false;
   @Mut() visibleEditForm: boolean = false;
 
-  @Computed() get renderDefault(): RenderElement | undefined {
-    // const renderForm = this.renderForm;
-    // if (!this.showTable && this.showForm) return renderForm;
-    return undefined;
+  @Computed() get openModal() {
+    return this.visibleAddForm || this.visibleEditForm || false;
+  }
+
+  @Computed() get renderToolButtons(): RenderElement | undefined {
+    if (this.renderToolButtonElements.length) {
+      return () => (
+        <Space>{this.renderToolButtonElements.map((item) => item())}</Space>
+      );
+    }
+  }
+
+  @Computed() get modalName() {
+    let prefix = "";
+    if (this.visibleAddForm) prefix = "新增";
+    else if (this.visibleEditForm) prefix = "编辑";
+    return prefix + (this.props.option.name ?? "");
+  }
+
+  get renderModal(): RenderElement | undefined {
+    const onUpdateOpen = (val: boolean) =>
+      (this.visibleEditForm = this.visibleAddForm = val);
+    let fn: (e: MouseEvent) => void;
+    if (this.visibleEditForm) fn = this._handleEdit;
+    else if (this.visibleAddForm) fn = this._handleAdd;
+    return () => (
+      <Modal
+        title={this.modalName}
+        open={this.openModal}
+        onUpdate:open={onUpdateOpen}
+        onOk={fn}
+      >
+        {this.renderEditForm?.() ?? this.renderAddForm?.()}
+      </Modal>
+    );
   }
 
   @Computed() get renderPagination(): RenderElement | undefined {
@@ -125,6 +160,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     if (this.renderAddFormElements.length)
       return () => (
         <Form
+          ref={"addForm"}
           model={this.addFormModel}
           {...mergeDefaultComponentProps(
             "Form",
@@ -141,6 +177,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     if (this.renderEditFormElements.length)
       return () => (
         <Form
+          ref={"editForm"}
           model={this.editFormModel}
           {...mergeDefaultComponentProps(
             "Form",
@@ -158,6 +195,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       return () => (
         <Form
           model={this.searchFormModel}
+          layout={"inline"}
           {...mergeDefaultComponentProps(
             "Form",
             this.props.option.formOption?.componentProps,
@@ -268,6 +306,48 @@ export class CrudInst extends VueComponent<CrudProps> {
   }
 
   @PropsWatcher({ immediate: true })
+  buildToolButtons() {
+    this.renderToolButtonElements.length = 0;
+    if (!this.showTable) return;
+    const toolButtons = Object.assign({}, this.props.option.toolButtons);
+    const addButton: ToolButtonOption = {
+      text: "新增",
+      component: "Button",
+      componentProps: {
+        type: "primary",
+        onClick: () => (this.visibleAddForm = true),
+      },
+    };
+    const batchDeleteButton: ToolButtonOption = {
+      text: "批量删除",
+      component: "Button",
+      componentProps: {
+        type: "primary",
+        danger: true,
+      },
+    };
+    if (!toolButtons.add) toolButtons.add = addButton;
+    if (!toolButtons.batchDelete) toolButtons.batchDelete = batchDeleteButton;
+    for (let key in toolButtons) {
+      const buttonOption = toolButtons[key];
+      const componentName = buttonOption.component;
+      const componentFn =
+        typeof componentName === "string"
+          ? (AntComponent as any)[componentName]
+          : componentName;
+      this.renderToolButtonElements.push(() =>
+        isVNode(componentFn)
+          ? componentFn
+          : createVNode(
+              componentFn,
+              buttonOption.componentProps,
+              () => buttonOption.text,
+            ),
+      );
+    }
+  }
+
+  @PropsWatcher({ immediate: true })
   buildFormModel() {
     this.renderFormElements.length = 0;
     if (!this.showForm || this.showTable) {
@@ -279,6 +359,7 @@ export class CrudInst extends VueComponent<CrudProps> {
   }
 
   @PropsWatcher({ immediate: true })
+  @Watcher({ source: ["visibleAddForm"] })
   buildAddFormModel() {
     this.renderAddFormElements.length = 0;
     if (!this.showAddForm || !this.visibleAddForm) {
@@ -294,6 +375,7 @@ export class CrudInst extends VueComponent<CrudProps> {
   }
 
   @PropsWatcher({ immediate: true })
+  @Watcher({ source: ["visibleEditForm"] })
   buildEditFormModel() {
     this.renderEditFormElements.length = 0;
     if (!this.showEditForm || !this.visibleEditForm) {
@@ -343,12 +425,33 @@ export class CrudInst extends VueComponent<CrudProps> {
   render(): VNodeChild {
     return createVNode(this.layout, {
       searchForm: this.renderSearchForm,
-      buttons: this.renderButtons,
+      toolButtons: this.renderToolButtons,
       table: this.renderTable,
       pagination: this.renderPagination,
-      default: this.renderDefault,
+      modal: this.renderModal,
       form: this.renderForm,
+      inst: "layoutInst",
     });
+  }
+
+  @BindThis()
+  private _handleAdd() {
+    (this.layoutInst.vueInstance.refs.addForm as FormInstance)
+      .validate()
+      .then(() => {
+        this.props.option.request?.add(this.addFormModel);
+        this.visibleAddForm = false;
+      });
+  }
+
+  @BindThis()
+  private _handleEdit() {
+    (this.layoutInst.vueInstance.refs.editForm as FormInstance)
+      .validate()
+      .then(() => {
+        this.props.option.request?.edit(this.editFormModel);
+        this.visibleEditForm = false;
+      });
   }
 
   private _buildFormModel(

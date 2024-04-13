@@ -11,10 +11,10 @@ import {
 export interface LayoutProps extends VueComponentBaseProps {
   searchForm?: () => VNodeChild;
   form?: () => VNodeChild;
-  buttons?: () => VNodeChild;
+  toolButtons?: () => VNodeChild;
   table?: () => VNodeChild;
   pagination?: () => VNodeChild;
-  default?: () => VNodeChild;
+  modal?: () => VNodeChild;
 }
 
 const styles = {
@@ -45,7 +45,7 @@ const styles = {
     flexShrink: 0,
     width: "100%",
   } as StyleValue,
-  defaults: {
+  modal: {
     position: "absolute",
   } as StyleValue,
   form: {
@@ -59,22 +59,22 @@ export class LayoutInst extends VueComponent<LayoutProps> {
   static readonly defineProps: ComponentProps<LayoutProps> = [
     "inst",
     "searchForm",
-    "buttons",
+    "toolButtons",
     "table",
     "pagination",
-    "default",
+    "modal",
     "form",
   ];
 
   render(): VNodeChild {
-    const { searchForm, form, buttons, table, pagination } = this.props;
-    const defaults = this.props.default;
+    const { searchForm, form, modal, toolButtons, table, pagination } =
+      this.props;
     return (
       <div style={styles.layoutContainer}>
-        {searchForm || buttons ? (
+        {searchForm || toolButtons ? (
           <Flex justify={"space-between"} style={styles.topArea}>
             <div class={"search-form"}>{searchForm?.()}</div>
-            <div>{buttons?.()}</div>
+            <div>{toolButtons?.()}</div>
           </Flex>
         ) : null}
         {table ? (
@@ -87,7 +87,7 @@ export class LayoutInst extends VueComponent<LayoutProps> {
             {pagination()}
           </Flex>
         ) : null}
-        {defaults ? <div style={styles.defaults}>{defaults()}</div> : null}
+        {modal ? <div style={styles.modal}>{modal()}</div> : null}
         {form ? <div style={styles.form}>{form()}</div> : null}
       </div>
     );
