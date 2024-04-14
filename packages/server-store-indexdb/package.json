@@ -1,0 +1,16 @@
+{
+  "name": "server-store-indexdb",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "peerDependencies": {
+    "filter": "workspace:^",
+    "server-store": "workspace:^",
+    "uuid": "^9.0.1"
+  }
+}

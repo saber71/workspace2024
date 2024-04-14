@@ -14,6 +14,7 @@ import type { VueRouterGuard } from "./vue-router-guard";
 
 export type WatcherTarget<T extends VueComponent> =
   | string
+  | keyof T
   | ((instance: T) => any);
 
 export type HookType =

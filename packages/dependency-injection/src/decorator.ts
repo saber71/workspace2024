@@ -80,14 +80,15 @@ export function Injectable(option?: InjectableOptions) {
  * @param option.typeValueGetter 指定被装饰的字段或入参的自定义getter。当被装饰的是类的字段或入参时才生效
  * @throws InjectNotFoundTypeError 在无法确定被装饰者的类型时抛出
  */
-export function Inject(option?: InjectOptions) {
+export function Inject(option?: InjectOptions | string) {
   return (
     clazz: any,
     propName: ClassFieldDecoratorContext | any,
     index?: any,
   ) => {
     propName = getDecoratedName(propName) || "constructor";
-    const typeLabel = option?.typeLabel;
+    const typeLabel = typeof option === "string" ? option : option?.typeLabel;
+    if (typeof option === "string") option = {};
     const typeValueGetter = option?.typeValueGetter;
     if (typeof index === "number") {
       /* 构造函数或方法的参数装饰器 */

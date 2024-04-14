@@ -164,7 +164,8 @@ import EventEmitter from 'eventemitter3';
  */ function Inject(option) {
     return (clazz, propName, index)=>{
         propName = getDecoratedName(propName) || "constructor";
-        const typeLabel = option?.typeLabel;
+        const typeLabel = typeof option === "string" ? option : option?.typeLabel;
+        if (typeof option === "string") option = {};
         const typeValueGetter = option?.typeValueGetter;
         if (typeof index === "number") {
             /* 构造函数或方法的参数装饰器 */ const metadata = Metadata.getOrCreateMetadata(clazz);
@@ -305,7 +306,7 @@ function AfterCallMethod(cb) {
         this.extend(undefined);
     }
     hasLabel(label) {
-        return this._memberMap.has(label);
+        return this._memberMap.has(label) || !!this._extend?.hasLabel(label);
     }
     /**
    * 获取指定标识符的值

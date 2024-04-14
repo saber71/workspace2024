@@ -22,5 +22,5 @@ declare interface RoleModel extends StoreItem {
 }
 
 declare interface UserInfo
-  extends UserModel,
+  extends Omit<UserModel, "password">,
     Pick<RoleModel, "authorizations"> {}

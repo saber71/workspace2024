@@ -12,6 +12,15 @@ class ServerApiProvider {
         return (methodName, parameters, option)=>this.request(key, methodName, parameters, option);
     }
     async request(key, methodName, parameters, option) {
+        if ("isMock" in this.axiosInstance && this.axiosInstance.isMock) {
+            const data = await this.axiosInstance[key][methodName](...parameters ?? []);
+            return {
+                success: true,
+                msg: "ok",
+                object: data,
+                code: 200
+            };
+        }
         const methodSet = this.providerMetadata[key];
         if (!methodSet) throw new NotFoundControllerError(`找不到名为${key}的控制器数据`);
         const method = methodSet[methodName];

@@ -1,5 +1,4 @@
 ///<reference types="dependency-injection/types.d.ts"/>
-///<reference types="server/types.d.ts"/>
 ///<reference types="filter/types.d.ts"/>
 
 declare type TransactionRecord =
@@ -12,8 +11,6 @@ declare type TransactionRecord =
 /* 保存数据的基础类型 */
 declare interface StoreItem {
   _id: string;
-
-  [key: string | symbol]: any;
 }
 
 declare type PartialStoreItem<T extends StoreItem> = Omit<T, "_id"> &
@@ -40,13 +37,13 @@ declare interface StoreAdapter {
   /* 更新数据 */
   update<T extends StoreItem = StoreItem>(
     collectionName: string,
-    ...items: Partial<T>[]
+    ...items: PartialStoreItem<T>[]
   ): Promise<void>;
 
   /* 查询数据。查询条件为空返回所有数据 */
   search<T extends StoreItem = StoreItem>(
     collectionName: string,
-    condition?: FilterCondition<T>,
+    condition?: FilterCondition<T> | null,
     sortOrders?: SortOrders<T>,
   ): Promise<T[]>;
 

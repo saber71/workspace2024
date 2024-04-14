@@ -95,6 +95,8 @@ export declare function PropsWatcher(option?: WatchOptions): (target: object, ar
 declare function Readonly_2(shallow?: boolean): (target: object, arg: any) => void;
 export { Readonly_2 as Readonly }
 
+export declare const ROUTER = "router";
+
 export declare function RouterGuard(option?: {
     matchTo?: RegExp | ((path: RouteLocationNormalized) => boolean);
     matchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
@@ -122,6 +124,8 @@ export declare class VueComponent<Props extends VueComponentBaseProps = VueCompo
     readonly context: WithSlotTypes<Emit, Props>;
     readonly childInstMap: Record<string, VueComponent>;
     get props(): Props;
+    get router(): Router;
+    get route(): RouteLocationNormalizedLoaded;
     render(): VNodeChild;
     setup(): void;
 }
@@ -170,7 +174,7 @@ export declare function Watcher<T extends VueComponent>(option?: {
     option?: WatchOptions;
 }): (target: object, arg: any) => void;
 
-export declare type WatcherTarget<T extends VueComponent> = string | ((instance: T) => any);
+export declare type WatcherTarget<T extends VueComponent> = string|keyof T| ((instance: T) => any);
 
 export declare type WithSlotTypes<Emit extends EmitsOptions, T extends {}> = Omit<SetupContext<Emit>, "slots"> & {
     slots: NonNullable<VueComponentProps<T>["v-slots"]>;

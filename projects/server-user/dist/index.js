@@ -1,5 +1,5 @@
-import { Validation, ToBoolean, ToObject, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqSession, UnauthorizedError, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
-import { ServerLog, SERVER_LOG_ADDRESS } from 'server-log-decorator';
+import { Validation, ToBoolean, ToObject, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqJwtSession, UnauthorizedError, JwtSession, Server, AuthorizedGuard, WHITE_LIST } from 'server';
+import { ServerLog, SERVER_LOG_COLLECTION } from 'server-log-decorator';
 import { createServerPlatformKoa } from 'server-platform-koa';
 import { Collection, StoreCollection, ServerStore } from 'server-store';
 import validator from 'validator';
@@ -266,7 +266,9 @@ class RoleController {
             const role = await collection.getById(body.id);
             if (!role) throw new NotFoundObjectError(`找不到id为${body.id}的Role对象`);
             if (body.toDelete) {
-                await role.deleteOne();
+                await collection.delete({
+                    _id: body.id
+                });
                 return;
             }
             if (body.putAuthorizations) Object.assign(role.authorizations, body.putAuthorizations);
@@ -358,23 +360,24 @@ class UserController {
             });
         });
     }
-    login(data, session, collection) {
-        return collection.transaction(async ()=>{
+    login(data, session, userCollection, roleCollection) {
+        return userCollection.transaction(async ()=>{
             const is_email = validator.isEmail(data.loginNameOrEmail);
             let user;
             if (is_email) {
-                user = await collection.searchOne({
+                user = await userCollection.searchOne({
                     email: data.loginNameOrEmail,
                     password: data.password
                 });
             } else {
-                user = await collection.searchOne({
+                user = await userCollection.searchOne({
                     loginName: data.loginNameOrEmail,
                     password: data.password
                 });
             }
             if (!user) throw new NotFoundObjectError("找不到用户或密码错误");
             session.set("userId", user._id);
+            return await this.auth(session, userCollection, roleCollection);
         });
     }
     async logout(session) {
@@ -389,6 +392,8 @@ class UserController {
             if (!role) throw new UnauthorizedError("用户未配置角色");
             return {
                 ...user,
+                //@ts-ignore
+                password: undefined,
                 authorizations: role.authorizations
             };
         } else throw new UnauthorizedError();
@@ -431,35 +436,37 @@ _ts_decorate([
     ServerLog("登陆"),
     Post(),
     _ts_param(0, ReqBody()),
-    _ts_param(1, ReqSession()),
+    _ts_param(1, ReqJwtSession()),
     _ts_param(2, Collection(COLLECTION_USER)),
+    _ts_param(3, Collection(COLLECTION_ROLE)),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
         typeof LoginDTO === "undefined" ? Object : LoginDTO,
-        typeof Session === "undefined" ? Object : Session,
+        typeof JwtSession === "undefined" ? Object : JwtSession,
+        typeof StoreCollection === "undefined" ? Object : StoreCollection,
         typeof StoreCollection === "undefined" ? Object : StoreCollection
     ]),
-    _ts_metadata("design:returntype", void 0)
+    _ts_metadata("design:returntype", typeof Promise === "undefined" ? Object : Promise)
 ], UserController.prototype, "login", null);
 _ts_decorate([
     ServerLog("退出登陆"),
     Post(),
-    _ts_param(0, ReqSession()),
+    _ts_param(0, ReqJwtSession()),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
-        typeof Session === "undefined" ? Object : Session
+        typeof JwtSession === "undefined" ? Object : JwtSession
     ]),
     _ts_metadata("design:returntype", Promise)
 ], UserController.prototype, "logout", null);
 _ts_decorate([
     ServerLog("获取用户数据"),
     Get(),
-    _ts_param(0, ReqSession()),
+    _ts_param(0, ReqJwtSession()),
     _ts_param(1, Collection(COLLECTION_USER)),
     _ts_param(2, Collection(COLLECTION_ROLE)),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
-        typeof Session === "undefined" ? Object : Session,
+        typeof JwtSession === "undefined" ? Object : JwtSession,
         typeof StoreCollection === "undefined" ? Object : StoreCollection,
         typeof StoreCollection === "undefined" ? Object : StoreCollection
     ]),
@@ -485,8 +492,8 @@ UserController = _ts_decorate([
 
 // @ts-ignore
 ///<reference types="../types.d.ts"/>
-async function bootstrap(port, saveOnExit = true, logPort) {
-    const store = await ServerStore.create(createServerStoreFS("./store", saveOnExit));
+async function bootstrap(port, saveOnExit = true, log) {
+    const store = await ServerStore.create(createServerStoreFS("../store", saveOnExit));
     const app = await Server.create({
         serverPlatformAdapter: createServerPlatformKoa(),
         contextName: CONTEXT_NAME,
@@ -497,13 +504,10 @@ async function bootstrap(port, saveOnExit = true, logPort) {
     app.dependencyInjection.bindInstance(store).bindValue(WHITE_LIST, [
         "/user/login"
     ]);
-    if (typeof logPort === "number") app.dependencyInjection.bindValue(SERVER_LOG_ADDRESS, "http://localhost:" + logPort);
+    if (log) app.dependencyInjection.bindValue(SERVER_LOG_COLLECTION, "server-user-log");
     await createDefaultData(app, store);
     app.bootstrap({
-        port,
-        session: {
-            secretKey: "secretKey"
-        }
+        port
     });
 }
 async function createDefaultData(app, store) {
@@ -517,7 +521,7 @@ async function createDefaultData(app, store) {
             name: "默认",
             authorizations: {},
             createTime: Date.now()
-        }, roleCollection);
+        });
         app.log("log", "新建默认角色成功");
     }
     if (!defaultUser) {

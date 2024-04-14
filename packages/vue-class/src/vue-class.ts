@@ -1,7 +1,7 @@
 import { LoadableContainer } from "dependency-injection";
 import type { App } from "vue";
 import type { Router } from "vue-router";
-import { ModuleName } from "./constants";
+import { ModuleName, ROUTER } from "./constants";
 import type { Class } from "./types";
 import { VueDirective } from "./vue-directive";
 import { VueRouterGuard } from "./vue-router-guard";
@@ -15,6 +15,7 @@ export class VueClass {
 
   static async install(app: App, router: Router) {
     this.dependencyInjection.load({ moduleName: ModuleName });
+    this.dependencyInjection.bindValue(ROUTER, router);
     VueDirective.install(app);
     VueRouterGuard.install(router);
   }

@@ -13,11 +13,7 @@ describe("http", () => {
       guards: [AuthorizedGuard],
     });
     app.dependencyInjection.bindValue(WHITE_LIST, ["*"]);
-    app.bootstrap({
-      session: {
-        secretKey: "secretKey",
-      },
-    });
+    app.bootstrap();
 
     await Promise.all([
       userControllerHttpTestSuits(),

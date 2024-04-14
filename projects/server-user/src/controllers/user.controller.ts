@@ -1,12 +1,12 @@
 import {
   Controller,
   Get,
+  JwtSession,
   NotFoundObjectError,
   Post,
   ReqBody,
+  ReqJwtSession,
   ReqQuery,
-  ReqSession,
-  Session,
   UnauthorizedError,
 } from "server";
 import { Collection, StoreCollection } from "server-store";
@@ -55,41 +55,43 @@ export class UserController {
   @Post()
   login(
     @ReqBody() data: LoginDTO,
-    @ReqSession() session: Session<RegularSessionData>,
-    @Collection(COLLECTION_USER) collection: StoreCollection<UserModel>,
-  ) {
-    return collection.transaction(async () => {
+    @ReqJwtSession() session: JwtSession<RegularSessionData>,
+    @Collection(COLLECTION_USER) userCollection: StoreCollection<UserModel>,
+    @Collection(COLLECTION_ROLE) roleCollection: StoreCollection<RoleModel>,
+  ): Promise<UserInfo> {
+    return userCollection.transaction(async () => {
       const is_email = validator.isEmail(data.loginNameOrEmail);
       let user;
       if (is_email) {
-        user = await collection.searchOne({
+        user = await userCollection.searchOne({
           email: data.loginNameOrEmail,
           password: data.password,
         });
       } else {
-        user = await collection.searchOne({
+        user = await userCollection.searchOne({
           loginName: data.loginNameOrEmail,
           password: data.password,
         });
       }
       if (!user) throw new NotFoundObjectError("找不到用户或密码错误");
       session.set("userId", user._id);
+      return await this.auth(session, userCollection, roleCollection);
     });
   }
 
   @ServerLog("退出登陆")
   @Post()
-  async logout(@ReqSession() session: Session<RegularSessionData>) {
+  async logout(@ReqJwtSession() session: JwtSession<RegularSessionData>) {
     session.destroy();
   }
 
   @ServerLog("获取用户数据")
   @Get()
   async auth(
-    @ReqSession() session: Session<RegularSessionData>,
+    @ReqJwtSession() session: JwtSession<RegularSessionData>,
     @Collection(COLLECTION_USER) userCollection: StoreCollection<UserModel>,
     @Collection(COLLECTION_ROLE) roleCollection: StoreCollection<RoleModel>,
-  ) {
+  ): Promise<UserInfo> {
     const userId = session.get("userId");
     if (!userId) throw new UnauthorizedError();
     const user = await userCollection.getById(userId);
@@ -98,6 +100,8 @@ export class UserController {
       if (!role) throw new UnauthorizedError("用户未配置角色");
       return {
         ...user,
+        //@ts-ignore
+        password: undefined,
         authorizations: role.authorizations,
       } satisfies UserInfo;
     } else throw new UnauthorizedError();

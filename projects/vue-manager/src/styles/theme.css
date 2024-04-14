@@ -1,17 +1,28 @@
 .light {
-  --bg-base: #f5f5f5;
-  --bg-secondary: white;
-  --border-base: #f0f0f0;
+  --bg-base: white;
+  --bg-secondary: #f5f5f5;
+  --border-base: #d9d9d9;
   --text-base: black;
+  --text-secondary: rgba(0, 0, 0, 0.45);
 }
 
 .dark {
-  --bg-base: black;
-  --bg-secondary: #141414;
-  --border-base: #303030;
+  --bg-base: #141414;
+  --bg-secondary: black;
+  --bg-table: #202020;
+  --bg-table-header: #303030;
+  --border-base: #505050;
+  --bg-dropdown: #333333;
+  --bg-dropdown-hover: rgba(255, 255, 255, 0.1);
+  --bg-avatar: rgba(255, 255, 255, 0.25);
+
   --text-base: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.45);
+  --text-dropdown: rgba(255, 255, 255, 0.95);
+  --text-input-placeholder: rgba(255, 255, 255, 0.5);
+  --text-input-icon-hover: rgba(255, 255, 255, 0.85);
 }
 
-.root-view {
+body {
   color: var(--text-base);
 }

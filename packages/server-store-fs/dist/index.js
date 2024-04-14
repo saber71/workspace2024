@@ -9,16 +9,10 @@ function createServerStoreFS(basePath = ".", saveOnExit = false) {
     basePath = path.resolve(basePath);
     const collections = initCollections();
     const needSaveCollectionNames = new Set();
-    let prevTime = Date.now();
     if (saveOnExit) {
         process.on("exit", saveDataToFile);
-        process.nextTick(()=>{
-            const now = Date.now();
-            if (now - prevTime >= 1000) {
-                prevTime = now;
-                saveCollectionChange();
-            }
-        });
+        process.on("SIGINT", saveDataToFile);
+        setInterval(saveCollectionChange, 1000);
     }
     return {
         init () {

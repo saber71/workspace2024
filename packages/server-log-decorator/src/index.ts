@@ -1,13 +1,13 @@
 ///<reference types="../types.d.ts"/>
-import axios from "axios";
 import {
   AfterCallMethod,
   type Container,
+  JwtSession,
   ServerRequest,
-  Session,
 } from "server";
+import { ServerStore } from "server-store";
 
-export const SERVER_LOG_ADDRESS = "server-log-address";
+export const SERVER_LOG_COLLECTION = "server-log-collection";
 
 export function ServerLog(
   description: string,
@@ -18,14 +18,16 @@ export function ServerLog(
 ) {
   if (!options.creatorGetter)
     options.creatorGetter = (container: Container) =>
-      container.getValue(Session).get("userId");
+      container.getValue(JwtSession).get("userId");
   return AfterCallMethod((container, metadata, returnValue, args, error) => {
     if (error) return returnValue;
-    if (container.hasLabel(SERVER_LOG_ADDRESS)) {
+    if (container.hasLabel(SERVER_LOG_COLLECTION)) {
+      const collectionName = container.getValue(SERVER_LOG_COLLECTION);
       const creator = options.creatorGetter(container);
       const request = container.getValue(ServerRequest);
-      const serverLogAddress = container.getValue(SERVER_LOG_ADDRESS);
-      axios.post(serverLogAddress + "/log/create", {
+      const store = container.getValue(ServerStore);
+      const collection = store.collection<LogModel>(collectionName);
+      collection.add({
         creator,
         description,
         query: request.query,
@@ -37,5 +39,6 @@ export function ServerLog(
             : options.data,
       });
     }
+    return returnValue;
   });
 }

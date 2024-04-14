@@ -6,7 +6,9 @@ import axios from "axios";
 export class ServerApiProvider {
   constructor(
     readonly providerMetadata: ProviderMetadata,
-    readonly axiosInstance: AxiosInstance = axios,
+    readonly axiosInstance:
+      | AxiosInstance
+      | { isMock: boolean; [key: string]: any } = axios,
   ) {}
 
   provider<T extends Record<string, any>>(key: string) {
@@ -29,6 +31,17 @@ export class ServerApiProvider {
   ): Promise<
     ResponseBody<ExtractPromiseGenericType<ReturnType<T[MethodName]>>>
   > {
+    if ("isMock" in this.axiosInstance && this.axiosInstance.isMock) {
+      const data = await this.axiosInstance[key][methodName](
+        ...(parameters ?? []),
+      );
+      return {
+        success: true,
+        msg: "ok",
+        object: data,
+        code: 200,
+      };
+    }
     const methodSet = this.providerMetadata[key!];
     if (!methodSet)
       throw new NotFoundControllerError(`找不到名为${key!}的控制器数据`);

@@ -1,15 +1,21 @@
 import { userApi } from "@/api.ts";
 import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
-import { type Ref, ref } from "vue";
+import { ref } from "vue";
 
-enum UserData {
+export enum UserData {
   IsDarkTheme = "isDarkTheme",
 }
 
 export const useUser = defineStore("user", () => {
+  const rememberMe = useLocalStorage("rememberMe", false);
+  const info = useLocalStorage("user-info", {
+    userData: {},
+  } as any as UserInfo);
   const token = useLocalStorage("token", "");
-  const info: Ref<UserInfo> = ref({} as any);
+  const isAuth = ref(false);
+
+  if (!rememberMe.value) token.value = info.value._id = "";
 
   function isDarkTheme(): boolean {
     return !!info.value.userData?.[UserData.IsDarkTheme];
@@ -22,7 +28,7 @@ export const useUser = defineStore("user", () => {
     }
   }
 
-  return { token, info, isDarkTheme, setDarkTheme };
+  return { info, rememberMe, isAuth, token, isDarkTheme, setDarkTheme };
 
   function updateUserData(key: string, value: any): void {
     info.value.userData[key] = value;

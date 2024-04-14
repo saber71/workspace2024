@@ -23,8 +23,8 @@ function createServerPlatformKoa() {
             app.use(mount(routePathPrefix, staticServe(assetsPath)));
         },
         bootstrap (option) {
-            if (option.session?.secretKey) app.keys = [
-                option.session.secretKey
+            app.keys = [
+                option.session?.secretKey ?? "koa-secret-key"
             ];
             proxies.forEach((proxy)=>app.use(proxy));
             app.use(koaBody({
@@ -34,7 +34,7 @@ function createServerPlatformKoa() {
                     multiples: true
                 }
             })).use(session({
-                key: option.session?.cookieKey ?? "Secret key",
+                key: option.session?.cookieKey ?? "sid",
                 maxAge: option.session?.maxAge
             }, app)).use(router.routes()).use(router.allowedMethods()).listen(option.port, option.hostname);
         },
@@ -79,6 +79,11 @@ function createServerPlatformKoa() {
     };
 }
 function createServerRequest(ctx, id) {
+    const headers = new Proxy({}, {
+        get (_, p) {
+            return ctx.request.get(p);
+        }
+    });
     return {
         original: ctx.request,
         origin: ctx.origin,
@@ -86,7 +91,7 @@ function createServerRequest(ctx, id) {
         query: ctx.query,
         querystring: ctx.querystring,
         hostname: ctx.hostname,
-        headers: ctx.headers,
+        headers,
         host: ctx.host,
         href: ctx.href,
         path: ctx.path,
@@ -102,9 +107,19 @@ function createServerRequest(ctx, id) {
     };
 }
 function createServerResponse(ctx, id) {
+    const headers = new Proxy({}, {
+        get (_, p) {
+            return ctx.res.getHeader(p);
+        },
+        set (_, p, newValue) {
+            if (newValue === undefined || newValue === null) ctx.res.removeHeader(p);
+            else ctx.res.setHeader(p, newValue);
+            return true;
+        }
+    });
     return {
         original: ctx.response,
-        headers: ctx.response.headers,
+        headers,
         get id () {
             return id;
         },
