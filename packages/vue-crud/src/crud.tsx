@@ -1,4 +1,10 @@
 import {
+  DeleteFilled,
+  EditFilled,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons-vue";
+import {
+  Button,
   Form,
   type FormInstance,
   FormItem,
@@ -6,8 +12,10 @@ import {
   Pagination,
   type PaginationProps,
   Space,
+  Spin,
   Table,
   type TableColumnProps,
+  type TableProps,
 } from "ant-design-vue";
 import {
   type VNodeChild,
@@ -67,6 +75,7 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() addFormModel: any;
   @Mut() editFormModel: any;
   @Mut() dataSource: any[] = [];
+  @Mut() selectedRows: any[] = [];
   @Mut() tableColumnOptions: TableColumnProps[] = [];
   @Mut() curPage: number = 1;
   @Mut() pageSize: number = 10;
@@ -79,6 +88,7 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() renderToolButtonElements: Array<RenderElement> = [];
   @Mut() visibleAddForm: boolean = false;
   @Mut() visibleEditForm: boolean = false;
+  @Mut() loadingTable: boolean = false;
 
   @Computed() get openModal() {
     return this.visibleAddForm || this.visibleEditForm || false;
@@ -128,17 +138,33 @@ export class CrudInst extends VueComponent<CrudProps> {
 
   @Computed() get renderTable(): RenderElement | undefined {
     const dataSource = this.dataSource;
-    if (this.tableColumnOptions.length)
-      return () => (
-        <Table
-          {...mergeDefaultComponentProps(
-            "Table",
-            this.props.option.tableOption?.componentProps,
-          )}
-          columns={this.tableColumnOptions}
-          dataSource={dataSource}
-        ></Table>
-      );
+
+    if (this.tableColumnOptions.length) {
+      return () => {
+        const props = mergeDefaultComponentProps(
+          "Table",
+          this.props.option.tableOption?.componentProps,
+        );
+        const rowSelection: TableProps["rowSelection"] = {
+          onChange: (_, selectedRows) => {
+            this.selectedRows = selectedRows || [];
+          },
+          selectedRowKeys: this.selectedRows.map(
+            (item) => item[props.rowKey || "_id"],
+          ),
+        };
+        return (
+          <Spin spinning={this.loadingTable} tip={"Loading..."}>
+            <Table
+              {...props}
+              columns={this.tableColumnOptions}
+              dataSource={dataSource}
+              rowSelection={rowSelection}
+            ></Table>
+          </Spin>
+        );
+      };
+    }
   }
 
   @Computed() get renderForm(): RenderElement | undefined {
@@ -303,6 +329,39 @@ export class CrudInst extends VueComponent<CrudProps> {
         ...columnOption.tableOption?.tableColumnProps,
       });
     }
+    this.tableColumnOptions.push({
+      title: "操作",
+      customRender: (data) => (
+        <Space>
+          <Button
+            type={"link"}
+            onClick={() => {
+              this.editFormModel = Object.assign({}, data.record);
+              this.visibleEditForm = true;
+            }}
+          >
+            <EditFilled />
+          </Button>
+          <Button
+            type={"link"}
+            danger
+            onClick={() => {
+              this.selectedRows.length = 0;
+              this.selectedRows.push(data.record);
+              Modal.confirm({
+                title: "是否删除选中的数据？",
+                icon: <ExclamationCircleOutlined />,
+                onOk: this._handleDelete,
+              });
+            }}
+          >
+            <DeleteFilled />
+          </Button>
+        </Space>
+      ),
+      width: 150,
+      ...this.props.option.tableOption?.tableColumnType,
+    });
   }
 
   @PropsWatcher({ immediate: true })
@@ -324,6 +383,13 @@ export class CrudInst extends VueComponent<CrudProps> {
       componentProps: {
         type: "primary",
         danger: true,
+        onClick: () => {
+          Modal.confirm({
+            title: `是否删除选中的${this.selectedRows.length}条数据？`,
+            icon: <ExclamationCircleOutlined />,
+            onOk: this._handleDelete,
+          });
+        },
       },
     };
     if (!toolButtons.add) toolButtons.add = addButton;
@@ -340,7 +406,13 @@ export class CrudInst extends VueComponent<CrudProps> {
           ? componentFn
           : createVNode(
               componentFn,
-              buttonOption.componentProps,
+              Object.assign(
+                {
+                  disabled:
+                    key === "batchDelete" && this.selectedRows.length === 0,
+                },
+                buttonOption.componentProps,
+              ),
               () => buttonOption.text,
             ),
       );
@@ -403,16 +475,32 @@ export class CrudInst extends VueComponent<CrudProps> {
       "searchFormOption",
       this.renderSearchFormElements,
       false,
+      {
+        onSearch: this.handleSearch,
+      },
+      "InputSearch",
     );
   }
 
   @PropsWatcher({ immediate: true })
-  setDataSource() {
+  @BindThis()
+  async handleSearch() {
+    console.log("search");
     if (this.props.dataSource) {
       this.dataSource =
         this.props.dataSource instanceof Array
           ? this.props.dataSource
           : this.props.dataSource.data;
+    } else {
+      this.loadingTable = true;
+      const searchResult = await this.props.option.request?.search(
+        this.searchFormModel,
+      );
+      this.dataSource = searchResult?.data ?? [];
+      this.curPage = searchResult?.curPage ?? 1;
+      this.pageSize = searchResult?.pageSize ?? 10;
+      this.total = searchResult?.total ?? 0;
+      this.loadingTable = false;
     }
   }
 
@@ -438,9 +526,10 @@ export class CrudInst extends VueComponent<CrudProps> {
   private _handleAdd() {
     (this.layoutInst.vueInstance.refs.addForm as FormInstance)
       .validate()
-      .then(() => {
-        this.props.option.request?.add(this.addFormModel);
+      .then(async () => {
+        await this.props.option.request?.add(this.addFormModel);
         this.visibleAddForm = false;
+        await this.handleSearch();
       });
   }
 
@@ -448,10 +537,17 @@ export class CrudInst extends VueComponent<CrudProps> {
   private _handleEdit() {
     (this.layoutInst.vueInstance.refs.editForm as FormInstance)
       .validate()
-      .then(() => {
-        this.props.option.request?.edit(this.editFormModel);
+      .then(async () => {
+        await this.props.option.request?.edit(this.editFormModel);
         this.visibleEditForm = false;
+        await this.handleSearch();
       });
+  }
+
+  @BindThis()
+  private async _handleDelete() {
+    await this.props.option.request?.delete(this.selectedRows);
+    await this.handleSearch();
   }
 
   private _buildFormModel(
@@ -463,6 +559,8 @@ export class CrudInst extends VueComponent<CrudProps> {
       | "formOption",
     renderElements: RenderElement[],
     defaultShowInForm: boolean = true,
+    defaultComponentProps: object = {},
+    defaultComponentName: string = "Input",
   ) {
     const { crudColumnOptions } = this.props.option;
     for (let propName in crudColumnOptions) {
@@ -477,7 +575,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       } else {
         if (!(propName in form))
           form[propName] = formOption?.value ?? columnOption.formOption?.value;
-        if (!componentName) componentName = "Input";
+        if (!componentName) componentName = defaultComponentName;
       }
       if (componentName) {
         let componentProps =
@@ -498,6 +596,7 @@ export class CrudInst extends VueComponent<CrudProps> {
                 componentFn,
                 mergeDefaultComponentProps(
                   componentName,
+                  defaultComponentProps,
                   {
                     [dictOption]: dict?.data.value,
                   },

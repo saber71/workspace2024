@@ -13,6 +13,7 @@ declare interface AntComponentPropsMap {
   AutoComplete: import("ant-design-vue").AutoCompleteProps;
   Input: import("ant-design-vue").InputProps;
   InputPassword: import("ant-design-vue").InputProps;
+  InputSearch: import("ant-design-vue").InputProps & { enterButton?: boolean };
   InputNumber: import("ant-design-vue").InputNumberProps;
   Form: import("ant-design-vue").FormProps;
   FormItem: import("ant-design-vue").FormItemProps;
@@ -110,7 +111,7 @@ declare interface RequestOption {
 
   search(query: any): Promise<PaginationResult>;
 
-  delete(ids: any[]): Promise<void>;
+  delete(rows: any[]): Promise<void>;
 
   edit(data: any): Promise<void>;
 

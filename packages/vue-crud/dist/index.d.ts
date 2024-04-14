@@ -22,6 +22,7 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     addFormModel: any;
     editFormModel: any;
     dataSource: any[];
+    selectedRows: any[];
     tableColumnOptions: TableColumnProps[];
     curPage: number;
     pageSize: number;
@@ -34,6 +35,7 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     renderToolButtonElements: Array<RenderElement>;
     visibleAddForm: boolean;
     visibleEditForm: boolean;
+    loadingTable: boolean;
     get openModal(): boolean;
     get renderToolButtons(): RenderElement | undefined;
     get modalName(): string;
@@ -57,11 +59,12 @@ export declare class CrudInst extends VueComponent<CrudProps> {
     buildAddFormModel(): void;
     buildEditFormModel(): void;
     buildSearchFormModel(): void;
-    setDataSource(): void;
+    handleSearch(): Promise<void>;
     setLayout(): void;
     render(): VNodeChild;
     private _handleAdd;
     private _handleEdit;
+    private _handleDelete;
     private _buildFormModel;
 }
 

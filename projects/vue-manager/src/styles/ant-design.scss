@@ -286,4 +286,12 @@
     border-color: var(--border-base);
     background: var(--bg-secondary);
   }
+
+  .ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td {
+    background: transparent;
+  }
+
+  .ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected:hover > td {
+    background: #191919;
+  }
 }

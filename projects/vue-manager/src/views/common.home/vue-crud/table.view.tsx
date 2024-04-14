@@ -36,6 +36,11 @@ export class TableViewInst extends VueComponent {
       },
       password: {
         title: "密码",
+        editFormOption: {
+          formItemProps: {
+            rules: Required,
+          },
+        },
       },
     },
     name: "用户",
@@ -51,26 +56,57 @@ export class TableViewInst extends VueComponent {
       {
         name: "dsa",
         password: "dsad",
+        _id: String(Math.random()),
       },
       {
         name: "dsa1",
         password: "d1sad",
+        _id: String(Math.random()),
       },
       {
         name: "dsa12",
         password: "d21sad",
+        _id: String(Math.random()),
       },
       {
         name: "dsa",
         password: "",
+        _id: String(Math.random()),
       },
       {
         name: "dsa1",
         password: "d1sad",
+        _id: String(Math.random()),
       },
       {
         name: "dsa12",
         password: "d21sad",
+        _id: String(Math.random()),
+      },
+      {
+        name: "dsa1",
+        password: "d1sad",
+        _id: String(Math.random()),
+      },
+      {
+        name: "dsa12",
+        password: "d21sad",
+        _id: String(Math.random()),
+      },
+      {
+        name: "dsa",
+        password: "",
+        _id: String(Math.random()),
+      },
+      {
+        name: "dsa1",
+        password: "d1sad",
+        _id: String(Math.random()),
+      },
+      {
+        name: "dsa12",
+        password: "d21sad",
+        _id: String(Math.random()),
       },
     ],
     curPage: 1,

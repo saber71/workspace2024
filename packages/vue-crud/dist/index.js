@@ -1,12 +1,18 @@
 import { createVNode, isVNode, mergeProps, ref } from 'vue';
+import { EditFilled, ExclamationCircleOutlined, DeleteFilled } from '@ant-design/icons-vue';
 import * as AntComponent from 'ant-design-vue';
-import { Flex, Space, Modal, Pagination, Table, Form, FormItem } from 'ant-design-vue';
+import { Flex, Space, Modal, Pagination, Spin, Table, Form, Button, FormItem } from 'ant-design-vue';
 import { Component, toNative, VueComponent, Link, Mut, Computed, PropsWatcher, Watcher, BindThis } from 'vue-class';
 
 const DefaultComponentProps = {
     Input: {
         allowClear: true,
         placeholder: "请输入"
+    },
+    InputSearch: {
+        allowClear: true,
+        placeholder: "请输入",
+        enterButton: true
     },
     InputNumber: {
         placeholder: "请输入"
@@ -20,11 +26,13 @@ const DefaultComponentProps = {
     },
     Table: {
         pagination: false,
-        sticky: true
+        sticky: true,
+        rowKey: "_id"
     }
 };
 const ComponentVModal = {
     Input: "value",
+    InputSearch: "value",
     InputPassword: "value",
     InputNumber: "value",
     Cascader: "value",
@@ -186,7 +194,7 @@ let LayoutInst = (_dec$1 = Component(), _dec$1(_class$1 = (_LayoutInst = class L
 ]), _LayoutInst)) || _class$1);
 const Layout = toNative(LayoutInst);
 
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _dec26, _dec27, _dec28, _dec29, _dec30, _dec31, _dec32, _dec33, _dec34, _dec35, _dec36, _dec37, _dec38, _dec39, _dec40, _dec41, _dec42, _dec43, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _descriptor19, _CrudInst;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _dec26, _dec27, _dec28, _dec29, _dec30, _dec31, _dec32, _dec33, _dec34, _dec35, _dec36, _dec37, _dec38, _dec39, _dec40, _dec41, _dec42, _dec43, _dec44, _dec45, _dec46, _dec47, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _descriptor19, _descriptor20, _descriptor21, _CrudInst;
 function _initializerDefineProperty(target, property, descriptor, context) {
     if (!descriptor) return;
     Object.defineProperty(target, property, {
@@ -250,39 +258,39 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
 function _isSlot(s) {
     return typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !isVNode(s);
 }
-let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = Mut(), _dec5 = Mut(), _dec6 = Mut(), _dec7 = Mut(), _dec8 = Mut(), _dec9 = Mut(), _dec10 = Mut(), _dec11 = Mut(), _dec12 = Mut(), _dec13 = Mut(), _dec14 = Mut(), _dec15 = Mut(), _dec16 = Mut(), _dec17 = Mut(), _dec18 = Mut(), _dec19 = Mut(), _dec20 = Mut(), _dec21 = Computed(), _dec22 = Computed(), _dec23 = Computed(), _dec24 = Computed(), _dec25 = Computed(), _dec26 = Computed(), _dec27 = Computed(), _dec28 = Computed(), _dec29 = Computed(), _dec30 = PropsWatcher({
+let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = Mut(), _dec5 = Mut(), _dec6 = Mut(), _dec7 = Mut(), _dec8 = Mut(), _dec9 = Mut(), _dec10 = Mut(), _dec11 = Mut(), _dec12 = Mut(), _dec13 = Mut(), _dec14 = Mut(), _dec15 = Mut(), _dec16 = Mut(), _dec17 = Mut(), _dec18 = Mut(), _dec19 = Mut(), _dec20 = Mut(), _dec21 = Mut(), _dec22 = Mut(), _dec23 = Computed(), _dec24 = Computed(), _dec25 = Computed(), _dec26 = Computed(), _dec27 = Computed(), _dec28 = Computed(), _dec29 = Computed(), _dec30 = Computed(), _dec31 = Computed(), _dec32 = PropsWatcher({
     immediate: true
-}), _dec31 = Watcher({
+}), _dec33 = Watcher({
     source: [
         "curPage",
         "pageSize",
         "total"
     ]
-}), _dec32 = PropsWatcher({
-    immediate: true
-}), _dec33 = PropsWatcher({
-    immediate: true
 }), _dec34 = PropsWatcher({
     immediate: true
 }), _dec35 = PropsWatcher({
     immediate: true
-}), _dec36 = Watcher({
-    source: [
-        "visibleAddForm"
-    ]
+}), _dec36 = PropsWatcher({
+    immediate: true
 }), _dec37 = PropsWatcher({
     immediate: true
 }), _dec38 = Watcher({
     source: [
-        "visibleEditForm"
+        "visibleAddForm"
     ]
 }), _dec39 = PropsWatcher({
     immediate: true
-}), _dec40 = PropsWatcher({
-    immediate: true
+}), _dec40 = Watcher({
+    source: [
+        "visibleEditForm"
+    ]
 }), _dec41 = PropsWatcher({
     immediate: true
-}), _dec42 = BindThis(), _dec43 = BindThis(), _dec(_class = (_class2 = (_CrudInst = class CrudInst extends VueComponent {
+}), _dec42 = PropsWatcher({
+    immediate: true
+}), _dec43 = BindThis(), _dec44 = PropsWatcher({
+    immediate: true
+}), _dec45 = BindThis(), _dec46 = BindThis(), _dec47 = BindThis(), _dec(_class = (_class2 = (_CrudInst = class CrudInst extends VueComponent {
     constructor(...args){
         super(...args);
         _initializerDefineProperty(this, "layoutInst", _descriptor, this);
@@ -292,18 +300,20 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
         _initializerDefineProperty(this, "addFormModel", _descriptor5, this);
         _initializerDefineProperty(this, "editFormModel", _descriptor6, this);
         _initializerDefineProperty(this, "dataSource", _descriptor7, this);
-        _initializerDefineProperty(this, "tableColumnOptions", _descriptor8, this);
-        _initializerDefineProperty(this, "curPage", _descriptor9, this);
-        _initializerDefineProperty(this, "pageSize", _descriptor10, this);
-        _initializerDefineProperty(this, "total", _descriptor11, this);
-        _initializerDefineProperty(this, "paginationOption", _descriptor12, this);
-        _initializerDefineProperty(this, "renderFormElements", _descriptor13, this);
-        _initializerDefineProperty(this, "renderSearchFormElements", _descriptor14, this);
-        _initializerDefineProperty(this, "renderAddFormElements", _descriptor15, this);
-        _initializerDefineProperty(this, "renderEditFormElements", _descriptor16, this);
-        _initializerDefineProperty(this, "renderToolButtonElements", _descriptor17, this);
-        _initializerDefineProperty(this, "visibleAddForm", _descriptor18, this);
-        _initializerDefineProperty(this, "visibleEditForm", _descriptor19, this);
+        _initializerDefineProperty(this, "selectedRows", _descriptor8, this);
+        _initializerDefineProperty(this, "tableColumnOptions", _descriptor9, this);
+        _initializerDefineProperty(this, "curPage", _descriptor10, this);
+        _initializerDefineProperty(this, "pageSize", _descriptor11, this);
+        _initializerDefineProperty(this, "total", _descriptor12, this);
+        _initializerDefineProperty(this, "paginationOption", _descriptor13, this);
+        _initializerDefineProperty(this, "renderFormElements", _descriptor14, this);
+        _initializerDefineProperty(this, "renderSearchFormElements", _descriptor15, this);
+        _initializerDefineProperty(this, "renderAddFormElements", _descriptor16, this);
+        _initializerDefineProperty(this, "renderEditFormElements", _descriptor17, this);
+        _initializerDefineProperty(this, "renderToolButtonElements", _descriptor18, this);
+        _initializerDefineProperty(this, "visibleAddForm", _descriptor19, this);
+        _initializerDefineProperty(this, "visibleEditForm", _descriptor20, this);
+        _initializerDefineProperty(this, "loadingTable", _descriptor21, this);
     }
     static _getModal(formModel, propName, componentName, modalName) {
         if (!componentName) return {};
@@ -355,10 +365,29 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     }
     get renderTable() {
         const dataSource = this.dataSource;
-        if (this.tableColumnOptions.length) return ()=>createVNode(Table, mergeProps(mergeDefaultComponentProps("Table", this.props.option.tableOption?.componentProps), {
-                "columns": this.tableColumnOptions,
-                "dataSource": dataSource
-            }), null);
+        if (this.tableColumnOptions.length) {
+            return ()=>{
+                const props = mergeDefaultComponentProps("Table", this.props.option.tableOption?.componentProps);
+                const rowSelection = {
+                    onChange: (_, selectedRows)=>{
+                        this.selectedRows = selectedRows || [];
+                    },
+                    selectedRowKeys: this.selectedRows.map((item)=>item[props.rowKey || "_id"])
+                };
+                return createVNode(Spin, {
+                    "spinning": this.loadingTable,
+                    "tip": "Loading..."
+                }, {
+                    default: ()=>[
+                            createVNode(Table, mergeProps(props, {
+                                "columns": this.tableColumnOptions,
+                                "dataSource": dataSource,
+                                "rowSelection": rowSelection
+                            }), null)
+                        ]
+                });
+            };
+        }
     }
     get renderForm() {
         if (this.renderFormElements.length) return ()=>{
@@ -484,6 +513,43 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
                 ...columnOption.tableOption?.tableColumnProps
             });
         }
+        this.tableColumnOptions.push({
+            title: "操作",
+            customRender: (data)=>createVNode(Space, null, {
+                    default: ()=>[
+                            createVNode(Button, {
+                                "type": "link",
+                                "onClick": ()=>{
+                                    this.editFormModel = Object.assign({}, data.record);
+                                    this.visibleEditForm = true;
+                                }
+                            }, {
+                                default: ()=>[
+                                        createVNode(EditFilled, null, null)
+                                    ]
+                            }),
+                            createVNode(Button, {
+                                "type": "link",
+                                "danger": true,
+                                "onClick": ()=>{
+                                    this.selectedRows.length = 0;
+                                    this.selectedRows.push(data.record);
+                                    Modal.confirm({
+                                        title: "是否删除选中的数据？",
+                                        icon: createVNode(ExclamationCircleOutlined, null, null),
+                                        onOk: this._handleDelete
+                                    });
+                                }
+                            }, {
+                                default: ()=>[
+                                        createVNode(DeleteFilled, null, null)
+                                    ]
+                            })
+                        ]
+                }),
+            width: 150,
+            ...this.props.option.tableOption?.tableColumnType
+        });
     }
     buildToolButtons() {
         this.renderToolButtonElements.length = 0;
@@ -502,7 +568,14 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
             component: "Button",
             componentProps: {
                 type: "primary",
-                danger: true
+                danger: true,
+                onClick: ()=>{
+                    Modal.confirm({
+                        title: `是否删除选中的${this.selectedRows.length}条数据？`,
+                        icon: createVNode(ExclamationCircleOutlined, null, null),
+                        onOk: this._handleDelete
+                    });
+                }
             }
         };
         if (!toolButtons.add) toolButtons.add = addButton;
@@ -511,7 +584,9 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
             const buttonOption = toolButtons[key];
             const componentName = buttonOption.component;
             const componentFn = typeof componentName === "string" ? AntComponent[componentName] : componentName;
-            this.renderToolButtonElements.push(()=>isVNode(componentFn) ? componentFn : createVNode(componentFn, buttonOption.componentProps, ()=>buttonOption.text));
+            this.renderToolButtonElements.push(()=>isVNode(componentFn) ? componentFn : createVNode(componentFn, Object.assign({
+                    disabled: key === "batchDelete" && this.selectedRows.length === 0
+                }, buttonOption.componentProps), ()=>buttonOption.text));
         }
     }
     buildFormModel() {
@@ -548,11 +623,22 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
             return;
         }
         if (!this.searchFormModel) this.searchFormModel = {};
-        this._buildFormModel(this.searchFormModel, "searchFormOption", this.renderSearchFormElements, false);
+        this._buildFormModel(this.searchFormModel, "searchFormOption", this.renderSearchFormElements, false, {
+            onSearch: this.handleSearch
+        }, "InputSearch");
     }
-    setDataSource() {
+    async handleSearch() {
+        console.log("search");
         if (this.props.dataSource) {
             this.dataSource = this.props.dataSource instanceof Array ? this.props.dataSource : this.props.dataSource.data;
+        } else {
+            this.loadingTable = true;
+            const searchResult = await this.props.option.request?.search(this.searchFormModel);
+            this.dataSource = searchResult?.data ?? [];
+            this.curPage = searchResult?.curPage ?? 1;
+            this.pageSize = searchResult?.pageSize ?? 10;
+            this.total = searchResult?.total ?? 0;
+            this.loadingTable = false;
         }
     }
     setLayout() {
@@ -571,18 +657,24 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
         });
     }
     _handleAdd() {
-        this.layoutInst.vueInstance.refs.addForm.validate().then(()=>{
-            this.props.option.request?.add(this.addFormModel);
+        this.layoutInst.vueInstance.refs.addForm.validate().then(async ()=>{
+            await this.props.option.request?.add(this.addFormModel);
             this.visibleAddForm = false;
+            await this.handleSearch();
         });
     }
     _handleEdit() {
-        this.layoutInst.vueInstance.refs.editForm.validate().then(()=>{
-            this.props.option.request?.edit(this.editFormModel);
+        this.layoutInst.vueInstance.refs.editForm.validate().then(async ()=>{
+            await this.props.option.request?.edit(this.editFormModel);
             this.visibleEditForm = false;
+            await this.handleSearch();
         });
     }
-    _buildFormModel(form, formOptionName, renderElements, defaultShowInForm = true) {
+    async _handleDelete() {
+        await this.props.option.request?.delete(this.selectedRows);
+        await this.handleSearch();
+    }
+    _buildFormModel(form, formOptionName, renderElements, defaultShowInForm = true, defaultComponentProps = {}, defaultComponentName = "Input") {
         const { crudColumnOptions } = this.props.option;
         for(let propName in crudColumnOptions){
             const columnOption = crudColumnOptions[propName];
@@ -593,7 +685,7 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
                 delete form[propName];
             } else {
                 if (!(propName in form)) form[propName] = formOption?.value ?? columnOption.formOption?.value;
-                if (!componentName) componentName = "Input";
+                if (!componentName) componentName = defaultComponentName;
             }
             if (componentName) {
                 let componentProps = formOption?.componentProps ?? columnOption.formOption?.componentProps;
@@ -603,7 +695,7 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
                 const dict = formOption?.dict ?? columnOption.dict;
                 const dictOption = formOption?.dictOption ?? columnOption.dictOption ?? "options";
                 const createComponent = ()=>{
-                    return isVNode(componentFn) ? componentFn : createVNode(componentFn, mergeDefaultComponentProps(componentName, {
+                    return isVNode(componentFn) ? componentFn : createVNode(componentFn, mergeDefaultComponentProps(componentName, defaultComponentProps, {
                         [dictOption]: dict?.data.value
                     }, componentProps, CrudInst._getModal(form, propName, componentName, vModal)), slots);
                 };
@@ -680,7 +772,7 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return [];
     }
-}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, "tableColumnOptions", [
+}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, "selectedRows", [
     _dec9
 ], {
     configurable: true,
@@ -689,42 +781,8 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return [];
     }
-}), _descriptor9 = _applyDecoratedDescriptor(_class2.prototype, "curPage", [
+}), _descriptor9 = _applyDecoratedDescriptor(_class2.prototype, "tableColumnOptions", [
     _dec10
-], {
-    configurable: true,
-    enumerable: true,
-    writable: true,
-    initializer: function() {
-        return 1;
-    }
-}), _descriptor10 = _applyDecoratedDescriptor(_class2.prototype, "pageSize", [
-    _dec11
-], {
-    configurable: true,
-    enumerable: true,
-    writable: true,
-    initializer: function() {
-        return 10;
-    }
-}), _descriptor11 = _applyDecoratedDescriptor(_class2.prototype, "total", [
-    _dec12
-], {
-    configurable: true,
-    enumerable: true,
-    writable: true,
-    initializer: function() {
-        return 0;
-    }
-}), _descriptor12 = _applyDecoratedDescriptor(_class2.prototype, "paginationOption", [
-    _dec13
-], {
-    configurable: true,
-    enumerable: true,
-    writable: true,
-    initializer: null
-}), _descriptor13 = _applyDecoratedDescriptor(_class2.prototype, "renderFormElements", [
-    _dec14
 ], {
     configurable: true,
     enumerable: true,
@@ -732,7 +790,41 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return [];
     }
-}), _descriptor14 = _applyDecoratedDescriptor(_class2.prototype, "renderSearchFormElements", [
+}), _descriptor10 = _applyDecoratedDescriptor(_class2.prototype, "curPage", [
+    _dec11
+], {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    initializer: function() {
+        return 1;
+    }
+}), _descriptor11 = _applyDecoratedDescriptor(_class2.prototype, "pageSize", [
+    _dec12
+], {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    initializer: function() {
+        return 10;
+    }
+}), _descriptor12 = _applyDecoratedDescriptor(_class2.prototype, "total", [
+    _dec13
+], {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    initializer: function() {
+        return 0;
+    }
+}), _descriptor13 = _applyDecoratedDescriptor(_class2.prototype, "paginationOption", [
+    _dec14
+], {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    initializer: null
+}), _descriptor14 = _applyDecoratedDescriptor(_class2.prototype, "renderFormElements", [
     _dec15
 ], {
     configurable: true,
@@ -741,7 +833,7 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return [];
     }
-}), _descriptor15 = _applyDecoratedDescriptor(_class2.prototype, "renderAddFormElements", [
+}), _descriptor15 = _applyDecoratedDescriptor(_class2.prototype, "renderSearchFormElements", [
     _dec16
 ], {
     configurable: true,
@@ -750,7 +842,7 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return [];
     }
-}), _descriptor16 = _applyDecoratedDescriptor(_class2.prototype, "renderEditFormElements", [
+}), _descriptor16 = _applyDecoratedDescriptor(_class2.prototype, "renderAddFormElements", [
     _dec17
 ], {
     configurable: true,
@@ -759,7 +851,7 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return [];
     }
-}), _descriptor17 = _applyDecoratedDescriptor(_class2.prototype, "renderToolButtonElements", [
+}), _descriptor17 = _applyDecoratedDescriptor(_class2.prototype, "renderEditFormElements", [
     _dec18
 ], {
     configurable: true,
@@ -768,16 +860,16 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return [];
     }
-}), _descriptor18 = _applyDecoratedDescriptor(_class2.prototype, "visibleAddForm", [
+}), _descriptor18 = _applyDecoratedDescriptor(_class2.prototype, "renderToolButtonElements", [
     _dec19
 ], {
     configurable: true,
     enumerable: true,
     writable: true,
     initializer: function() {
-        return false;
+        return [];
     }
-}), _descriptor19 = _applyDecoratedDescriptor(_class2.prototype, "visibleEditForm", [
+}), _descriptor19 = _applyDecoratedDescriptor(_class2.prototype, "visibleAddForm", [
     _dec20
 ], {
     configurable: true,
@@ -786,50 +878,71 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
     initializer: function() {
         return false;
     }
-}), _applyDecoratedDescriptor(_class2.prototype, "openModal", [
+}), _descriptor20 = _applyDecoratedDescriptor(_class2.prototype, "visibleEditForm", [
     _dec21
-], Object.getOwnPropertyDescriptor(_class2.prototype, "openModal"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderToolButtons", [
+], {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    initializer: function() {
+        return false;
+    }
+}), _descriptor21 = _applyDecoratedDescriptor(_class2.prototype, "loadingTable", [
     _dec22
-], Object.getOwnPropertyDescriptor(_class2.prototype, "renderToolButtons"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "modalName", [
+], {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    initializer: function() {
+        return false;
+    }
+}), _applyDecoratedDescriptor(_class2.prototype, "openModal", [
     _dec23
-], Object.getOwnPropertyDescriptor(_class2.prototype, "modalName"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderPagination", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "openModal"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderToolButtons", [
     _dec24
-], Object.getOwnPropertyDescriptor(_class2.prototype, "renderPagination"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderTable", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderToolButtons"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "modalName", [
     _dec25
-], Object.getOwnPropertyDescriptor(_class2.prototype, "renderTable"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderForm", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "modalName"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderPagination", [
     _dec26
-], Object.getOwnPropertyDescriptor(_class2.prototype, "renderForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderAddForm", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderPagination"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderTable", [
     _dec27
-], Object.getOwnPropertyDescriptor(_class2.prototype, "renderAddForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderEditForm", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderTable"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderForm", [
     _dec28
-], Object.getOwnPropertyDescriptor(_class2.prototype, "renderEditForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderSearchForm", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderAddForm", [
     _dec29
-], Object.getOwnPropertyDescriptor(_class2.prototype, "renderSearchForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildPagination", [
-    _dec30,
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderAddForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderEditForm", [
+    _dec30
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderEditForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "renderSearchForm", [
     _dec31
-], Object.getOwnPropertyDescriptor(_class2.prototype, "buildPagination"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildTableColumnOptions", [
-    _dec32
-], Object.getOwnPropertyDescriptor(_class2.prototype, "buildTableColumnOptions"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildToolButtons", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "renderSearchForm"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildPagination", [
+    _dec32,
     _dec33
-], Object.getOwnPropertyDescriptor(_class2.prototype, "buildToolButtons"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildFormModel", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "buildPagination"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildTableColumnOptions", [
     _dec34
-], Object.getOwnPropertyDescriptor(_class2.prototype, "buildFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildAddFormModel", [
-    _dec35,
+], Object.getOwnPropertyDescriptor(_class2.prototype, "buildTableColumnOptions"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildToolButtons", [
+    _dec35
+], Object.getOwnPropertyDescriptor(_class2.prototype, "buildToolButtons"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildFormModel", [
     _dec36
-], Object.getOwnPropertyDescriptor(_class2.prototype, "buildAddFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildEditFormModel", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "buildFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildAddFormModel", [
     _dec37,
     _dec38
-], Object.getOwnPropertyDescriptor(_class2.prototype, "buildEditFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildSearchFormModel", [
-    _dec39
-], Object.getOwnPropertyDescriptor(_class2.prototype, "buildSearchFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "setDataSource", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "buildAddFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildEditFormModel", [
+    _dec39,
     _dec40
-], Object.getOwnPropertyDescriptor(_class2.prototype, "setDataSource"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "setLayout", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "buildEditFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "buildSearchFormModel", [
     _dec41
-], Object.getOwnPropertyDescriptor(_class2.prototype, "setLayout"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "_handleAdd", [
-    _dec42
-], Object.getOwnPropertyDescriptor(_class2.prototype, "_handleAdd"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "_handleEdit", [
+], Object.getOwnPropertyDescriptor(_class2.prototype, "buildSearchFormModel"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "handleSearch", [
+    _dec42,
     _dec43
-], Object.getOwnPropertyDescriptor(_class2.prototype, "_handleEdit"), _class2.prototype), _class2)) || _class);
+], Object.getOwnPropertyDescriptor(_class2.prototype, "handleSearch"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "setLayout", [
+    _dec44
+], Object.getOwnPropertyDescriptor(_class2.prototype, "setLayout"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "_handleAdd", [
+    _dec45
+], Object.getOwnPropertyDescriptor(_class2.prototype, "_handleAdd"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "_handleEdit", [
+    _dec46
+], Object.getOwnPropertyDescriptor(_class2.prototype, "_handleEdit"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "_handleDelete", [
+    _dec47
+], Object.getOwnPropertyDescriptor(_class2.prototype, "_handleDelete"), _class2.prototype), _class2)) || _class);
 const Crud = toNative(CrudInst);
 
 function dict(option) {
