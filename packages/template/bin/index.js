@@ -71,6 +71,7 @@ async function isServerOrNot() {
     if (isServer) {
         workspaceDependencies.push("server", "server-log-decorator", "server-store");
         peerDependencies.push({ name: "server", version: "workspace:^" }, { name: "server-log-decorator", version: "workspace:^" }, { name: "server-store", version: "workspace:^" });
+        devDependencies.push({ name: "http-test", version: "workspace:^" }, { name: "server-provider", version: "workspace:^" });
         waitWriteContents.push({
             path: path.resolve(projectPath, "index.ts"),
             content: () => {
@@ -266,17 +267,23 @@ ${dependenciesContent.join(",\n")}
             }
             else {
                 const peerDependenciesContent = peerDependencies.map((item) => `    "${item.name}": "${item.version}"`);
+                const devDependenciesContent = devDependencies.map((item) => `    "${item.name}": "${item.version}"`);
                 let template = chosenType === ProjectType.Packages
                     ? fs.readFileSync(path.resolve(templateBinDir, "package-json.package.template"), "utf8")
                     : fs.readFileSync(path.resolve(templateBinDir, "package-json.project.template"), "utf8");
                 template = template.replace("$NAME$", projectName);
+                let peer = "", dev = "";
                 if (peerDependenciesContent.length)
-                    template = template.replace("$SLOT$", `,
+                    peer = `,
   "peerDependencies": {
 ${peerDependenciesContent.join(",\n")}
-  }`);
-                else
-                    template = template.replace("$SLOT$", "");
+  }`;
+                if (devDependenciesContent.length)
+                    dev = `,
+  "devDependencies": {
+${devDependenciesContent.join(",\n")}
+  }`;
+                template = template.replace("$SLOT$", peer + dev);
                 if (useVitest)
                     template = template.replace("$SCRIPT_SLOT$", ',\n    "test": "vitest"');
                 else
