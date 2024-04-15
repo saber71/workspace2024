@@ -12,12 +12,14 @@ enum ProjectType {
   Projects = "projects",
 }
 
+const workspaceDependencies: string[] = [];
 const dependencies: Dependency[] = [];
 const peerDependencies: Dependency[] = [];
+const devDependencies: Dependency[] = [];
 const externalDependencies: string[] = [];
 let isBin = false;
+let isServer = false;
 let binName = "";
-let isBrowser = false;
 let useVite = false;
 let useVitest = false;
 let useVue = false;
@@ -58,12 +60,18 @@ if (chosenType === ProjectType.Packages) {
       await useVitestOrNot();
     }
     await addPeerDependencies();
+    await addDevDependencies();
     setupTypesAndSrc();
   }
 } else {
-  term.red("\nNot support projects yet\n");
-  process.exit();
-  // await isBrowserOrNot();
+  await useViteOrNot();
+  if (useVite) {
+    await useVitestOrNot();
+  }
+  await isServerOrNot();
+  await addPeerDependencies();
+  await addDevDependencies();
+  setupTypesAndSrc();
 }
 
 setupTsConfig();
@@ -71,6 +79,44 @@ setupPackageJson();
 outputFile();
 
 process.exit();
+
+async function isServerOrNot() {
+  isServer = await yesOrNot("是否是server项目？", true);
+  if (isServer) {
+    workspaceDependencies.push(
+      "server",
+      "server-log-decorator",
+      "server-store",
+    );
+    peerDependencies.push(
+      { name: "server", version: "workspace:^" },
+      { name: "server-log-decorator", version: "workspace:^" },
+      { name: "server-store", version: "workspace:^" },
+    );
+    waitWriteContents.push(
+      {
+        path: path.resolve(projectPath, "index.ts"),
+        content: () => {
+          const template = fs.readFileSync(
+            path.resolve(templateBinDir, "index.ts.template"),
+            "utf-8",
+          );
+          return template.replace("$NAME$", projectName);
+        },
+      },
+      {
+        path: path.resolve(projectPath, "index.js"),
+        content: () => {
+          const template = fs.readFileSync(
+            path.resolve(templateBinDir, "index.js.template"),
+            "utf-8",
+          );
+          return template.replace("$NAME$", projectName);
+        },
+      },
+    );
+  }
+}
 
 function setupTypesAndSrc() {
   waitWriteContents.push(
@@ -84,12 +130,15 @@ function setupTypesAndSrc() {
     },
     {
       path: path.resolve(projectPath, "types.d.ts"),
+      content: workspaceDependencies
+        .map((name) => `///<reference types="${name}/types.d.ts"/>`)
+        .join("\n"),
     },
   );
 }
 
 async function addPeerDependencies() {
-  const result = await inputDependencies();
+  const result = await inputDependencies("peer");
   peerDependencies.push(
     ...result.map((item) => ({
       name: item.name,
@@ -99,8 +148,19 @@ async function addPeerDependencies() {
   externalDependencies.push(...peerDependencies.map((item) => item.name));
 }
 
+async function addDevDependencies() {
+  const result = await inputDependencies("dev");
+  devDependencies.push(
+    ...result.map((item) => ({
+      name: item.name,
+      version: item.version ? "^" + item.version : "workspace:^",
+    })),
+  );
+  externalDependencies.push(...devDependencies.map((item) => item.name));
+}
+
 async function addDependencies() {
-  const result = await inputDependencies();
+  const result = await inputDependencies("");
   dependencies.push(
     ...result.map((item) => ({
       name: item.name,
@@ -131,10 +191,6 @@ function inputBinName() {
       }
     });
   });
-}
-
-async function isBrowserOrNot() {
-  isBrowser = await yesOrNot("是否是浏览器端项目？", false);
 }
 
 async function useVueJsxOrNot() {
@@ -280,14 +336,20 @@ ${dependenciesContent.join(",\n")}
           );
         else template = template.replace("$SLOT$", "");
         return template;
-      } else if (chosenType === ProjectType.Packages) {
+      } else {
         const peerDependenciesContent = peerDependencies.map(
           (item) => `    "${item.name}": "${item.version}"`,
         );
-        let template = fs.readFileSync(
-          path.resolve(templateBinDir, "package-json.package.template"),
-          "utf8",
-        );
+        let template =
+          chosenType === ProjectType.Packages
+            ? fs.readFileSync(
+                path.resolve(templateBinDir, "package-json.package.template"),
+                "utf8",
+              )
+            : fs.readFileSync(
+                path.resolve(templateBinDir, "package-json.project.template"),
+                "utf8",
+              );
         template = template.replace("$NAME$", projectName);
         if (peerDependenciesContent.length)
           template = template.replace(
@@ -306,7 +368,6 @@ ${peerDependenciesContent.join(",\n")}
         else template = template.replace("$SCRIPT_SLOT$", "");
         return template;
       }
-      return "";
     },
   });
 }
@@ -413,7 +474,7 @@ function yesOrNot(prompt: string, defaultYes: boolean) {
   });
 }
 
-async function inputDependencies() {
+async function inputDependencies(prefix: string) {
   const versionMap: Record<string, string> = {};
   workspacePackages.forEach((item) => (versionMap[item] = ""));
   const result: Dependency[] = [];
@@ -427,7 +488,7 @@ async function inputDependencies() {
   function input() {
     return new Promise<Dependency | undefined>((resolve, reject) => {
       br();
-      term.cyan("请输入需要的依赖名（esc或直接enter跳过）：");
+      term.cyan(`请输入需要的${prefix}依赖名（esc或直接enter跳过）：`);
       term.inputField(
         {
           autoCompleteMenu: true,
@@ -455,6 +516,8 @@ async function inputDependencies() {
           if (err) reject(err);
           else if (!res) resolve(undefined);
           else {
+            if (workspacePackages.includes(res))
+              workspaceDependencies.push(res);
             if (res in versionMap)
               resolve({ name: res, version: versionMap[res] });
             else {

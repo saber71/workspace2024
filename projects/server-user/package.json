@@ -9,7 +9,6 @@
     "watch": "vite build --watch",
     "test": "vitest",
     "serve:prod": "node index.js",
-    "serve:prod:log": "node index.js log",
     "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
   },
   "peerDependencies": {

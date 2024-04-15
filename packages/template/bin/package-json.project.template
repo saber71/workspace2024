@@ -1,0 +1,13 @@
+{
+  "name": "$NAME$",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build && server-provider-metadata",
+    "watch": "vite build --watch",
+    "serve:prod": "node index.js",
+    "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"$SCRIPT_SLOT$
+  }$SLOT$
+}
