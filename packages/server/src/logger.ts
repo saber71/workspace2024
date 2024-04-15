@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import * as process from "node:process";
 import { Logger } from "./decorators";
 import { ServerRequest } from "./request";
 
@@ -34,7 +33,7 @@ export class ConsoleLogger implements LoggerInterface {
     if (message instanceof Error) message = colorize(message);
     else if (typeof message === "object")
       message = `[${message.method}] ${message.url}`;
-    const output = `[${this.contextName}] ${colorize(process.pid)} - ${dateTimeFormatter.format(Date.now())} ${colorize(level.toUpperCase())} ${message}\n`;
-    process.stdout.write(output);
+    const output = `[${this.contextName}] - ${dateTimeFormatter.format(Date.now())} ${colorize(level.toUpperCase())} ${message}\n`;
+    console.log(output);
   }
 }

@@ -7,7 +7,6 @@ import { Container } from "dependency-injection";
 import { expect } from "vitest";
 import {
   Controller,
-  JwtSession,
   Method,
   ReqBody,
   ReqFile,
@@ -47,11 +46,6 @@ export class CommonController {
   @Method()
   setSession(session: Session<any>) {
     session.set("userId", 20);
-  }
-
-  @Method()
-  setJwtSession(jwtSession: JwtSession<any>) {
-    jwtSession.set("number", 20);
   }
 
   @Method({ type: "POST" })
@@ -104,14 +98,7 @@ export function commonControllerHttpTestSuits() {
       method: "GET",
       url: "/set-session",
     })
-      .expectHasHeader("set-cookie")
-      .expectStatus(200)
-      .done(),
-    httpTest({
-      method: "GET",
-      url: "/set-jwt-session",
-    })
-      .expectHasHeader("Authorized")
+      .expectHasHeader("authorized")
       .expectStatus(200)
       .done(),
     httpTest({

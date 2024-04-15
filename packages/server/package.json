@@ -13,8 +13,7 @@
     "common": "workspace:^",
     "chalk": "^5.3.0",
     "class-validator": "workspace:^",
-    "dependency-injection": "workspace:^",
-    "jsonwebtoken": "^9.0.2"
+    "dependency-injection": "workspace:^"
   },
   "devDependencies": {
     "form-data": "4.0.0",

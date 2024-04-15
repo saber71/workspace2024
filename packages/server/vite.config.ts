@@ -7,14 +7,7 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: [
-        "dependency-injection",
-        "class-validator",
-        "chalk",
-        "node:process",
-        "jsonwebtoken",
-        "common",
-      ],
+      external: ["dependency-injection", "class-validator", "chalk", "common"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

@@ -15,7 +15,7 @@ export default defineConfig({
         "koa-router",
         "koa-send",
         "koa-static",
-        "koa-session",
+        "jsonwebtoken",
         "node:path",
         "koa-proxies",
         "uuid",

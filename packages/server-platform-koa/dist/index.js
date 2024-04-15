@@ -3,17 +3,19 @@ import { koaBody } from 'koa-body';
 import mount from 'koa-mount';
 import Router from 'koa-router';
 import send from 'koa-send';
-import session from 'koa-session';
 import staticServe from 'koa-static';
 import path from 'node:path';
 import proxy from 'koa-proxies';
 import { v4 } from 'uuid';
+import jwt from 'jsonwebtoken';
 
 /// <reference types="../types" />
 function createServerPlatformKoa() {
     const app = new Koa();
     const router = new Router();
     const proxies = [];
+    let secretKey = "secretKey";
+    let maxAge = "8h";
     return {
         name: "koa",
         create () {
@@ -23,9 +25,8 @@ function createServerPlatformKoa() {
             app.use(mount(routePathPrefix, staticServe(assetsPath)));
         },
         bootstrap (option) {
-            app.keys = [
-                option.session?.secretKey ?? "koa-secret-key"
-            ];
+            if (option.session?.secretKey) secretKey = option.session.secretKey;
+            if (option.session?.maxAge) maxAge = option.session.maxAge;
             proxies.forEach((proxy)=>app.use(proxy));
             app.use(koaBody({
                 multipart: true,
@@ -33,10 +34,7 @@ function createServerPlatformKoa() {
                     keepExtensions: true,
                     multiples: true
                 }
-            })).use(session({
-                key: option.session?.cookieKey ?? "sid",
-                maxAge: option.session?.maxAge
-            }, app)).use(router.routes()).use(router.allowedMethods()).listen(option.port, option.hostname);
+            })).use(router.routes()).use(router.allowedMethods()).listen(option.port, option.hostname);
         },
         useRoutes (routes) {
             for(let url in routes){
@@ -52,8 +50,8 @@ function createServerPlatformKoa() {
             function getHandler(object) {
                 return async (ctx, next)=>{
                     const id = v4();
-                    const req = createServerRequest(ctx, id);
-                    const res = createServerResponse(ctx, id);
+                    const req = createServerRequest(ctx, id, secretKey);
+                    const res = createServerResponse(ctx, id, secretKey, req, maxAge);
                     try {
                         await object.handle(req, res);
                     } catch (e) {
@@ -78,7 +76,14 @@ function createServerPlatformKoa() {
         }
     };
 }
-function createServerRequest(ctx, id) {
+function createServerRequest(ctx, id, secrectKey) {
+    const token = ctx.get("Authorized");
+    let session;
+    try {
+        session = jwt.verify(token, secrectKey);
+    } catch (e) {
+        session = {};
+    }
     const headers = new Proxy({}, {
         get (_, p) {
             return ctx.request.get(p);
@@ -100,13 +105,13 @@ function createServerRequest(ctx, id) {
         URL: ctx.URL,
         body: ctx.request.body,
         files: ctx.request.files,
-        session: ctx.session,
+        session,
         get id () {
             return id;
         }
     };
 }
-function createServerResponse(ctx, id) {
+function createServerResponse(ctx, id, secretKey, req, maxAge) {
     const headers = new Proxy({}, {
         get (_, p) {
             return ctx.res.getHeader(p);
@@ -136,6 +141,7 @@ function createServerResponse(ctx, id) {
             return ctx.response.status;
         },
         body (value1) {
+            setupToken();
             let contentType = "text/plain";
             if (!(value1 instanceof Buffer)) {
                 if (typeof value1 === "object") {
@@ -151,14 +157,26 @@ function createServerResponse(ctx, id) {
             ctx.response.body = value1;
         },
         async sendFile (filePath) {
+            setupToken();
             const fileName = path.basename(filePath);
             ctx.attachment(fileName);
             await send(ctx, fileName);
         },
         redirect (url) {
+            setupToken();
             ctx.response.redirect(url);
         }
     };
+    function setupToken() {
+        if (req.session) {
+            const token = jwt.sign(req.session, secretKey, {
+                expiresIn: maxAge
+            });
+            ctx.res.setHeader("Authorized", token);
+        } else {
+            ctx.res.removeHeader("Authorized");
+        }
+    }
 }
 
 export { createServerPlatformKoa, createServerRequest, createServerResponse };

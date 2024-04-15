@@ -7,7 +7,6 @@ export * from "./req.decorator";
 export * from "./req-body.decorator";
 export * from "./req-file.decorator";
 export * from "./req-files.decorator";
-export * from "./req-jwt-session.decorator";
 export * from "./req-query.decorator";
 export * from "./req-session.decorator";
 export * from "./res.decorator";

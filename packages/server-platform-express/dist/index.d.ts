@@ -6,8 +6,8 @@ import { ServerResponse } from 'server';
 
 export declare function createServerPlatformExpress(): ServerPlatformAdapter<Express_2>;
 
-export declare function createServerRequest(req: Request_2, id: string): ServerRequest<Request_2>;
+export declare function createServerRequest(req: Request_2, id: string, secretKey: string): ServerRequest<Request_2>;
 
-export declare function createServerResponse(req: Request_2, res: Response_2, id: string): ServerResponse<Response_2>;
+export declare function createServerResponse(req: ServerRequest, res: Response_2, id: string, secretKey: string, maxAge?: number | string): ServerResponse<Response_2>;
 
 export { }

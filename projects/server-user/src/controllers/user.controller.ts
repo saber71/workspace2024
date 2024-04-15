@@ -1,12 +1,12 @@
 import {
   Controller,
   Get,
-  JwtSession,
+  Session,
   NotFoundObjectError,
   Post,
   ReqBody,
-  ReqJwtSession,
   ReqQuery,
+  ReqSession,
   UnauthorizedError,
 } from "server";
 import { Collection, StoreCollection } from "server-store";
@@ -55,7 +55,7 @@ export class UserController {
   @Post()
   login(
     @ReqBody() data: LoginDTO,
-    @ReqJwtSession() session: JwtSession<RegularSessionData>,
+    @ReqSession() session: Session<RegularSessionData>,
     @Collection(COLLECTION_USER) userCollection: StoreCollection<UserModel>,
     @Collection(COLLECTION_ROLE) roleCollection: StoreCollection<RoleModel>,
   ): Promise<UserInfo> {
@@ -81,14 +81,14 @@ export class UserController {
 
   @ServerLog("退出登陆")
   @Post()
-  async logout(@ReqJwtSession() session: JwtSession<RegularSessionData>) {
+  async logout(@ReqSession() session: Session<RegularSessionData>) {
     session.destroy();
   }
 
   @ServerLog("获取用户数据")
   @Get()
   async auth(
-    @ReqJwtSession() session: JwtSession<RegularSessionData>,
+    @ReqSession() session: Session<RegularSessionData>,
     @Collection(COLLECTION_USER) userCollection: StoreCollection<UserModel>,
     @Collection(COLLECTION_ROLE) roleCollection: StoreCollection<RoleModel>,
   ): Promise<UserInfo> {

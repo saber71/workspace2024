@@ -113,11 +113,8 @@ declare interface ServerBootstrapOption {
     /* 用来加密session的key */
     secretKey?: string;
 
-    /* session保存在cookie的key名 */
-    cookieKey?: string;
-
     /* session的有效时间 */
-    maxAge?: number;
+    maxAge?: number | string;
   };
 }
 
@@ -262,3 +259,9 @@ declare type MethodOptions = Partial<
   MethodParameterOption;
 
 declare type WithoutTypeMethodOptions = Omit<MethodOptions, "type">;
+
+declare interface ServerRuntime {
+  writeFile(path: string, content: any): Promise<void>;
+  readFileAsString(path: string): Promise<string>;
+  readFileAsBlob(path: string): Promise<Blob>;
+}

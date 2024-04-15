@@ -10,4 +10,11 @@
 //   console.log(hex.q, hex.r, hex.row, hex.col, hex.corners);
 // });
 
+import * as fs from "node:fs";
+
 console.log(process.argv);
+
+const content = fs.readFileSync("./package.json");
+
+const blob = new Blob([content.buffer]);
+console.log(content, blob);

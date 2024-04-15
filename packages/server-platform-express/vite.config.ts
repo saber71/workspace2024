@@ -11,7 +11,7 @@ export default defineConfig({
         "server",
         "express",
         "express-formidable",
-        "express-session",
+        "jsonwebtoken",
         "node:querystring",
         "node:url",
         "node:path",

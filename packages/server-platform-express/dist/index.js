@@ -1,11 +1,11 @@
 import express from 'express';
-import session from 'express-session';
 import formidableMiddleware from 'express-formidable';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { URL } from 'node:url';
 import * as qs from 'node:querystring';
 import * as path from 'node:path';
 import { v4 } from 'uuid';
+import jwt from 'jsonwebtoken';
 
 function createServerPlatformExpress() {
     const app = express();
@@ -13,6 +13,8 @@ function createServerPlatformExpress() {
     const staticAssets = [];
     const routes = [];
     const proxies = [];
+    let secretKey = "secretKey";
+    let maxAge = "8h";
     return {
         name: "express",
         create () {
@@ -28,6 +30,8 @@ function createServerPlatformExpress() {
             routes.push(data);
         },
         bootstrap (option) {
+            if (option.session?.secretKey) secretKey = option.session.secretKey;
+            if (option.session?.maxAge) maxAge = option.session.maxAge;
             for (let proxy of proxies){
                 app.use(proxy);
             }
@@ -38,24 +42,14 @@ function createServerPlatformExpress() {
                 for(let url in route){
                     const object = route[url];
                     for (let methodType of object.methodTypes){
-                        if (methodType === "GET") router.get(url, getRouteHandler(object));
-                        else if (methodType === "POST") router.post(url, getRouteHandler(object));
-                        else if (methodType === "DELETE") router.delete(url, getRouteHandler(object));
-                        else if (methodType === "PUT") router.put(url, getRouteHandler(object));
+                        if (methodType === "GET") router.get(url, getRouteHandler(object, secretKey, maxAge));
+                        else if (methodType === "POST") router.post(url, getRouteHandler(object, secretKey, maxAge));
+                        else if (methodType === "DELETE") router.delete(url, getRouteHandler(object, secretKey, maxAge));
+                        else if (methodType === "PUT") router.put(url, getRouteHandler(object, secretKey, maxAge));
                         else throw new Error("unknown method type " + methodType);
                     }
                 }
             }
-            app.use(session({
-                secret: option.session?.secretKey ?? "express-secret-key",
-                name: option.session?.cookieKey ?? "sid",
-                resave: true,
-                saveUninitialized: false,
-                cookie: {
-                    secure: true,
-                    maxAge: option.session?.maxAge
-                }
-            }));
             app.use(formidableMiddleware({
                 multiples: true,
                 keepExtensions: true
@@ -71,11 +65,11 @@ function createServerPlatformExpress() {
         }
     };
 }
-function getRouteHandler(object) {
+function getRouteHandler(object, secretKey, maxAge) {
     return async (req, res, next)=>{
         const id = v4();
-        const request = createServerRequest(req, id);
-        const response = createServerResponse(req, res, id);
+        const request = createServerRequest(req, id, secretKey);
+        const response = createServerResponse(request, res, id, secretKey, maxAge);
         try {
             await object.handle(request, response);
         } catch (e) {
@@ -84,7 +78,7 @@ function getRouteHandler(object) {
         next();
     };
 }
-function createServerRequest(req, id) {
+function createServerRequest(req, id, secretKey) {
     const url = new URL(req.protocol + "://" + req.headers.host + req.url);
     const querystring = url.search.substring(1);
     let body = req.body;
@@ -104,6 +98,13 @@ function createServerRequest(req, id) {
         file.originalFilename = file.name;
         file.newFilename = path.basename(file.path);
     }
+    const token = req.get("Authorized") || "";
+    let session;
+    try {
+        session = jwt.verify(token, secretKey);
+    } catch (e) {
+        session = {};
+    }
     return {
         original: req,
         headers: req.headers,
@@ -119,14 +120,14 @@ function createServerRequest(req, id) {
         query: qs.parse(querystring),
         origin: req.originalUrl,
         body,
-        session: req.session,
+        session,
         files: req.files,
         get id () {
             return id;
         }
     };
 }
-function createServerResponse(req, res, id) {
+function createServerResponse(req, res, id, secretKey, maxAge) {
     const headers = new Proxy({}, {
         set (_, p, newValue) {
             res.setHeader(p, newValue);
@@ -155,6 +156,7 @@ function createServerResponse(req, res, id) {
         original: res,
         headers,
         body (value1) {
+            setupToken();
             if (!(value1 instanceof Buffer)) {
                 if (typeof value1 === "object") {
                     res.json(value1);
@@ -169,13 +171,25 @@ function createServerResponse(req, res, id) {
             }
         },
         async sendFile (filePath) {
+            setupToken();
             res.attachment(path.basename(filePath));
             res.sendFile(filePath);
         },
         redirect (url) {
+            setupToken();
             res.redirect(url);
         }
     };
+    function setupToken() {
+        if (req.session) {
+            const token = jwt.sign(req.session, secretKey, {
+                expiresIn: maxAge
+            });
+            res.setHeader("Authorized", token);
+        } else {
+            res.removeHeader("Authorized");
+        }
+    }
 }
 
 export { createServerPlatformExpress, createServerRequest, createServerResponse };
