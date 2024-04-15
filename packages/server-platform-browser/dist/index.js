@@ -80,7 +80,12 @@ function createServerRequest(id, original, req) {
         query[key] = value;
     }
     const token = req.headers.Authorized;
-    let session = token ? JSON.parse(token) : {};
+    let session;
+    try {
+        session = token ? JSON.parse(token) : {};
+    } catch (e) {
+        session = {};
+    }
     let files;
     if (req.files && req.files instanceof FormData) {
         files = {};

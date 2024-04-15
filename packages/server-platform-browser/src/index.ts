@@ -97,7 +97,12 @@ export function createServerRequest(
     query[key] = value;
   }
   const token = req.headers.Authorized;
-  let session: any = token ? JSON.parse(token) : {};
+  let session: any;
+  try {
+    session = token ? JSON.parse(token) : {};
+  } catch (e) {
+    session = {};
+  }
   let files: ServerRequest["files"];
   if (req.files && req.files instanceof FormData) {
     files = {};
