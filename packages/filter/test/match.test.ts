@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { matchFilterCondition } from "../src";
 
 describe("match", () => {
-  test("query condition must match data", () => {
+  test("basic", () => {
     expect(
       matchFilterCondition(
         { _id: "1", a: 12, b: "  ", c: { c1: 20, c2: 50 } },

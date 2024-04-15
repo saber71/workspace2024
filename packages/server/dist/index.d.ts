@@ -7,7 +7,7 @@ import { ParsedUrlQuery } from 'node:querystring';
 import { URL as URL_2 } from 'node:url';
 
 export declare class AuthorizedGuard implements GuardInterface {
-    guard(session: Session<RegularSessionData>, jwtSession: JwtSession<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
+    guard(session: Session<RegularSessionData>, whiteList: string[], req: ServerRequest): void | Promise<void>;
 }
 
 export declare class ConsoleLogger implements LoggerInterface {
@@ -39,18 +39,6 @@ export declare function Guard(): (clazz: Class, _?: any) => void;
 
 export declare class ImproperDecoratorError extends ServerError {
     name: string;
-}
-
-export declare class JwtSession<T extends Record<string, any>> extends Session<T> {
-    constructor(req: ServerRequest, res: ServerResponse);
-    readonly tokenKey = "Authorized";
-    readonly secretKey = "Secret";
-    private _data?;
-    set<Key extends keyof T>(key: Key, value: T[Key]): this;
-    get<Key extends keyof T>(key: Key): T[Key] | undefined;
-    has<Key extends keyof T>(key: Key): boolean;
-    destroy(): void;
-    toString(): string;
 }
 
 export declare function Logger(): (clazz: Class<any>, ctx?: any) => void;
@@ -103,8 +91,6 @@ export declare function ReqBody(option?: ParserAndValidator): (clazz: any, metho
 export declare function ReqFile(fieldName: string): (clazz: any, propName: any, index?: any) => void;
 
 export declare function ReqFiles(fieldName: string): (clazz: any, propName: any, index?: any) => void;
-
-export declare function ReqJwtSession(): (clazz: any, propName: any, index?: any) => void;
 
 export declare function ReqQuery(option?: ParserAndValidator): (clazz: any, methodName: any, index: number) => void;
 

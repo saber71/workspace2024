@@ -3,9 +3,7 @@ export * from 'class-validator';
 import { Metadata, Injectable, Inject, getDecoratedName, NotExistLabelError, Container, LoadableContainer } from 'dependency-injection';
 export * from 'dependency-injection';
 import { composeUrl } from 'common';
-import jwt from 'jsonwebtoken';
 import chalk from 'chalk';
-import * as process from 'node:process';
 
 /* server自定义错误的根类型 */ class ServerError extends Error {
     code = 500;
@@ -472,6 +470,16 @@ const validatedKey = Symbol("validated");
     });
 }
 
+/* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
+    return MethodParameter({
+        ...option,
+        typeValueGetter: (container)=>container.getValue(ServerRequest).query,
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isQuery: true
+            }
+    });
+}
+
 /* 读取/更新会话对象 */ class Session {
     req;
     res;
@@ -506,65 +514,6 @@ const validatedKey = Symbol("validated");
     /* 删除会话对象 */ destroy() {
         this.res.session = null;
     }
-}
-/* 使用jwt生成、验证、传输token */ class JwtSession extends Session {
-    constructor(req, res){
-        super(req, res);
-        const token = req.headers[this.tokenKey];
-        res.headers[this.tokenKey] = token;
-        if (typeof token === "string") {
-            try {
-                const result = jwt.verify(token, this.secretKey);
-                if (result && typeof result === "object") this._data = result;
-            } catch (e) {}
-        }
-    }
-    tokenKey = "Authorized";
-    secretKey = "Secret";
-    _data;
-    set(key, value) {
-        if (!this._data) this._data = {};
-        if (value === null) delete this._data[key];
-        else this._data[key] = value;
-        this.res.headers[this.tokenKey] = this.toString();
-        return super.set(key, value);
-    }
-    get(key) {
-        return this._data?.[key];
-    }
-    has(key) {
-        if (!this._data) return false;
-        return key in this._data;
-    }
-    destroy() {
-        this._data = undefined;
-        this.res.headers[this.tokenKey] = this.toString();
-        super.destroy();
-    }
-    toString() {
-        return this._data ? jwt.sign(this._data, this.secretKey, {
-            expiresIn: "8h"
-        }) : "";
-    }
-}
-
-/* 属性/参数装饰器。为被装饰者注入JwtSession对象 */ function ReqJwtSession() {
-    return Inject({
-        typeValueGetter: (container)=>container.getValue(JwtSession),
-        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
-                isSession: true
-            }
-    });
-}
-
-/* 属性/参数装饰器。为被装饰者注入请求参数 */ function ReqQuery(option) {
-    return MethodParameter({
-        ...option,
-        typeValueGetter: (container)=>container.getValue(ServerRequest).query,
-        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
-                isQuery: true
-            }
-    });
 }
 
 /* 属性/参数装饰器。为被装饰者注入session对象 */ function ReqSession() {
@@ -613,21 +562,19 @@ function _ts_param(paramIndex, decorator) {
     };
 }
 class AuthorizedGuard {
-    guard(session, jwtSession, whiteList, req) {
+    guard(session, whiteList, req) {
         if (whiteList.length === 0 || whiteList.includes("*")) return;
         if (whiteList.includes(req.path)) return;
-        if (!jwtSession.get("userId") && !session.get("userId")) throw new UnauthorizedError();
+        if (!session.get("userId")) throw new UnauthorizedError();
     }
 }
 _ts_decorate$1([
     Inject(),
     _ts_param(0, ReqSession()),
-    _ts_param(1, ReqJwtSession()),
-    _ts_param(2, Inject(WHITE_LIST)),
+    _ts_param(1, Inject(WHITE_LIST)),
     _ts_metadata$1("design:type", Function),
     _ts_metadata$1("design:paramtypes", [
         typeof Session === "undefined" ? Object : Session,
-        typeof JwtSession === "undefined" ? Object : JwtSession,
         Array,
         typeof ServerRequest === "undefined" ? Object : ServerRequest
     ]),
@@ -672,8 +619,8 @@ class ConsoleLogger {
         const colorize = this.logLevelColorMap[level] ?? this.logLevelColorMap.log;
         if (message instanceof Error) message = colorize(message);
         else if (typeof message === "object") message = `[${message.method}] ${message.url}`;
-        const output = `[${this.contextName}] ${colorize(process.pid)} - ${dateTimeFormatter.format(Date.now())} ${colorize(level.toUpperCase())} ${message}\n`;
-        process.stdout.write(output);
+        const output = `[${this.contextName}] - ${dateTimeFormatter.format(Date.now())} ${colorize(level.toUpperCase())} ${message}\n`;
+        console.log(output);
     }
 }
 ConsoleLogger = _ts_decorate([
@@ -726,7 +673,7 @@ const filePath = Symbol("__FilePath__");
         this.request = request;
         this.response = response;
         this._container = server.createContainer();
-        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response)).bindValue(JwtSession.name, new JwtSession(request, response));
+        this._container.bindValue(Container.name, this._container).bindValue(ServerRequest.name, request).bindValue(ServerResponse.name, response).bindGetter(Session.name, ()=>new Session(request, response));
     }
     /* 依赖注入容器 */ _container;
     /* 启动管道，开始处理请求 */ async start() {
@@ -836,4 +783,4 @@ class Server {
     }
 }
 
-export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, Get, Guard, ImproperDecoratorError, JwtSession, Logger, MODULE_NAME, MarkParseType, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, ParseFailedError, Parser, Post, RegularParser, Req, ReqBody, ReqFile, ReqFiles, ReqJwtSession, ReqQuery, ReqSession, Res, ResponseBodyImpl, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ToArray, ToBoolean, ToDate, ToMap, ToNumber, ToObject, ToRegExp, ToSet, ToString, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };
+export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, Get, Guard, ImproperDecoratorError, Logger, MODULE_NAME, MarkParseType, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, ParseFailedError, Parser, Post, RegularParser, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, Res, ResponseBodyImpl, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ToArray, ToBoolean, ToDate, ToMap, ToNumber, ToObject, ToRegExp, ToSet, ToString, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };

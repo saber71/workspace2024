@@ -1,4 +1,4 @@
-import { Validation, ToBoolean, ToObject, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqJwtSession, UnauthorizedError, JwtSession, Server, AuthorizedGuard, WHITE_LIST } from 'server';
+import { Validation, ToBoolean, ToObject, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqSession, UnauthorizedError, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
 import { ServerLog, SERVER_LOG_COLLECTION } from 'server-log-decorator';
 import { createServerPlatformKoa } from 'server-platform-koa';
 import { Collection, StoreCollection, ServerStore } from 'server-store';
@@ -436,13 +436,13 @@ _ts_decorate([
     ServerLog("登陆"),
     Post(),
     _ts_param(0, ReqBody()),
-    _ts_param(1, ReqJwtSession()),
+    _ts_param(1, ReqSession()),
     _ts_param(2, Collection(COLLECTION_USER)),
     _ts_param(3, Collection(COLLECTION_ROLE)),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
         typeof LoginDTO === "undefined" ? Object : LoginDTO,
-        typeof JwtSession === "undefined" ? Object : JwtSession,
+        typeof Session === "undefined" ? Object : Session,
         typeof StoreCollection === "undefined" ? Object : StoreCollection,
         typeof StoreCollection === "undefined" ? Object : StoreCollection
     ]),
@@ -451,22 +451,22 @@ _ts_decorate([
 _ts_decorate([
     ServerLog("退出登陆"),
     Post(),
-    _ts_param(0, ReqJwtSession()),
+    _ts_param(0, ReqSession()),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
-        typeof JwtSession === "undefined" ? Object : JwtSession
+        typeof Session === "undefined" ? Object : Session
     ]),
     _ts_metadata("design:returntype", Promise)
 ], UserController.prototype, "logout", null);
 _ts_decorate([
     ServerLog("获取用户数据"),
     Get(),
-    _ts_param(0, ReqJwtSession()),
+    _ts_param(0, ReqSession()),
     _ts_param(1, Collection(COLLECTION_USER)),
     _ts_param(2, Collection(COLLECTION_ROLE)),
     _ts_metadata("design:type", Function),
     _ts_metadata("design:paramtypes", [
-        typeof JwtSession === "undefined" ? Object : JwtSession,
+        typeof Session === "undefined" ? Object : Session,
         typeof StoreCollection === "undefined" ? Object : StoreCollection,
         typeof StoreCollection === "undefined" ? Object : StoreCollection
     ]),
