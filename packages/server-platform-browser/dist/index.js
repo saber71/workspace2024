@@ -130,7 +130,7 @@ function createServerResponse(id, original, req, callback) {
             callback(value);
         },
         async sendFile (filePath) {
-            const data = await original.runtime.readFileAsBlob(filePath);
+            const data = await original.runtime.fs.readFile(filePath);
             callback(data);
         },
         redirect (url) {

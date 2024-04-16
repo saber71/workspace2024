@@ -1,4 +1,4 @@
-///<reference types="../../../types/index.d.ts"/>
+///<reference types="../types.d.ts"/>
 export * from "./composeUrl";
 export * from "./deepAssign";
 export * from "./deepClone";

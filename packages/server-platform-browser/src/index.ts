@@ -153,7 +153,7 @@ export function createServerResponse(
       callback(value);
     },
     async sendFile(filePath: string): Promise<void> {
-      const data = await original.runtime.readFileAsBlob(filePath);
+      const data = await original.runtime.fs.readFile(filePath);
       callback(data);
     },
     redirect(url: string) {
