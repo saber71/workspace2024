@@ -3,10 +3,10 @@ import swc from "unplugin-swc";
 import { defineConfig } from "vite";
 import dtsPlugin from "vite-plugin-dts";
 export default defineConfig({
-  plugins: [dtsPlugin({ rollupTypes: true }),swc.vite()],
+  plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["server-store"],
+      external: ["memfs/lib/fsa-to-node"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

@@ -9,7 +9,7 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
-    "server-store": "workspace:^"
+    "memfs": "^4.8.2"
   },
   "devDependencies": {
     "server": "workspace:^"

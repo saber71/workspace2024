@@ -1,5 +1,5 @@
-import { ServerStore } from 'server-store';
+/// <reference types="server/types" />
 
-export declare function createServerRuntimeBrowser(store: ServerStore): ServerRuntimeAdapter;
+export declare function createServerRuntimeBrowser(): Promise<ServerRuntimeAdapter>;
 
 export { }

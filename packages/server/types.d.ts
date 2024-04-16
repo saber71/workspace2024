@@ -261,11 +261,5 @@ declare type MethodOptions = Partial<
 declare type WithoutTypeMethodOptions = Omit<MethodOptions, "type">;
 
 declare interface ServerRuntimeAdapter {
-  rmFile(path: string): Promise<void>;
-  writeFile(path: string, content: any): Promise<void>;
-  readFileAsString(path: string): Promise<string>;
-  readFileAsBlob(path: string): Promise<Blob>;
-  readdir(path: string): Promise<string[]>;
-  mkdir(path: string): Promise<void>;
-  rmdir(path: string): Promise<void>;
+  fs: typeof import("node:fs/promises");
 }
