@@ -12,7 +12,6 @@ enum ProjectType {
   Projects = "projects",
 }
 
-const workspaceDependencies: string[] = [];
 const dependencies: Dependency[] = [];
 const peerDependencies: Dependency[] = [];
 const devDependencies: Dependency[] = [];
@@ -83,11 +82,6 @@ process.exit();
 async function isServerOrNot() {
   isServer = await yesOrNot("是否是server项目？", true);
   if (isServer) {
-    workspaceDependencies.push(
-      "server",
-      "server-log-decorator",
-      "server-store",
-    );
     peerDependencies.push(
       { name: "server", version: "workspace:^" },
       { name: "server-log-decorator", version: "workspace:^" },
@@ -130,13 +124,7 @@ function setupTypesAndSrc() {
     },
     {
       path: path.resolve(projectPath, "src", "index.ts"),
-      content: `///<reference types="../types.d.ts"/>\n`,
-    },
-    {
-      path: path.resolve(projectPath, "types.d.ts"),
-      content: workspaceDependencies
-        .map((name) => `///<reference types="${name}/types.d.ts"/>`)
-        .join("\n"),
+      content: `///<reference types="../../../types/index.d.ts"/>\n`,
     },
   );
 }
@@ -527,8 +515,6 @@ async function inputDependencies(prefix: string) {
           if (err) reject(err);
           else if (!res) resolve(undefined);
           else {
-            if (workspacePackages.includes(res))
-              workspaceDependencies.push(res);
             if (res in versionMap)
               resolve({ name: res, version: versionMap[res] });
             else {

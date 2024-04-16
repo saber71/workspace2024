@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [dtsPlugin({ rollupTypes: true }), swc.vite()],
   build: {
     rollupOptions: {
-      external: ["memfs/lib/fsa-to-node"],
+      external: ["memfs/lib/fsa-to-node", "path-browserify"],
     },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

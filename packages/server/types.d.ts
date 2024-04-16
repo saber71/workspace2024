@@ -262,4 +262,5 @@ declare type WithoutTypeMethodOptions = Omit<MethodOptions, "type">;
 
 declare interface ServerRuntimeAdapter {
   fs: typeof import("node:fs/promises");
+  path: typeof import("node:path");
 }

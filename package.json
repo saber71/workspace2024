@@ -22,6 +22,7 @@
     "@types/koa-session": "^6.4.5",
     "@types/koa-static": "^4.0.4",
     "@types/node": "^20.12.7",
+    "@types/path-browserify": "^1.0.2",
     "@types/svg-intersections": "^0.4.4",
     "@types/terminal-kit": "^2.5.6",
     "@types/tough-cookie": "^4.0.5",

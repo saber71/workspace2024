@@ -1,5 +1,5 @@
 /* 类的定义 */
-declare type Class<T = any, P extends Array = Array<any>> = {
+declare type Class<T = any, P extends Array<any> = Array<any>> = {
   new (...args: P): T;
 };
 
