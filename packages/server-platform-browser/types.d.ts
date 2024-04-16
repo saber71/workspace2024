@@ -2,7 +2,10 @@
 
 declare interface App {
   runtime: ServerRuntimeAdapter;
-  apply(url: string, option?: AppApplyOption): Promise<any>;
+  apply(
+    url: string,
+    option?: AppApplyOption,
+  ): Promise<{ data: any; status: number; headers: Record<string, any> }>;
 }
 
 declare interface AppApplyOption {

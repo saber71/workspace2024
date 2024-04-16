@@ -7,8 +7,15 @@ function createServerPlatformBrowser(runtime) {
         runtime,
         apply (url, option) {
             return new Promise((resolve)=>{
+                function return404() {
+                    return resolve({
+                        data: null,
+                        status: 404,
+                        headers: option?.headers ?? {}
+                    });
+                }
                 const urlOption = urlMap[url];
-                if (!urlOption) return resolve(null);
+                if (!urlOption) return return404();
                 const method = option?.method ?? "GET";
                 const id = v4();
                 const req = createServerRequest(id, app, {
@@ -18,20 +25,26 @@ function createServerPlatformBrowser(runtime) {
                     headers: option?.headers ?? {},
                     files: option?.body
                 });
-                const res = createServerResponse(id, app, req, resolve);
+                const res = createServerResponse(id, app, req, (data)=>{
+                    resolve({
+                        data,
+                        status: res.statusCode,
+                        headers: res.headers
+                    });
+                });
                 if (urlOption.type === "route") {
                     const routeHandler = urlOption.routeHandler;
-                    if (!routeHandler.methodTypes.has(method)) return resolve(null);
+                    if (!routeHandler.methodTypes.has(method)) return return404();
                     try {
                         routeHandler.handle(req, res);
                     } catch (e) {
                         routeHandler.catchError(e, req, res);
                     }
                 } else if (urlOption.type === "assets") {
-                    if (!urlOption.filePath) return resolve(null);
+                    if (!urlOption.filePath) return return404();
                     res.sendFile(urlOption.filePath);
                 } else if (urlOption.type === "proxy") {
-                    if (!urlOption.proxy) return resolve(null);
+                    if (!urlOption.proxy) return return404();
                     if (urlOption.proxy.rewrites) {
                         for(let regStr in urlOption.proxy.rewrites){
                             const reg = new RegExp(regStr);
@@ -120,16 +133,18 @@ function createServerRequest(id, original, req) {
     };
 }
 function createServerResponse(id, original, req, callback) {
-    return {
+    const res = {
         id,
         original,
         session: req.session,
-        headers: req.headers,
+        headers: Object.assign({}, req.headers),
         statusCode: 200,
         body (value) {
+            setupToken();
             callback(value);
         },
         async sendFile (filePath) {
+            setupToken();
             const data = await original.runtime.fs.readFile(filePath);
             callback(data);
         },
@@ -140,9 +155,21 @@ function createServerResponse(id, original, req, callback) {
                 data: req.body,
                 headers: req.headers,
                 validateStatus: ()=>true
-            }).then(({ data })=>callback(data));
+            }).then((res)=>{
+                Object.assign(this.headers, res.headers);
+                this.statusCode = res.status;
+                setupToken();
+                callback(res.data);
+            });
         }
     };
+    return res;
+    function setupToken() {
+        const field = "authorized";
+        const token = res.session ? JSON.stringify(res.session) : null;
+        if (token) res.headers[field] = token;
+        else delete res.headers[field];
+    }
 }
 
 export { createServerPlatformBrowser, createServerRequest, createServerResponse };

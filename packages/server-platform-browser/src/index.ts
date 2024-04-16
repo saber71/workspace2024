@@ -11,8 +11,16 @@ export function createServerPlatformBrowser(
     runtime,
     apply(url: string, option?: AppApplyOption) {
       return new Promise((resolve) => {
+        function return404() {
+          return resolve({
+            data: null,
+            status: 404,
+            headers: option?.headers ?? {},
+          });
+        }
+
         const urlOption = urlMap[url];
-        if (!urlOption) return resolve(null);
+        if (!urlOption) return return404();
         const method = option?.method ?? "GET";
         const id = v4();
         const req = createServerRequest(id, app, {
@@ -22,20 +30,26 @@ export function createServerPlatformBrowser(
           headers: option?.headers ?? {},
           files: option?.body,
         });
-        const res = createServerResponse(id, app, req, resolve);
+        const res = createServerResponse(id, app, req, (data) => {
+          resolve({
+            data,
+            status: res.statusCode,
+            headers: res.headers,
+          });
+        });
         if (urlOption.type === "route") {
           const routeHandler = urlOption.routeHandler!;
-          if (!routeHandler.methodTypes.has(method)) return resolve(null);
+          if (!routeHandler.methodTypes.has(method)) return return404();
           try {
             routeHandler.handle(req, res);
           } catch (e) {
             routeHandler.catchError(e as Error, req, res);
           }
         } else if (urlOption.type === "assets") {
-          if (!urlOption.filePath) return resolve(null);
+          if (!urlOption.filePath) return return404();
           res.sendFile(urlOption.filePath);
         } else if (urlOption.type === "proxy") {
-          if (!urlOption.proxy) return resolve(null);
+          if (!urlOption.proxy) return return404();
           if (urlOption.proxy.rewrites) {
             for (let regStr in urlOption.proxy.rewrites) {
               const reg = new RegExp(regStr);
@@ -106,6 +120,7 @@ export function createServerRequest(
   let files: ServerRequest["files"];
   if (req.files && req.files instanceof FormData) {
     files = {};
+
     function toServerFile(f: File) {
       const result = f as any as ServerFile;
       result.filepath = "";
@@ -113,6 +128,7 @@ export function createServerRequest(
       result.originalFilename = f.name;
       return result;
     }
+
     req.files.forEach((f, field) => {
       const file = f as File | File[];
       if (!(file instanceof Array)) files![field] = toServerFile(file);
@@ -143,16 +159,18 @@ export function createServerResponse(
   req: ServerRequest,
   callback: (body: any) => void,
 ): ServerResponse {
-  return {
+  const res: ServerResponse = {
     id,
     original,
     session: req.session,
-    headers: req.headers,
+    headers: Object.assign({}, req.headers),
     statusCode: 200,
     body(value?: any) {
+      setupToken();
       callback(value);
     },
     async sendFile(filePath: string): Promise<void> {
+      setupToken();
       const data = await original.runtime.fs.readFile(filePath);
       callback(data);
     },
@@ -165,7 +183,20 @@ export function createServerResponse(
           headers: req.headers,
           validateStatus: () => true,
         })
-        .then(({ data }) => callback(data));
+        .then((res) => {
+          Object.assign(this.headers, res.headers);
+          this.statusCode = res.status;
+          setupToken();
+          callback(res.data);
+        });
     },
   };
+  return res;
+
+  function setupToken() {
+    const field = "authorized";
+    const token = res.session ? JSON.stringify(res.session) : null;
+    if (token) res.headers[field] = token;
+    else delete res.headers[field];
+  }
 }
