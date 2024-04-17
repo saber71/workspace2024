@@ -17,6 +17,8 @@ const devDependencies = [];
 const externalDependencies = [];
 let isBin = false;
 let isServer = false;
+let serverPlatformPackage = "";
+let serverStorePackage = "";
 let binName = "";
 let useVite = false;
 let useVitest = false;
@@ -58,6 +60,13 @@ else {
         await useVitestOrNot();
     }
     await isServerOrNot();
+    if (isServer) {
+        serverPlatformPackage = await chooseServerPlatform([
+            "server-platform-express",
+            "server-platform-koa",
+        ]);
+        serverStorePackage = await chooseServerStore(["server-store-fs"]);
+    }
     await addPeerDependencies();
     await addDevDependencies();
     setupTypesAndSrc();
@@ -69,20 +78,49 @@ process.exit();
 async function isServerOrNot() {
     isServer = await yesOrNot("是否是server项目？", true);
     if (isServer) {
-        workspaceDependencies.push("server", "server-log-decorator", "server-store");
-        peerDependencies.push({ name: "server", version: "workspace:^" }, { name: "server-log-decorator", version: "workspace:^" }, { name: "server-store", version: "workspace:^" });
-        devDependencies.push({ name: "http-test", version: "workspace:^" }, { name: "server-provider", version: "workspace:^" });
+        workspaceDependencies.push("server", "server-log-decorator", "server-store", "server-store-fs", "server-store-indexdb", "server-platform-browser", "create-server", "server-runtime-node", "server-runtime-browser");
+        peerDependencies.push({ name: "server", version: "workspace:^" }, { name: "server-log-decorator", version: "workspace:^" }, { name: "server-store", version: "workspace:^" }, { name: "create-server", version: "workspace:^" }, { name: "server-runtime-node", version: "workspace:^" });
+        devDependencies.push({ name: "http-test", version: "workspace:^" }, { name: "server-provider", version: "workspace:^" }, { name: "server-store-fs", version: "workspace:^" }, { name: "server-store-indexdb", version: "workspace:^" }, { name: "server-platform-browser", version: "workspace:^" }, { name: "server-runtime-browser", version: "workspace:^" });
         waitWriteContents.push({
-            path: path.resolve(projectPath, "index.ts"),
-            content: () => {
-                const template = fs.readFileSync(path.resolve(templateBinDir, "index.ts.template"), "utf-8");
-                return template.replace("$NAME$", projectName);
-            },
-        }, {
             path: path.resolve(projectPath, "index.js"),
             content: () => {
-                const template = fs.readFileSync(path.resolve(templateBinDir, "index.js.template"), "utf-8");
-                return template.replace("$NAME$", projectName);
+                let template = fs.readFileSync(path.resolve(templateBinDir, "index.js.template"), "utf-8");
+                template = template.replaceAll("$NAME$", projectName);
+                let platform = "";
+                if (serverPlatformPackage === "server-platform-express")
+                    platform = `import { createServerPlatformExpress } from "${serverPlatformPackage}";
+const serverPlatformAdapter = createServerPlatformExpress()`;
+                else if (serverPlatformPackage === "server-platform-koa")
+                    platform = `import { createServerPlatformKoa } from "${serverPlatformPackage}";
+const serverPlatformAdapter = createServerPlatformKoa()`;
+                template = template.replace("$PLATFORM$", platform);
+                if (serverStorePackage === "server-store-fs") {
+                    template = template
+                        .replace("$IMPORT_STORE$", 'import { createServerStoreFS } from "server-store-fs"')
+                        .replace("$STORE$", "createServerStoreFS()");
+                }
+                return template;
+            },
+        }, {
+            path: path.resolve(projectPath, "index.test.js"),
+            content: () => {
+                let template = fs.readFileSync(path.resolve(templateBinDir, "index.test.js.template"), "utf-8");
+                template = template.replaceAll("$NAME$", projectName);
+                let platform = "";
+                if (serverPlatformPackage === "server-platform-express")
+                    platform = `import { createServerPlatformExpress } from "${serverPlatformPackage}";
+const serverPlatformAdapter = createServerPlatformExpress()`;
+                else if (serverPlatformPackage === "server-platform-koa")
+                    platform = `import { createServerPlatformKoa } from "${serverPlatformPackage}";
+const serverPlatformAdapter = createServerPlatformKoa()`;
+                template = template.replace("$PLATFORM$", platform);
+                return template;
+            },
+        }, {
+            path: path.resolve(projectPath, "index.browser.js"),
+            content: () => {
+                const template = fs.readFileSync(path.resolve(templateBinDir, "index.browser.js.template"), "utf-8");
+                return template.replaceAll("$NAME$", projectName);
             },
         });
     }
@@ -339,6 +377,42 @@ function inputProjectName() {
             else {
                 br();
                 inputProjectName().then(resolve).catch(reject);
+            }
+        });
+    });
+}
+function chooseServerStore(stores) {
+    return new Promise((resolve, reject) => {
+        term.cyan("\n请选择StoreAdapter：");
+        term.singleColumnMenu(stores.map((item, index) => index + 1 + "." + item), function (err, response) {
+            if (err)
+                reject(err);
+            else {
+                const packageName = stores[response.selectedIndex];
+                workspaceDependencies.push(packageName);
+                peerDependencies.push({
+                    name: packageName,
+                    version: "workspace:^",
+                });
+                resolve(packageName);
+            }
+        });
+    });
+}
+function chooseServerPlatform(platforms) {
+    return new Promise((resolve, reject) => {
+        term.cyan("\n请选择ServerPlatformAdapter：");
+        term.singleColumnMenu(platforms.map((item, index) => index + 1 + "." + item), function (err, response) {
+            if (err)
+                reject(err);
+            else {
+                const packageName = platforms[response.selectedIndex];
+                workspaceDependencies.push(packageName);
+                peerDependencies.push({
+                    name: packageName,
+                    version: "workspace:^",
+                });
+                resolve(packageName);
             }
         });
     });

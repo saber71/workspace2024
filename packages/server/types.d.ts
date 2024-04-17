@@ -33,6 +33,8 @@ declare interface ServerCreateOption {
   /* Web框架适配器 */
   serverPlatformAdapter: ServerPlatformAdapter;
 
+  runtime: ServerRuntimeAdapter;
+
   /* 用来处理日志 */
   loggers?: Class<LoggerInterface>[];
 

@@ -1,8 +1,8 @@
-import './dist/index.js';
+import './src';
 import json from "../server.json" with { type: "json" };
 import { createServer } from 'create-server';
 import { createServerRuntimeNode } from 'server-runtime-node'
-$IMPORT_STORE$;
+import { createServerStoreFS } from "server-store-fs";
 $PLATFORM$;
 
 const runtime = createServerRuntimeNode();
@@ -13,8 +13,8 @@ await createServer({
   log: {
     serverLogCollection: '$NAME$-log'
   },
-  storeAdapter: $STORE$,
+  storeAdapter: createServerStoreFS(),
   bootstrapOption: {
-    port: json["$NAME$"].port
+    port: 4000
   }
 });

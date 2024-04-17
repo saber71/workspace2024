@@ -9,3 +9,5 @@ export const CONTEXT_LABEL = "ContextName";
 
 /* 鉴权白名单 */
 export const WHITE_LIST = "WhiteList";
+
+export const RUNTIME = "runtime";

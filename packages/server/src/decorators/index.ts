@@ -10,3 +10,4 @@ export * from "./req-files.decorator";
 export * from "./req-query.decorator";
 export * from "./req-session.decorator";
 export * from "./res.decorator";
+export * from "./runtime.decorator";

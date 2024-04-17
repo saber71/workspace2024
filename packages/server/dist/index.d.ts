@@ -129,6 +129,10 @@ export declare namespace RouteManager {
     export function getRouteHandler(methodType: MethodType, url: string): RouteHandler;
 }
 
+export declare const RUNTIME = "runtime";
+
+export declare function Runtime(): (clazz: any, methodName: any, index: number) => void;
+
 export declare class Server<PlatformInstance extends object = object> {
     private readonly _serverPlatform;
     static create(options: ServerCreateOption): Promise<Server<object>>;

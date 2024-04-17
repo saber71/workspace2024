@@ -7,7 +7,6 @@
   "scripts": {
     "build": "vite build && server-provider-metadata",
     "watch": "vite build --watch",
-    "serve:prod": "node index.js",
-    "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"$SCRIPT_SLOT$
+    "serve": "node index.js"$SCRIPT_SLOT$
   }$SLOT$
 }

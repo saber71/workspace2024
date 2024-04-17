@@ -1,5 +1,5 @@
 import { Container, LoadableContainer } from "dependency-injection";
-import { CONTEXT_LABEL, DEFAULT_PORT, MODULE_NAME } from "./constant";
+import { CONTEXT_LABEL, DEFAULT_PORT, MODULE_NAME, RUNTIME } from "./constant";
 import { ConsoleLogger } from "./logger";
 import { ResponseBodyImpl } from "./response-body";
 import { RouteManager } from "./route-manager";
@@ -92,6 +92,7 @@ export class Server<PlatformInstance extends object = object> {
     this._dependencyInjection
       .bindValue(Server.name, this)
       .bindFactory(Container.name, this.createContainer.bind(this))
+      .bindValue(RUNTIME, options.runtime)
       .bindValue(
         CONTEXT_LABEL,
         (options.contextName || "server") + ":" + this._serverPlatform.name,

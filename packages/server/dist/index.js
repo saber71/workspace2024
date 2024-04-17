@@ -92,6 +92,7 @@ import chalk from 'chalk';
 /* Web服务器默认的监听端口 */ const DEFAULT_PORT = 4000;
 /* 环境名在依赖注入容器中的标签名，用于日志输出 */ const CONTEXT_LABEL = "ContextName";
 /* 鉴权白名单 */ const WHITE_LIST = "WhiteList";
+const RUNTIME = "runtime";
 
 var RouteManager;
 (function(RouteManager) {
@@ -547,6 +548,15 @@ const validatedKey = Symbol("validated");
     });
 }
 
+/* 属性/参数装饰器。*/ function Runtime() {
+    return MethodParameter({
+        typeValueGetter: (container)=>container.getValue(RUNTIME),
+        afterExecute: (metadata, ...args)=>metadata.userData[args.join(".")] = {
+                isRuntime: true
+            }
+    });
+}
+
 function _ts_decorate$1(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -756,7 +766,7 @@ class Server {
         pipeline.dispose();
     }
     /* 初始化Web服务器 */ async _init(options) {
-        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this)).bindValue(CONTEXT_LABEL, (options.contextName || "server") + ":" + this._serverPlatform.name).load({
+        this._dependencyInjection.bindValue(Server.name, this).bindFactory(Container.name, this.createContainer.bind(this)).bindValue(RUNTIME, options.runtime).bindValue(CONTEXT_LABEL, (options.contextName || "server") + ":" + this._serverPlatform.name).load({
             moduleName: MODULE_NAME
         });
         if (options.consoleLogger !== false) this._loggerClasses.push(ConsoleLogger);
@@ -783,4 +793,4 @@ class Server {
     }
 }
 
-export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, Get, Guard, ImproperDecoratorError, Logger, MODULE_NAME, MarkParseType, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, ParseFailedError, Parser, Post, RegularParser, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, Res, ResponseBodyImpl, RouteManager, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ToArray, ToBoolean, ToDate, ToMap, ToNumber, ToObject, ToRegExp, ToSet, ToString, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };
+export { AuthorizedGuard, CONTEXT_LABEL, ConsoleLogger, Controller, DEFAULT_PORT, DuplicateRouteHandlerError, Get, Guard, ImproperDecoratorError, Logger, MODULE_NAME, MarkParseType, Method, NotFoundError, NotFoundFileError, NotFoundObjectError, NotFoundRouteHandlerError, NotFoundValidatorError, ParseFailedError, Parser, Post, RUNTIME, RegularParser, Req, ReqBody, ReqFile, ReqFiles, ReqQuery, ReqSession, Res, ResponseBodyImpl, RouteManager, Runtime, Server, ServerError, ServerRequest, ServerResponse, Session, SessionKeyNotExistError, ToArray, ToBoolean, ToDate, ToMap, ToNumber, ToObject, ToRegExp, ToSet, ToString, UnauthorizedError, ValidateFailedError, WHITE_LIST, getOrCreateControllerMethod, getOrCreateMetadataUserData };
