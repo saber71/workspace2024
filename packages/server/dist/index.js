@@ -695,6 +695,7 @@ const filePath = Symbol("__FilePath__");
             }
             const routeHandler = RouteManager.getRouteHandler(this.request.method, this.request.path);
             result = await this._container.call(this._container.getValue(routeHandler.controllerClass), routeHandler.methodName);
+            console.log(result);
         } catch (e) {
             this.server.log(e.logLevel || "error", e);
             result = e;

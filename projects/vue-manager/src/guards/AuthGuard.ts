@@ -7,7 +7,7 @@ import type { NavigationGuardNext, RouteLocationNormalized } from "vue-router";
 const whiteList = [LoginView.name];
 
 @RouterGuard({ matchTo: (path) => !whiteList.includes(path.name as string) })
-export class AuthorizedGuard extends VueRouterGuard {
+export class AuthGuard extends VueRouterGuard {
   async beforeEach(
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,

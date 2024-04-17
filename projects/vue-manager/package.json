@@ -27,6 +27,7 @@
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
-    "server-user": "workspace:^"
+    "server-user": "workspace:^",
+    "vite-plugin-node-polyfills": "^0.21.0"
   }
 }

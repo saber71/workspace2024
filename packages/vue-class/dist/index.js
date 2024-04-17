@@ -129,7 +129,7 @@ class VueRouterGuard {
 class VueClass {
     static dependencyInjection = new LoadableContainer();
     static getInstance(clazz) {
-        return this.dependencyInjection.getValue(clazz, ModuleName);
+        return this.dependencyInjection.getValue(clazz);
     }
     static async install(app, router) {
         this.dependencyInjection.load({

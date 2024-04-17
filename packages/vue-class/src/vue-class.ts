@@ -10,7 +10,7 @@ export class VueClass {
   static readonly dependencyInjection = new LoadableContainer();
 
   static getInstance<T>(clazz: Class<T>): T {
-    return this.dependencyInjection.getValue(clazz, ModuleName);
+    return this.dependencyInjection.getValue(clazz);
   }
 
   static async install(app: App, router: Router) {

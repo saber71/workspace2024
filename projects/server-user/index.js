@@ -1,4 +1,5 @@
 import "./dist/index.js";
+import { createDefaultData } from "./dist/index.js";
 import json from "../server.json" with { type: "json" };
 import { createServer } from "create-server";
 import { createServerRuntimeNode } from "server-runtime-node";
@@ -7,7 +8,7 @@ import { createServerStoreFS } from "server-store-fs";
 
 const serverPlatformAdapter = createServerPlatformKoa();
 const runtime = createServerRuntimeNode();
-await createServer({
+export const app = await createServer({
   contextName: "server-user",
   serverPlatformAdapter,
   runtime,
@@ -20,3 +21,4 @@ await createServer({
   },
   whiteList: ["/user/login"],
 });
+await createDefaultData(app, app.dependencyInjection.getValue("ServerStore"));

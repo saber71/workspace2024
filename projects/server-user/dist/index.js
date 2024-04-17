@@ -486,4 +486,35 @@ UserController = _ts_decorate([
     })
 ], UserController);
 
-export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleController, UpdateRoleDTO, UpdateUserDTO, UpdateUserDataDTO, UserController };
+// @ts-ignore
+///<reference types="../types.d.ts"/>
+async function createDefaultData(app, store) {
+    const roleCollection = store.collection(COLLECTION_ROLE);
+    const userCollection = store.collection(COLLECTION_USER);
+    const defaultRole = await roleCollection.getById("0");
+    const defaultUser = await userCollection.getById("0");
+    if (!defaultRole) {
+        await roleCollection.add({
+            _id: "0",
+            name: "默认",
+            authorizations: {},
+            createTime: Date.now()
+        });
+        app.log("log", "新建默认角色成功");
+    }
+    if (!defaultUser) {
+        await userCollection.add({
+            _id: "0",
+            name: "默认",
+            loginName: "default-user",
+            password: "123456",
+            roleId: "0",
+            email: "default-user@example.com",
+            userData: {},
+            createTime: Date.now()
+        });
+        app.log("log", "新建默认用户成功");
+    }
+}
+
+export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleController, UpdateRoleDTO, UpdateUserDTO, UpdateUserDataDTO, UserController, createDefaultData };

@@ -5,7 +5,7 @@ import "./controllers";
 import { COLLECTION_ROLE, COLLECTION_USER } from "./constants";
 import { Server, ServerStore } from "create-server";
 
-async function createDefaultData(app: Server, store: ServerStore) {
+export async function createDefaultData(app: Server, store: ServerStore) {
   const roleCollection = store.collection<RoleModel>(COLLECTION_ROLE);
   const userCollection = store.collection<UserModel>(COLLECTION_USER);
   const defaultRole = await roleCollection.getById("0");

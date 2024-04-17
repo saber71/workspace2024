@@ -4,6 +4,7 @@ import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import * as path from "node:path";
 import * as fs from "node:fs";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const serverPortJson = JSON.parse(
   fs.readFileSync(path.resolve("../server.json"), "utf8"),
@@ -11,6 +12,9 @@ const serverPortJson = JSON.parse(
 
 export default defineConfig({
   plugins: [
+    nodePolyfills({
+      include: ["stream"],
+    }),
     vue(),
     vueJsx({
       babelPlugins: [

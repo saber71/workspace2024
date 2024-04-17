@@ -1,5 +1,7 @@
 /// <reference types="../types.d.ts" />
 
+import { Server } from 'create-server';
+import { ServerStore } from 'create-server';
 import { Session } from 'create-server';
 import { StoreCollection } from 'create-server';
 
@@ -8,6 +10,8 @@ export declare const COLLECTION_ROLE = "role";
 export declare const COLLECTION_USER = "user";
 
 export declare const CONTEXT_NAME = "server-user";
+
+export declare function createDefaultData(app: Server, store: ServerStore): Promise<void>;
 
 export declare class CreateRoleDTO {
     name: string;

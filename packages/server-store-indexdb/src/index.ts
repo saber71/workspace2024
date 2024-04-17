@@ -81,14 +81,15 @@ export function createServerStoreIndexdb(): StoreAdapter {
     condition?: FilterCondition<any> | null,
     sortOrders?: SortOrders,
   ) {
-    const filters = condition ? [() => true] : parseFilterCondition(condition);
+    const filters = !condition ? [() => true] : parseFilterCondition(condition);
     const array = await new Promise<any[]>((resolve, reject) => {
       const cursor = store.openCursor();
       const array: any[] = [];
       cursor.onsuccess = () => {
         if (cursor.result) {
-          if (filters.every((fn) => fn(cursor.result)))
-            array.push(cursor.result);
+          if (filters.every((fn) => fn(cursor.result!.value)))
+            array.push(cursor.result.value);
+          cursor.result.continue();
         } else resolve(array);
       };
     });
@@ -108,7 +109,7 @@ export function createServerStoreIndexdb(): StoreAdapter {
     mode: IDBTransactionMode = "readwrite",
   ): Promise<IDBObjectStore> {
     const db = await getDatabase(collectionName);
-    return db.transaction(collectionName, mode).objectStore("key-vaue");
+    return db.transaction(["key-value"], mode).objectStore("key-value");
   }
 
   async function getDatabase(collectionName: string) {

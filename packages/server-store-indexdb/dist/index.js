@@ -50,7 +50,7 @@ function createServerStoreIndexdb() {
         }
     };
     async function query(store, condition, sortOrders) {
-        const filters = condition ? [
+        const filters = !condition ? [
             ()=>true
         ] : parseFilterCondition(condition);
         const array = await new Promise((resolve, reject)=>{
@@ -58,7 +58,8 @@ function createServerStoreIndexdb() {
             const array = [];
             cursor.onsuccess = ()=>{
                 if (cursor.result) {
-                    if (filters.every((fn)=>fn(cursor.result))) array.push(cursor.result);
+                    if (filters.every((fn)=>fn(cursor.result.value))) array.push(cursor.result.value);
+                    cursor.result.continue();
                 } else resolve(array);
             };
         });
@@ -73,7 +74,9 @@ function createServerStoreIndexdb() {
     }
     async function getObjectStore(collectionName, mode = "readwrite") {
         const db = await getDatabase(collectionName);
-        return db.transaction(collectionName, mode).objectStore("key-vaue");
+        return db.transaction([
+            "key-value"
+        ], mode).objectStore("key-value");
     }
     async function getDatabase(collectionName) {
         let db = dbMap.get(collectionName);

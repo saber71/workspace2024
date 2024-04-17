@@ -65,7 +65,7 @@ export function createServerPlatformBrowser(
   const urlMap: Record<string, UrlOption> = {};
 
   return {
-    name: "server-platform-browser",
+    name: "browser",
     create(): Promise<App> {
       return Promise.resolve(app);
     },

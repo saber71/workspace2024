@@ -3,7 +3,9 @@ import { AuthorizedGuard, Server, WHITE_LIST } from "server";
 import { SERVER_LOG_COLLECTION } from "server-log-decorator";
 import { ServerStore } from "server-store";
 
-export async function createServer(option: CreateServerOption) {
+export async function createServer<PlatformInstance extends object>(
+  option: CreateServerOption<PlatformInstance>,
+): Promise<Server<PlatformInstance>> {
   if (!option.guards) option.guards = [AuthorizedGuard];
   const app = await Server.create(option);
   app.dependencyInjection
@@ -17,7 +19,7 @@ export async function createServer(option: CreateServerOption) {
     );
   }
   app.bootstrap(option.bootstrapOption);
-  return app;
+  return app as any;
 }
 
 export * from "server";

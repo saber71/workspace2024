@@ -1,12 +1,12 @@
 import "./dist/index.js";
-import json from "../server.json" with { type: "json" };
+import { createDefaultData } from "./dist/index.js";
 import { createServer } from "create-server";
 import { createServerPlatformBrowser } from "server-platform-browser";
 import { createServerRuntimeBrowser } from "server-runtime-browser";
 import { createServerStoreIndexdb } from "server-store-indexdb";
 
 const runtime = await createServerRuntimeBrowser();
-await createServer({
+export const app = await createServer({
   contextName: "server-user",
   serverPlatformAdapter: createServerPlatformBrowser(runtime),
   runtime,
@@ -14,8 +14,6 @@ await createServer({
     serverLogCollection: "server-user-log",
   },
   storeAdapter: createServerStoreIndexdb(),
-  bootstrapOption: {
-    port: json["server-user"].port,
-  },
   whiteList: ["/user/login"],
 });
+await createDefaultData(app, app.dependencyInjection.getValue("ServerStore"));

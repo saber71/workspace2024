@@ -9,7 +9,9 @@ import { ServerResponse } from "./response";
 
 export class Server<PlatformInstance extends object = object> {
   /* 创建Server对象 */
-  static async create(options: ServerCreateOption) {
+  static async create<PlatformInstance extends object = object>(
+    options: ServerCreateOption<PlatformInstance>,
+  ) {
     const app = new Server(options.serverPlatformAdapter);
     await app._init(options);
     return app;
@@ -87,7 +89,7 @@ export class Server<PlatformInstance extends object = object> {
 
   /* 初始化Web服务器 */
   private async _init(
-    options: Omit<ServerCreateOption, "serverPlatformAdapter">,
+    options: Omit<ServerCreateOption<any>, "serverPlatformAdapter">,
   ) {
     this._dependencyInjection
       .bindValue(Server.name, this)

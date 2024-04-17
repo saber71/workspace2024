@@ -58,7 +58,7 @@ function createServerPlatformBrowser(runtime) {
     };
     const urlMap = {};
     return {
-        name: "server-platform-browser",
+        name: "browser",
         create () {
             return Promise.resolve(app);
         },

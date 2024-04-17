@@ -1,20 +1,16 @@
 import './dist/index.js';
-import json from "../server.json" with { type: "json" };
 import { createServer } from 'create-server';
 import { createServerPlatformBrowser } from 'server-platform-browser';
 import { createServerRuntimeBrowser } from 'server-runtime-browser';
 import { createServerStoreIndexdb } from 'server-store-indexdb';
 
 const runtime = await createServerRuntimeBrowser();
-await createServer({
+export const app = await createServer({
   contextName: "$NAME$",
   serverPlatformAdapter: createServerPlatformBrowser(runtime),
   runtime,
   log: {
     serverLogCollection: '$NAME$-log'
   },
-  storeAdapter: createServerStoreIndexdb(),
-  bootstrapOption: {
-    port: json["$NAME$"].port
-  }
+  storeAdapter: createServerStoreIndexdb()
 });

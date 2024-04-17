@@ -40,6 +40,7 @@ export class RequestPipeline {
         this._container.getValue(routeHandler.controllerClass),
         routeHandler.methodName,
       );
+      console.log(result);
     } catch (e) {
       this.server.log((e as any).logLevel || "error", e as Error);
       result = e;

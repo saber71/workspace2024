@@ -1,6 +1,6 @@
 import { Server } from 'server';
 
-export declare function createServer(option: CreateServerOption): Promise<Server<object>>;
+export declare function createServer<PlatformInstance extends object>(option: CreateServerOption<PlatformInstance>): Promise<Server<PlatformInstance>>;
 
 
 export * from "server";

@@ -1,2 +1,2 @@
-export * from "./AuthorizedGuard.ts";
+export * from "./AuthGuard.ts";
 export * from "./TitleGuard.ts";

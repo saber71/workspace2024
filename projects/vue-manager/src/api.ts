@@ -1,6 +1,4 @@
-import { mockRoleController, mockUserController } from "@/mock";
 import { useUser } from "@/stores";
-import * as process from "process";
 import { ROUTER } from "vue-class";
 import LoginView from "@/views/login.view.tsx";
 import { message } from "ant-design-vue";
@@ -12,16 +10,13 @@ import { VueClass } from "vue-class";
 import type { Router } from "vue-router";
 
 export const isMock = !!import.meta.env.VITE_MOCK;
+if (isMock) {
+  await import("./mock");
+}
 
 const serverUserApiProvider = new ServerApiProvider(
   serverUserJson as any,
-  isMock
-    ? {
-        isMock: true,
-        UserController: mockUserController,
-        RoleController: mockRoleController,
-      }
-    : createAxiosInstance("/server-user"),
+  createAxiosInstance("/server-user"),
 );
 
 export const userApi =
@@ -43,7 +38,8 @@ function createAxiosInstance(baseURL: string) {
   instance.interceptors.response.use(
     (res: AxiosResponse<ResponseBody<any>>) => {
       const userStore = useUser();
-      userStore.token = res.headers.authorized;
+      userStore.token =
+        res.headers[tokenKey.toLowerCase()] ?? res.headers[tokenKey];
       const body = res.data ?? {};
       if (!body.success) {
         message.error(body.msg || "操作失败");

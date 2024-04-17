@@ -26,12 +26,12 @@ declare interface ServerFile {
 }
 
 /* 创建Server对象时传入的选项 */
-declare interface ServerCreateOption {
+declare interface ServerCreateOption<PlatformInstance extends object> {
   /* 上下文环境名。默认server */
   contextName?: string;
 
   /* Web框架适配器 */
-  serverPlatformAdapter: ServerPlatformAdapter;
+  serverPlatformAdapter: ServerPlatformAdapter<PlatformInstance>;
 
   runtime: ServerRuntimeAdapter;
 
