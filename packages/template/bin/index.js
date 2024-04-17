@@ -97,7 +97,7 @@ const serverPlatformAdapter = createServerPlatformKoa()`;
                 if (serverStorePackage === "server-store-fs") {
                     template = template
                         .replace("$IMPORT_STORE$", 'import { createServerStoreFS } from "server-store-fs"')
-                        .replace("$STORE$", "createServerStoreFS()");
+                        .replace("$STORE$", "createServerStoreFS('../store', true)");
                 }
                 return template;
             },

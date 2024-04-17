@@ -8,19 +8,20 @@
     "build": "vite build && server-provider-metadata",
     "watch": "vite build --watch",
     "test": "vitest",
-    "serve:prod": "node index.js",
-    "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts --tsconfig tsconfig.json"
+    "serve": "node index.js"
   },
   "peerDependencies": {
-    "server": "workspace:^",
-    "server-log-decorator": "workspace:^",
+    "create-server": "workspace:^",
     "server-platform-koa": "workspace:^",
-    "server-store": "workspace:^",
-    "server-store-fs": "workspace:^",
+    "server-runtime-node": "workspace:^",
     "validator": "^13.11.0"
   },
   "devDependencies": {
     "http-test": "workspace:^",
-    "server-provider": "workspace:^"
+    "server-provider": "workspace:^",
+    "server-store-fs": "workspace:^",
+    "server-store-indexdb": "workspace:^",
+    "server-platform-browser": "workspace:^",
+    "server-runtime-browser": "workspace:^"
   }
 }

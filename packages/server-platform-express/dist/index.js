@@ -182,7 +182,10 @@ function createServerResponse(req, res, id, secretKey, maxAge) {
     };
     function setupToken() {
         if (req.session) {
-            const token = jwt.sign(req.session, secretKey, {
+            const payload = req.session;
+            delete payload.iat;
+            delete payload.exp;
+            const token = jwt.sign(payload, secretKey, {
                 expiresIn: maxAge
             });
             res.setHeader("Authorized", token);

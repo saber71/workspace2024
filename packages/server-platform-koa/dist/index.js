@@ -129,10 +129,10 @@ function createServerResponse(ctx, id, secretKey, req, maxAge) {
             return id;
         },
         get session () {
-            return ctx.session;
+            return req.session;
         },
         set session (value){
-            ctx.session = value;
+            req.session = value;
         },
         set statusCode (value){
             ctx.response.status = value;
@@ -169,7 +169,10 @@ function createServerResponse(ctx, id, secretKey, req, maxAge) {
     };
     function setupToken() {
         if (req.session) {
-            const token = jwt.sign(req.session, secretKey, {
+            const payload = req.session;
+            delete payload.iat;
+            delete payload.exp;
+            const token = jwt.sign(payload, secretKey, {
                 expiresIn: maxAge
             });
             ctx.res.setHeader("Authorized", token);

@@ -1,9 +1,7 @@
 /// <reference types="../types.d.ts" />
 
-import { Session } from 'server';
-import { StoreCollection } from 'server-store';
-
-export declare function bootstrap(port: number, saveOnExit?: boolean, log?: boolean): Promise<void>;
+import { Session } from 'create-server';
+import { StoreCollection } from 'create-server';
 
 export declare const COLLECTION_ROLE = "role";
 

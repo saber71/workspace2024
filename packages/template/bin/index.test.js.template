@@ -1,5 +1,4 @@
 import './src';
-import json from "../server.json" with { type: "json" };
 import { createServer } from 'create-server';
 import { createServerRuntimeNode } from 'server-runtime-node'
 import { createServerStoreFS } from "server-store-fs";
@@ -13,7 +12,7 @@ await createServer({
   log: {
     serverLogCollection: '$NAME$-log'
   },
-  storeAdapter: createServerStoreFS(),
+  storeAdapter: createServerStoreFS('../store'),
   bootstrapOption: {
     port: 4000
   }

@@ -1,9 +1,5 @@
-import { Validation, ToBoolean, ToObject, ToArray, Injectable, Post, ReqBody, Get, ReqQuery, Controller, NotFoundObjectError, ReqSession, UnauthorizedError, Session, Server, AuthorizedGuard, WHITE_LIST } from 'server';
-import { ServerLog, SERVER_LOG_COLLECTION } from 'server-log-decorator';
-import { createServerPlatformKoa } from 'server-platform-koa';
-import { Collection, StoreCollection, ServerStore } from 'server-store';
+import { Validation, ToBoolean, ToObject, ToArray, Injectable, ServerLog, Post, ReqBody, Collection, Get, ReqQuery, Controller, NotFoundObjectError, StoreCollection, ReqSession, UnauthorizedError, Session } from 'create-server';
 import validator from 'validator';
-import { createServerStoreFS } from 'server-store-fs';
 
 const CONTEXT_NAME = "server-user";
 const COLLECTION_ROLE = "role";
@@ -490,53 +486,4 @@ UserController = _ts_decorate([
     })
 ], UserController);
 
-// @ts-ignore
-///<reference types="../types.d.ts"/>
-async function bootstrap(port, saveOnExit = true, log) {
-    const store = await ServerStore.create(createServerStoreFS("../store", saveOnExit));
-    const app = await Server.create({
-        serverPlatformAdapter: createServerPlatformKoa(),
-        contextName: CONTEXT_NAME,
-        guards: [
-            AuthorizedGuard
-        ]
-    });
-    app.dependencyInjection.bindInstance(store).bindValue(WHITE_LIST, [
-        "/user/login"
-    ]);
-    if (log) app.dependencyInjection.bindValue(SERVER_LOG_COLLECTION, "server-user-log");
-    await createDefaultData(app, store);
-    app.bootstrap({
-        port
-    });
-}
-async function createDefaultData(app, store) {
-    const roleCollection = store.collection(COLLECTION_ROLE);
-    const userCollection = store.collection(COLLECTION_USER);
-    const defaultRole = await roleCollection.getById("0");
-    const defaultUser = await userCollection.getById("0");
-    if (!defaultRole) {
-        await roleCollection.add({
-            _id: "0",
-            name: "默认",
-            authorizations: {},
-            createTime: Date.now()
-        });
-        app.log("log", "新建默认角色成功");
-    }
-    if (!defaultUser) {
-        await userCollection.add({
-            _id: "0",
-            name: "默认",
-            loginName: "default-user",
-            password: "123456",
-            roleId: "0",
-            email: "default-user@example.com",
-            userData: {},
-            createTime: Date.now()
-        });
-        app.log("log", "新建默认用户成功");
-    }
-}
-
-export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleController, UpdateRoleDTO, UpdateUserDTO, UpdateUserDataDTO, UserController, bootstrap };
+export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleController, UpdateRoleDTO, UpdateUserDTO, UpdateUserDataDTO, UserController };

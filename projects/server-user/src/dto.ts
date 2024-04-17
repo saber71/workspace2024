@@ -1,4 +1,10 @@
-import { Injectable, ToArray, ToBoolean, ToObject, Validation } from "server";
+import {
+  Injectable,
+  ToArray,
+  ToBoolean,
+  ToObject,
+  Validation,
+} from "create-server";
 
 export class QueryDTO {
   @Validation({ validatorType: "isString" })

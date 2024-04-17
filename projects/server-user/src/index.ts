@@ -1,35 +1,9 @@
 // @ts-ignore
 ///<reference types="../types.d.ts"/>
 
-import { AuthorizedGuard, Server, WHITE_LIST } from "server";
-import { SERVER_LOG_COLLECTION } from "server-log-decorator";
-import { createServerPlatformKoa } from "server-platform-koa";
 import "./controllers";
-import { ServerStore } from "server-store";
-import { createServerStoreFS } from "server-store-fs";
-import { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME } from "./constants";
-
-export async function bootstrap(
-  port: number,
-  saveOnExit = true,
-  log?: boolean,
-) {
-  const store = await ServerStore.create(
-    createServerStoreFS("../store", saveOnExit),
-  );
-  const app = await Server.create({
-    serverPlatformAdapter: createServerPlatformKoa(),
-    contextName: CONTEXT_NAME,
-    guards: [AuthorizedGuard],
-  });
-  app.dependencyInjection
-    .bindInstance(store)
-    .bindValue(WHITE_LIST, ["/user/login"]);
-  if (log)
-    app.dependencyInjection.bindValue(SERVER_LOG_COLLECTION, "server-user-log");
-  await createDefaultData(app, store);
-  app.bootstrap({ port });
-}
+import { COLLECTION_ROLE, COLLECTION_USER } from "./constants";
+import { Server, ServerStore } from "create-server";
 
 async function createDefaultData(app: Server, store: ServerStore) {
   const roleCollection = store.collection<RoleModel>(COLLECTION_ROLE);

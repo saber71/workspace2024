@@ -1,12 +1,11 @@
-import "./dist/index.js";
-import json from "../server.json" with { type: "json" };
+import "./src";
 import { createServer } from "create-server";
 import { createServerRuntimeNode } from "server-runtime-node";
-import { createServerPlatformKoa } from "server-platform-koa";
 import { createServerStoreFS } from "server-store-fs";
+import { createServerPlatformKoa } from "server-platform-koa";
 
-const serverPlatformAdapter = createServerPlatformKoa();
 const runtime = createServerRuntimeNode();
+const serverPlatformAdapter = createServerPlatformKoa();
 await createServer({
   contextName: "server-user",
   serverPlatformAdapter,
@@ -14,9 +13,9 @@ await createServer({
   log: {
     serverLogCollection: "server-user-log",
   },
-  storeAdapter: createServerStoreFS("../store", true),
+  storeAdapter: createServerStoreFS("../store"),
   bootstrapOption: {
-    port: json["server-user"].port,
+    port: 4000,
   },
   whiteList: ["/user/login"],
 });

@@ -228,7 +228,10 @@ export function createServerResponse(
 
   function setupToken() {
     if (req.session) {
-      const token = jwt.sign(req.session, secretKey, { expiresIn: maxAge });
+      const payload = req.session as any;
+      delete payload.iat;
+      delete payload.exp;
+      const token = jwt.sign(payload, secretKey, { expiresIn: maxAge });
       res.setHeader("Authorized", token);
     } else {
       res.removeHeader("Authorized");

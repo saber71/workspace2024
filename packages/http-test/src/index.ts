@@ -6,12 +6,15 @@ import { CookieJar } from "tough-cookie";
 const axiosInstance = axiosCookieJarSupport.wrapper(axios);
 
 const cookieJar = new CookieJar();
+let token = "";
 
 /* 调用axios发起请求，返回准备对Response内容进行测试的对象 */
 export function httpTest<Data = any>(
   config: AxiosRequestConfig | (() => AxiosRequestConfig),
 ) {
   if (typeof config === "function") config = config();
+  if (!config.headers) config.headers = {};
+  config.headers["Authorized"] = token;
   return new ExpectResponse<Data>(
     axiosInstance
       .request({
@@ -103,6 +106,7 @@ export class ExpectResponse<Data> {
   /* 开始进行测试 */
   async done() {
     const res = await this._res;
+    token = res.headers.authorized;
     this._response = res;
     for (let item of this._expectHeaders) {
       this._toBe(res, res.headers[item[0].toLowerCase()], item[1]);

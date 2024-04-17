@@ -8,12 +8,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: [
-        "server",
+        "create-server",
         "server-platform-koa",
         "validator",
-        "server-store",
-        "server-store-fs",
-        "server-log-decorator",
+        "server-runtime-node",
       ],
     },
     lib: {

@@ -1,5 +1,4 @@
-/// <reference types="server/types"/>
-/// <reference types="server-store/types"/>
+/// <reference types="create-server/types"/>
 
 declare interface UserModel extends StoreItem {
   /* 显示名 */

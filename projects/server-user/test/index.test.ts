@@ -1,11 +1,9 @@
 import { httpTest } from "http-test";
 import { describe, test } from "vitest";
-import { bootstrap } from "../src";
+import "../index.test.js";
 
 describe("ServerUser", async () => {
   test.concurrent("login", async () => {
-    await bootstrap(4000, false);
-
     await httpTest({
       url: "/user/create",
       method: "POST",
