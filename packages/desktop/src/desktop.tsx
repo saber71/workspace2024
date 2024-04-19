@@ -16,16 +16,15 @@ export interface DesktopProps extends VueComponentBaseProps {}
 export class DesktopInst extends VueComponent<DesktopProps> {
   static readonly defineProps: ComponentProps<DesktopProps> = ["inst"];
 
-  readonly styles = useDesktopStyles().desktopStyles;
-
   setup() {
     useDesktop().desktopInst = this as any;
   }
 
   render(): VNodeChild {
+    const styles = useDesktopStyles().desktopStyles;
     return (
-      <div style={this.styles.container}>
-        <div style={this.styles.wrapper}>
+      <div style={styles.container}>
+        <div style={styles.wrapper}>
           <Main></Main>
           <Taskbar></Taskbar>
         </div>

@@ -14,14 +14,13 @@ export interface MainAreaProps extends VueComponentBaseProps {}
 export class MainAreaInst extends VueComponent<MainAreaProps> {
   static readonly defineProps: ComponentProps<MainAreaProps> = ["inst"];
 
-  readonly styles = useDesktopStyles().mainAreaStyles;
-
   setup() {
     useDesktop().mainAreaInst = this as any;
   }
 
   render(): VNodeChild {
-    return <div style={this.styles.container}></div>;
+    const styles = useDesktopStyles().mainAreaStyles;
+    return <div style={styles.container}></div>;
   }
 }
 

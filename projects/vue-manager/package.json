@@ -17,6 +17,7 @@
     "axios": "^1.6.8",
     "check-password-strength": "^2.0.10",
     "dayjs": "^1.11.10",
+    "desktop": "workspace:^",
     "pinia": "^2.1.7",
     "server-api-provider": "workspace:^",
     "vue": "^3.4.23",
