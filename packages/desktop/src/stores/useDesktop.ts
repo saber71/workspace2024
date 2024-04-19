@@ -2,7 +2,7 @@ import { useLocalStorage } from "@vueuse/core";
 import { remove } from "common";
 import EventEmitter from "eventemitter3";
 import { defineStore } from "pinia";
-import { shallowRef, watch } from "vue";
+import { ref, shallowRef, watch } from "vue";
 import { BASE_FONT_SIZE } from "../constants";
 import type { DesktopInst } from "../desktop";
 import type { MainAreaInst } from "../main-area";
@@ -26,21 +26,59 @@ export const useDesktop = defineStore("desktop", () => {
   opened.value.push(id);
 
   const scale = useLocalStorage("desktop.scale", 1);
-  let oldFontSize = document.body.style.fontSize;
+  let oldFontSize = document.documentElement.style.fontSize;
   watch(
     scale,
     () => {
-      document.body.style.fontSize = scale.value * BASE_FONT_SIZE + "px";
+      document.documentElement.style.fontSize =
+        scale.value * BASE_FONT_SIZE + "px";
     },
     { immediate: true },
   );
 
+  const timestamp = shallowRef(new Date());
+  const formatTime = ref("");
+  const formatDate = ref("");
+  let raqHandler = requestAnimationFrame(updateTimestamp);
+
   const eventBus = new EventEmitter<DesktopEvents>().on("close", () => {
     remove(opened.value, id);
-    document.body.style.fontSize = oldFontSize;
+    document.documentElement.style.fontSize = oldFontSize;
+    cancelAnimationFrame(raqHandler);
   });
 
-  return { opened, id, eventBus, desktopInst, mainAreaInst, taskbarInst };
+  return {
+    opened,
+    id,
+    eventBus,
+    desktopInst,
+    mainAreaInst,
+    taskbarInst,
+    timestamp,
+    formatDate,
+    formatTime,
+  };
+
+  function updateTimestamp() {
+    timestamp.value = new Date();
+    updateTime();
+    updateDate();
+    raqHandler = requestAnimationFrame(updateTimestamp);
+  }
+
+  function updateTime() {
+    const date = timestamp.value;
+    formatTime.value = `${formatNumber(date.getHours())}:${formatNumber(date.getMinutes())}`;
+  }
+
+  function updateDate() {
+    const date = timestamp.value;
+    formatDate.value = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+  }
+
+  function formatNumber(num: number) {
+    return num <= 9 ? "0" + num : num;
+  }
 });
 
 export function rem(px: number) {

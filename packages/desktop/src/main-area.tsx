@@ -6,7 +6,7 @@ import {
   toNative,
   VueComponent,
 } from "vue-class";
-import { useDesktop } from "./stores";
+import { useDesktop, useDesktopStyles } from "./stores";
 
 export interface MainAreaProps extends VueComponentBaseProps {}
 
@@ -14,12 +14,14 @@ export interface MainAreaProps extends VueComponentBaseProps {}
 export class MainAreaInst extends VueComponent<MainAreaProps> {
   static readonly defineProps: ComponentProps<MainAreaProps> = ["inst"];
 
+  readonly styles = useDesktopStyles().mainAreaStyles;
+
   setup() {
     useDesktop().mainAreaInst = this as any;
   }
 
   render(): VNodeChild {
-    return <div></div>;
+    return <div style={this.styles.container}></div>;
   }
 }
 
