@@ -24,7 +24,7 @@
     "vue-class": "workspace:^",
     "vue-crud": "workspace:^",
     "vue-form-rules": "workspace:^",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.2"
   },
   "devDependencies": {
     "server-user": "workspace:^",

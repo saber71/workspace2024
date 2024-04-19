@@ -599,6 +599,7 @@ export class CrudInst extends VueComponent<CrudProps> {
                   defaultComponentProps,
                   {
                     [dictOption]: dict?.data.value,
+                    form,
                   },
                   componentProps,
                   CrudInst._getModal(form, propName, componentName, vModal),

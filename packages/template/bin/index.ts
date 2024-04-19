@@ -26,7 +26,7 @@ let useVite = false;
 let useVitest = false;
 let useVue = false;
 let useVueJsx = false;
-let useDecorator = false;
+let useDecorator = true;
 
 const waitWriteContents: Array<{
   path: string;

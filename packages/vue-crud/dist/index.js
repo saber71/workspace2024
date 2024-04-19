@@ -696,7 +696,8 @@ let CrudInst = (_dec = Component(), _dec2 = Link(), _dec3 = Mut(true), _dec4 = M
                 const dictOption = formOption?.dictOption ?? columnOption.dictOption ?? "options";
                 const createComponent = ()=>{
                     return isVNode(componentFn) ? componentFn : createVNode(componentFn, mergeDefaultComponentProps(componentName, defaultComponentProps, {
-                        [dictOption]: dict?.data.value
+                        [dictOption]: dict?.data.value,
+                        form
                     }, componentProps, CrudInst._getModal(form, propName, componentName, vModal)), slots);
                 };
                 if (formOption?.wrapFormItem ?? columnOption.formOption?.wrapFormItem ?? showInForm) {
