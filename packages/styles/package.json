@@ -1,0 +1,15 @@
+{
+  "name": "styles",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.23",
+    "uuid": "^9.0.1"
+  }
+}

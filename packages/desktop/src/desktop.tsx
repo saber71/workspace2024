@@ -1,4 +1,4 @@
-import type { StyleValue, VNodeChild } from "vue";
+import type { VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
