@@ -1,4 +1,4 @@
-import { dynamic, Styles } from "styles";
+import { Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
   Component,
@@ -7,7 +7,7 @@ import {
   toNative,
   VueComponent,
 } from "vue-class";
-import { useDesktop, useSettings } from "./stores";
+import { useDesktop, useTaskbarSetting } from "./stores";
 
 export interface MainAreaProps extends VueComponentBaseProps {}
 
@@ -16,11 +16,7 @@ export class MainAreaInst extends VueComponent<MainAreaProps> {
   static readonly defineProps: ComponentProps<MainAreaProps> = ["inst"];
 
   readonly styles = new Styles<"container">().addDynamic("container", () => {
-    const settings = useSettings().taskbar;
-    let deputySizeProp = "height";
-    if (settings.position === "left" || settings.position === "right") {
-      deputySizeProp = "width";
-    }
+    const { deputySizeProp } = useTaskbarSetting();
     return {
       position: "relative",
       flexGrow: "1",

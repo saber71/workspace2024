@@ -1,2 +1,2 @@
 export * from "./useDesktop";
-export * from "./useSettings";
+export * from "./useTaskbarSetting";

@@ -8,7 +8,7 @@ import {
   VueComponent,
 } from "vue-class";
 import Main from "./main-area";
-import { useDesktop, useSettings } from "./stores";
+import { useDesktop, useTaskbarSetting } from "./stores";
 import Taskbar from "./taskbar";
 
 export interface DesktopProps extends VueComponentBaseProps {}
@@ -24,7 +24,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
       overflow: "auto",
     })
     .addDynamic("wrapper", () => {
-      const settings = useSettings().taskbar;
+      const settings = useTaskbarSetting().value;
       let flexDirection: any;
       if (settings.position === "left") flexDirection = "row-reverse";
       else if (settings.position === "right") flexDirection = "row";
