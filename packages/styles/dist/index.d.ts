@@ -19,8 +19,8 @@ export declare class Styles<Class extends string> {
     private _styleEL?;
     private _timeoutHandler?;
     readonly classNames: Readonly<Record<Class, string>>;
-    add(className: string, properties: CSSStyle, pseudoClasses: DynamicOptions["pseudoClasses"]): this;
-    addDynamic(className: string, callback: () => CSSStyle, options?: DynamicOptions): this;
+    add(className: Class, properties: CSSStyle, pseudoClasses?: DynamicOptions["pseudoClasses"]): this;
+    addDynamic(className: Class, callback: () => CSSStyle, options?: DynamicOptions): this;
     dispose(): void;
     private _handleCSSProperties;
     private _updateStyleElement;

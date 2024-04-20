@@ -16,7 +16,7 @@ class Styles {
     constructor(){
         this.classNames = new Proxy({}, {
             get (target, p) {
-                return target[p] ?? (target[p] = v4());
+                return target[p] ?? (target[p] = p + "-" + v4());
             }
         });
     }
@@ -56,6 +56,7 @@ class Styles {
         }
     }
     _handleCSSProperties(className, pseudoClasses, properties) {
+        className = this.classNames[className];
         let selector;
         if (pseudoClasses.length) selector = pseudoClasses.map((val)=>`.${className}:${val}`).join(",");
         else selector = `.${className}`;
@@ -66,10 +67,10 @@ class Styles {
                 if (isDynamicValue(value)) {
                     const name = this._createCSSPropertyName(className, property, pseudoClasses);
                     document.documentElement.style.setProperty(name, value.value + "");
-                    css += `${property}:var(${name});`;
+                    css += `${transformProperty(property)}:var(${name});`;
                 }
             } else {
-                css += `${property}:${value};`;
+                css += `${transformProperty(property)}:${value};`;
             }
         }
         css = `${selector}{${css}}`;
@@ -110,6 +111,15 @@ function getPseudoClasses(data) {
         ];
     } else pseudoClasses = [];
     return pseudoClasses;
+}
+function transformProperty(property) {
+    let result = "";
+    for(let i = 0; i < property.length; i++){
+        const char = property[i];
+        if (/[A-Z]/.test(char)) result += "-" + char.toLowerCase();
+        else result += char;
+    }
+    return result;
 }
 
 export { Styles, dynamic, isDynamicValue };

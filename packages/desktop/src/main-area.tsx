@@ -1,3 +1,4 @@
+import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
   Component,
@@ -6,7 +7,7 @@ import {
   toNative,
   VueComponent,
 } from "vue-class";
-import { useDesktop, useDesktopStyles } from "./stores";
+import { useDesktop, useSettings } from "./stores";
 
 export interface MainAreaProps extends VueComponentBaseProps {}
 
@@ -14,13 +15,25 @@ export interface MainAreaProps extends VueComponentBaseProps {}
 export class MainAreaInst extends VueComponent<MainAreaProps> {
   static readonly defineProps: ComponentProps<MainAreaProps> = ["inst"];
 
+  readonly styles = new Styles<"container">().addDynamic("container", () => {
+    const settings = useSettings().taskbar;
+    let deputySizeProp = "height";
+    if (settings.position === "left" || settings.position === "right") {
+      deputySizeProp = "width";
+    }
+    return {
+      position: "relative",
+      flexGrow: "1",
+      [deputySizeProp]: "100%",
+    };
+  });
+
   setup() {
     useDesktop().mainAreaInst = this as any;
   }
 
   render(): VNodeChild {
-    const styles = useDesktopStyles().mainAreaStyles;
-    return <div style={styles.container}></div>;
+    return <div class={this.styles.classNames.container}></div>;
   }
 }
 

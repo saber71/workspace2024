@@ -33,6 +33,7 @@ export default defineConfig({
         "eventemitter3",
         "@ant-design/icons-vue",
         "ant-design-vue",
+        "styles",
       ],
     },
     lib: {

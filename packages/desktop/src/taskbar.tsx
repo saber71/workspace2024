@@ -1,5 +1,6 @@
 import { WindowsFilled } from "@ant-design/icons-vue";
-import type { CSSProperties, VNodeChild } from "vue";
+import { dynamic, Styles } from "styles";
+import type { VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
@@ -7,6 +8,7 @@ import {
   toNative,
   VueComponent,
   Computed,
+  Hook,
 } from "vue-class";
 import { TASKBAR_INIT_HEIGHT } from "./constants";
 import { rem, useDesktop, useSettings } from "./stores";
@@ -18,8 +20,114 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
   static readonly defineProps: ComponentProps<TaskbarProps> = ["inst"];
 
   readonly desktop = useDesktop();
+  readonly styles = new Styles<
+    | "time"
+    | "container"
+    | "promptLine"
+    | "startButton"
+    | "contentArea"
+    | "infoArea"
+    | "blank"
+  >()
+    .addDynamic("blank", () => {
+      const { deputySizeProp } = this.styleHelper;
+      return {
+        flexBasis: "7px",
+        [deputySizeProp]: "100%",
+        transition: "all 0.1s",
+      };
+    })
+    .add(
+      "blank",
+      {
+        boxShadow: "-2px 0 2px 0 rgba(0,0,0,0.2)",
+      },
+      "hover",
+    )
+    .add("time", {
+      textAlign: "center",
+      fontSize: "0.75rem",
+    })
+    .addDynamic("container", () => {
+      const {
+        deputySizeValue,
+        deputySizeProp,
+        deputyMinSizeProp,
+        principalSizeProp,
+        isHorizon,
+      } = this.styleHelper;
+      return {
+        [principalSizeProp]: "100%",
+        [deputySizeProp]: dynamic(deputySizeValue),
+        [deputyMinSizeProp]: dynamic(rem(TASKBAR_INIT_HEIGHT)),
+        display: "flex",
+        flexDirection: dynamic(isHorizon ? "column" : "row"),
+        flexShrink: "0",
+        background: "rgba(255, 255, 255, 0.5)",
+        backdropFilter: "blur(10px)",
+      };
+    })
+    .addDynamic("promptLine", () => {
+      const {
+        promptLinePositions,
+        deputySizeProp,
+        principalSizeProp,
+        isHorizon,
+      } = this.styleHelper;
+      return {
+        position: "absolute",
+        [promptLinePositions[0]]: 0,
+        [promptLinePositions[1]]: 0,
+        [principalSizeProp]: "100%",
+        [deputySizeProp]: "3px",
+        transform: dynamic(isHorizon ? "translateX(-50%)" : "translateY(-50%)"),
+        cursor: dynamic(isHorizon ? "col-resize" : "row-resize"),
+      };
+    })
+    .addDynamic("startButton", () => {
+      const { deputySizeProp } = this.styleHelper;
+      return {
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexBasis: dynamic(rem(50)),
+        [deputySizeProp]: "100%",
+        fontSize: dynamic(rem(18)),
+        cursor: "pointer",
+        transition: "all 0.3s linear",
+      };
+    })
+    .add(
+      "startButton",
+      {
+        background: "rgba(255, 255, 255, 0.5)",
+      },
+      "hover",
+    )
+    .addDynamic("contentArea", () => {
+      const { deputySizeProp } = this.styleHelper;
+      return {
+        flexGrow: 1,
+        [deputySizeProp]: "100%",
+      };
+    })
+    .addDynamic("infoArea", () => {
+      const { deputySizeProp, isHorizon } = this.styleHelper;
+      return {
+        flexShrink: 0,
+        flexBasis: "100px",
+        [deputySizeProp]: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        flexDirection: dynamic(isHorizon ? "column" : "row"),
+        gap: "3px",
+        overflow: "hidden",
+      };
+    });
 
-  @Computed() get styles() {
+  @Computed() get styleHelper() {
     const settings = useSettings().taskbar;
 
     const deputySizeValue = settings.deputySize || rem(TASKBAR_INIT_HEIGHT);
@@ -39,59 +147,12 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     else if (settings.position === "right") promptLinePositions[1] = "left";
 
     return {
-      container: {
-        [principalSizeProp]: "100%",
-        [deputySizeProp]: deputySizeValue,
-        [deputyMinSizeProp]: rem(TASKBAR_INIT_HEIGHT),
-        display: "flex",
-        flexDirection: isHorizon ? "col" : "row",
-        position: "absolute",
-        left:
-          settings.position !== "right"
-            ? "0"
-            : `calc(100% - ${deputySizeValue})`,
-        top:
-          settings.position !== "bottom"
-            ? 0
-            : `calc(100% - ${deputySizeValue})`,
-        background: "rgba(255, 255, 255, 0.5)",
-        backdropFilter: "blur(10px)",
-      } as CSSProperties,
-      promptLine: {
-        position: "absolute",
-        [promptLinePositions[0]]: 0,
-        [promptLinePositions[1]]: 0,
-        [principalSizeProp]: "100%",
-        [deputySizeProp]: "3px",
-        transform: isHorizon ? "translateX(-50%)" : "translateY(-50%)",
-        cursor: isHorizon ? "row-resize" : "col-resize",
-      } as CSSProperties,
-      startButton: {
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexBasis: rem(50),
-        [deputySizeProp]: "100%",
-        fontSize: rem(18),
-        cursor: "pointer",
-        transition: "all 0.3s ease-in-out",
-      } as CSSProperties,
-      contentArea: {
-        flexGrow: 1,
-        [deputySizeProp]: "100%",
-      } as CSSProperties,
-      infoArea: {
-        flexShrink: 0,
-        [principalSizeProp]: "100px",
-        [deputySizeProp]: "100%",
-        display: "flex",
-        alignItems: "center",
-      } as CSSProperties,
-      time: {
-        textAlign: "center",
-        fontSize: "0.75rem",
-      } as CSSProperties,
+      promptLinePositions,
+      principalSizeProp,
+      deputySizeProp,
+      deputyMinSizeProp,
+      deputySizeValue,
+      isHorizon,
     };
   }
 
@@ -99,21 +160,26 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     useDesktop().taskbarInst = this as any;
   }
 
+  @Hook("onUnmounted") onUnmounted(): void {
+    this.styles.dispose();
+  }
+
   render(): VNodeChild {
     const { styles, desktop } = this;
     return (
-      <div style={styles.container}>
-        <div style={styles.startButton} title={"开始"}>
+      <div class={styles.classNames.container}>
+        <div class={styles.classNames.startButton} title={"开始"}>
           <WindowsFilled />
         </div>
-        <div style={styles.contentArea}></div>
-        <div style={styles.infoArea}>
-          <div style={styles.time}>
+        <div class={styles.classNames.contentArea}></div>
+        <div class={styles.classNames.infoArea}>
+          <div class={styles.classNames.time}>
             <div>{desktop.formatTime}</div>
             <div>{desktop.formatDate}</div>
           </div>
+          <div class={styles.classNames.blank}></div>
         </div>
-        <div style={styles.promptLine}></div>
+        <div class={styles.classNames.promptLine}></div>
       </div>
     );
   }

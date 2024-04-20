@@ -10,7 +10,7 @@ export class Styles<Class extends string> {
       {},
       {
         get(target: any, p: string): any {
-          return target[p] ?? (target[p] = v4());
+          return target[p] ?? (target[p] = p + "-" + v4());
         },
       },
     ) as any;
@@ -25,9 +25,9 @@ export class Styles<Class extends string> {
   readonly classNames: Readonly<Record<Class, string>>;
 
   add(
-    className: string,
+    className: Class,
     properties: CSSStyle,
-    pseudoClasses: DynamicOptions["pseudoClasses"],
+    pseudoClasses?: DynamicOptions["pseudoClasses"],
   ) {
     this._handleCSSProperties(
       className,
@@ -38,7 +38,7 @@ export class Styles<Class extends string> {
   }
 
   addDynamic(
-    className: string,
+    className: Class,
     callback: () => CSSStyle,
     options: DynamicOptions = {},
   ): this {
@@ -74,6 +74,7 @@ export class Styles<Class extends string> {
     pseudoClasses: PseudoClassType[],
     properties: CSSStyle,
   ) {
+    className = (this.classNames as any)[className];
     let selector: string;
     if (pseudoClasses.length)
       selector = pseudoClasses.map((val) => `.${className}:${val}`).join(",");
@@ -89,10 +90,10 @@ export class Styles<Class extends string> {
             pseudoClasses,
           );
           document.documentElement.style.setProperty(name, value.value + "");
-          css += `${property}:var(${name});`;
+          css += `${transformProperty(property)}:var(${name});`;
         }
       } else {
-        css += `${property}:${value};`;
+        css += `${transformProperty(property)}:${value};`;
       }
     }
     css = `${selector}{${css}}`;
@@ -138,6 +139,16 @@ function getPseudoClasses(data?: DynamicOptions["pseudoClasses"]) {
     else pseudoClasses = [data];
   } else pseudoClasses = [];
   return pseudoClasses;
+}
+
+function transformProperty(property: string) {
+  let result = "";
+  for (let i = 0; i < property.length; i++) {
+    const char = property[i];
+    if (/[A-Z]/.test(char)) result += "-" + char.toLowerCase();
+    else result += char;
+  }
+  return result;
 }
 
 export type CSSStyle = {
