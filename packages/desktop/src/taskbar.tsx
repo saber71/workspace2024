@@ -1,5 +1,5 @@
 import { WindowsFilled } from "@ant-design/icons-vue";
-import { dynamic, Styles } from "styles";
+import { type CSSStyle, dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
   Component,
@@ -9,8 +9,46 @@ import {
   VueComponent,
   Hook,
 } from "vue-class";
-import { TASKBAR_INIT_HEIGHT } from "./constants";
+import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "./constants";
 import { rem, useDesktop, useTaskbarSetting } from "./stores";
+
+function setContainerPosition(
+  result: CSSStyle,
+  value: TaskbarSetting,
+  show: boolean,
+) {
+  switch (value.position) {
+    case "bottom":
+      result.bottom = "0";
+      result.left = "0";
+      result.transform = dynamic(
+        show ? "translate(0, 0)" : "translate(0, 100%)",
+      );
+      break;
+    case "left":
+      result.left = "0";
+      result.top = "0";
+      result.transform = dynamic(
+        show ? "translate(0, 0)" : "translate(-100%, 0)",
+      );
+      break;
+    case "right":
+      result.right = "0";
+      result.top = "0";
+      result.transform = dynamic(
+        show ? "translate(0, 0)" : "translate(100%, 0)",
+      );
+      break;
+    case "top":
+      result.top = "0";
+      result.left = 0;
+      result.transform = dynamic(
+        show ? "translate(0, 0)" : "translate(0, -100%)",
+      );
+      break;
+  }
+  return result;
+}
 
 export interface TaskbarProps extends VueComponentBaseProps {}
 
@@ -30,7 +68,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     .addDynamic("blank", () => {
       const { deputySizeProp } = useTaskbarSetting();
       return {
-        flexBasis: "7px",
+        flexBasis: "5px",
         [deputySizeProp]: "100%",
         transition: "all 0.1s",
       };
@@ -38,7 +76,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     .add(
       "blank",
       {
-        boxShadow: "-2px 0 2px 0 rgba(0,0,0,0.2)",
+        boxShadow: "-2px -2px 2px 0 rgba(0,0,0,0.2)",
       },
       "hover",
     )
@@ -53,18 +91,37 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         deputyMinSizeProp,
         principalSizeProp,
         isHorizon,
+        value,
       } = useTaskbarSetting();
-      return {
+      const result: CSSStyle = {
         [principalSizeProp]: "100%",
         [deputySizeProp]: dynamic(deputySizeValue),
-        [deputyMinSizeProp]: dynamic(rem(TASKBAR_INIT_HEIGHT)),
+        [deputyMinSizeProp]: dynamic(
+          rem(isHorizon ? TASKBAR_INIT_WIDTH : TASKBAR_INIT_HEIGHT),
+        ),
         display: "flex",
         flexDirection: dynamic(isHorizon ? "column" : "row"),
         flexShrink: "0",
         background: "rgba(255, 255, 255, 0.5)",
         backdropFilter: "blur(10px)",
+        position: dynamic(value.autoHide.enabled ? "absolute" : "relative"),
+        transitionProperty: "transform",
+        transitionDuration: "200ms",
+        transitionDelay: "500ms",
       };
+      if (value.autoHide.enabled) {
+        setContainerPosition(result, value, value.autoHide.forceShow);
+      }
+      return result;
     })
+    .addDynamic(
+      "container",
+      () => {
+        const result: CSSStyle = {};
+        return setContainerPosition(result, useTaskbarSetting().value, true);
+      },
+      { pseudoClasses: "hover" },
+    )
     .addDynamic("promptLine", () => {
       const {
         promptLinePositions,
@@ -120,8 +177,8 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         alignItems: "center",
         justifyContent: "flex-end",
         flexDirection: dynamic(isHorizon ? "column" : "row"),
-        gap: "3px",
         overflow: "hidden",
+        gap: "3px",
       };
     });
 
@@ -136,6 +193,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
   render(): VNodeChild {
     const { styles } = this;
     const desktop = useDesktop();
+    const setting = useTaskbarSetting().value;
     return (
       <div class={styles.classNames.container}>
         <div class={styles.classNames.startButton} title={"开始"}>
@@ -149,7 +207,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
           </div>
           <div class={styles.classNames.blank}></div>
         </div>
-        <div class={styles.classNames.promptLine}></div>
+        {setting.lock ? null : <div class={styles.classNames.promptLine}></div>}
       </div>
     );
   }

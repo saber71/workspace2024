@@ -29,7 +29,7 @@ export class MainAreaInst extends VueComponent<MainAreaProps> {
   }
 
   render(): VNodeChild {
-    return <div class={this.styles.classNames.container}></div>;
+    return <div class={this.styles.classNames.container}>main-area</div>;
   }
 }
 

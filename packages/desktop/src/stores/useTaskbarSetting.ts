@@ -6,7 +6,10 @@ import { rem } from "./useDesktop";
 export const useTaskbarSetting = defineStore("desktop.taskbar.setting", () => {
   const value = ref<TaskbarSetting>({
     deputySize: "",
-    autoHide: false,
+    autoHide: {
+      enabled: true,
+      forceShow: false,
+    },
     position: "bottom",
     small: false,
     lock: false,

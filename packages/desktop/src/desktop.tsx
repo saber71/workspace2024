@@ -38,6 +38,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
         flexDirection: dynamic(flexDirection),
         background: "wheat",
         cursor: "default",
+        overflow: "hidden",
       };
     });
 
