@@ -1,4 +1,3 @@
-import { WindowsFilled } from "@ant-design/icons-vue";
 import { type CSSStyle, dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -11,6 +10,10 @@ import {
 } from "vue-class";
 import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "./constants";
 import { rem, useDesktop, useTaskbarSetting } from "./stores";
+import ContentArea from "./taskbar/content-area";
+import InfoArea from "./taskbar/info-area";
+import PromptLine from "./taskbar/prompt-line";
+import StartButton from "./taskbar/start-button";
 
 function setContainerPosition(
   result: CSSStyle,
@@ -56,34 +59,7 @@ export interface TaskbarProps extends VueComponentBaseProps {}
 export class TaskbarInst extends VueComponent<TaskbarProps> {
   static readonly defineProps: ComponentProps<TaskbarProps> = ["inst"];
 
-  readonly styles = new Styles<
-    | "time"
-    | "container"
-    | "promptLine"
-    | "startButton"
-    | "contentArea"
-    | "infoArea"
-    | "blank"
-  >()
-    .addDynamic("blank", () => {
-      const { deputySizeProp } = useTaskbarSetting();
-      return {
-        flexBasis: "5px",
-        [deputySizeProp]: "100%",
-        transition: "all 0.1s",
-      };
-    })
-    .add(
-      "blank",
-      {
-        boxShadow: "-2px -2px 2px 0 rgba(0,0,0,0.2)",
-      },
-      "hover",
-    )
-    .add("time", {
-      textAlign: "center",
-      fontSize: "0.75rem",
-    })
+  readonly styles = new Styles<"container">()
     .addDynamic("container", () => {
       const {
         deputySizeValue,
@@ -121,66 +97,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         return setContainerPosition(result, useTaskbarSetting().value, true);
       },
       { pseudoClasses: "hover" },
-    )
-    .addDynamic("promptLine", () => {
-      const {
-        promptLinePositions,
-        deputySizeProp,
-        principalSizeProp,
-        isHorizon,
-      } = useTaskbarSetting();
-      return {
-        position: "absolute",
-        [promptLinePositions[0]]: 0,
-        [promptLinePositions[1]]: 0,
-        [principalSizeProp]: "100%",
-        [deputySizeProp]: "3px",
-        transform: dynamic(isHorizon ? "translateX(-50%)" : "translateY(-50%)"),
-        cursor: dynamic(isHorizon ? "col-resize" : "row-resize"),
-      };
-    })
-    .addDynamic("startButton", () => {
-      const { deputySizeProp } = useTaskbarSetting();
-      return {
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexBasis: dynamic(rem(50)),
-        [deputySizeProp]: "100%",
-        fontSize: dynamic(rem(18)),
-        cursor: "pointer",
-        transition: "all 0.3s linear",
-      };
-    })
-    .add(
-      "startButton",
-      {
-        background: "rgba(255, 255, 255, 0.5)",
-      },
-      "hover",
-    )
-    .addDynamic("contentArea", () => {
-      const { deputySizeProp } = useTaskbarSetting();
-      return {
-        flexGrow: 1,
-        [deputySizeProp]: "100%",
-      };
-    })
-    .addDynamic("infoArea", () => {
-      const { deputySizeProp, isHorizon } = useTaskbarSetting();
-      return {
-        flexShrink: 0,
-        flexBasis: "100px",
-        [deputySizeProp]: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
-        flexDirection: dynamic(isHorizon ? "column" : "row"),
-        overflow: "hidden",
-        gap: "3px",
-      };
-    });
+    );
 
   setup() {
     useDesktop().taskbarInst = this as any;
@@ -192,22 +109,13 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
 
   render(): VNodeChild {
     const { styles } = this;
-    const desktop = useDesktop();
     const setting = useTaskbarSetting().value;
     return (
       <div class={styles.classNames.container}>
-        <div class={styles.classNames.startButton} title={"开始"}>
-          <WindowsFilled />
-        </div>
-        <div class={styles.classNames.contentArea}></div>
-        <div class={styles.classNames.infoArea}>
-          <div class={styles.classNames.time}>
-            <div>{desktop.formatTime}</div>
-            <div>{desktop.formatDate}</div>
-          </div>
-          <div class={styles.classNames.blank}></div>
-        </div>
-        {setting.lock ? null : <div class={styles.classNames.promptLine}></div>}
+        <StartButton />
+        <ContentArea />
+        <InfoArea />
+        {setting.lock ? null : <PromptLine />}
       </div>
     );
   }

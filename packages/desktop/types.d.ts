@@ -15,3 +15,5 @@ declare interface TaskbarSetting {
   /* 设置任务栏在桌面上的位置。 default "bottom" */
   position: "top" | "right" | "bottom" | "left";
 }
+
+declare type BehaviorType = "normal" | "resize-taskbar";
