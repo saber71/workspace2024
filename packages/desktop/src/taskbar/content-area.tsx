@@ -26,6 +26,10 @@ export class ContentAreaInst extends VueComponent<ContentAreaProps> {
     },
   );
 
+  onUnmounted(): void {
+    this.styles.dispose();
+  }
+
   render(): VNodeChild {
     return <div class={this.styles.classNames.contentArea}></div>;
   }

@@ -6,7 +6,6 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
-  Hook,
 } from "vue-class";
 import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "./constants";
 import { rem, useDesktop, useTaskbarSetting } from "./stores";
@@ -103,7 +102,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     useDesktop().taskbarInst = this as any;
   }
 
-  @Hook("onUnmounted") onUnmounted(): void {
+  onUnmounted(): void {
     this.styles.dispose();
   }
 

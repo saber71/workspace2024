@@ -13,19 +13,30 @@ interface DesktopEvents {
 }
 
 export const useDesktop = defineStore("desktop", () => {
+  const initCursor = document.documentElement.style.cursor;
+  const cursor = ref(initCursor);
   const opened = useLocalStorage<number[]>("desktop.opened", []);
   const desktopInst = shallowRef<DesktopInst>(0 as any);
   const mainAreaInst = shallowRef<MainAreaInst>(0 as any);
   const taskbarInst = shallowRef<TaskbarInst>(0 as any);
-
   const id =
     opened.value.reduce(
       (previousValue, currentValue) => Math.max(previousValue, currentValue),
       -1,
     ) + 1;
+  const scale = useLocalStorage("desktop.scale", 1);
+  const timestamp = shallowRef(new Date());
+  const formatTime = ref("");
+  const formatDate = ref("");
+  let raqHandler = requestAnimationFrame(updateTimestamp);
+  const eventBus = new EventEmitter<DesktopEvents>().on("close", () => {
+    remove(opened.value, id);
+    document.documentElement.style.fontSize = oldFontSize;
+    cancelAnimationFrame(raqHandler);
+  });
+
   opened.value.push(id);
 
-  const scale = useLocalStorage("desktop.scale", 1);
   let oldFontSize = document.documentElement.style.fontSize;
   watch(
     scale,
@@ -36,15 +47,8 @@ export const useDesktop = defineStore("desktop", () => {
     { immediate: true },
   );
 
-  const timestamp = shallowRef(new Date());
-  const formatTime = ref("");
-  const formatDate = ref("");
-  let raqHandler = requestAnimationFrame(updateTimestamp);
-
-  const eventBus = new EventEmitter<DesktopEvents>().on("close", () => {
-    remove(opened.value, id);
-    document.documentElement.style.fontSize = oldFontSize;
-    cancelAnimationFrame(raqHandler);
+  watch(cursor, () => {
+    document.documentElement.style.cursor = cursor.value;
   });
 
   return {
@@ -57,7 +61,13 @@ export const useDesktop = defineStore("desktop", () => {
     timestamp,
     formatDate,
     formatTime,
+    cursor,
+    resetCursor,
   };
+
+  function resetCursor() {
+    cursor.value = initCursor;
+  }
 
   function updateTimestamp() {
     timestamp.value = new Date();

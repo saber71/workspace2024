@@ -128,6 +128,8 @@ export declare class VueComponent<Props extends VueComponentBaseProps = VueCompo
     get route(): RouteLocationNormalizedLoaded;
     render(): VNodeChild;
     setup(): void;
+    onMounted(): void;
+    onUnmounted(): void;
 }
 
 export declare interface VueComponentBaseProps extends Partial<HTMLAttributes> {

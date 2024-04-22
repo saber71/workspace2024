@@ -16,4 +16,44 @@ declare interface TaskbarSetting {
   position: "top" | "right" | "bottom" | "left";
 }
 
-declare type BehaviorType = "normal" | "resize-taskbar";
+declare type BehaviorType = "" | "resize-taskbar";
+
+type EventMap = HTMLElementEventMap & WindowEventHandlersEventMap;
+
+interface ExtraEventListenerOption {
+  key?: any;
+  behaviorTypes?: BehaviorType[] | BehaviorType;
+  firedOnLeave?: boolean;
+}
+
+declare interface Behavior {
+  listenerMapKeyBehaviorTypes: Map<
+    Function,
+    {
+      key: any;
+      behaviorTypes: BehaviorType[];
+      behaviorListener: Function;
+      event: string;
+    }
+  >;
+
+  addEventListener<EventName extends keyof EventMap>(
+    event: EventName,
+    listener: (e: EventMap[EventName]) => any,
+    options?: boolean | (AddEventListenerOptions & ExtraEventListenerOption),
+  ): this;
+
+  removeEventListener<EventName extends keyof EventMap>(
+    event: EventName,
+    listenerOrOption:
+      | ((e: EventMap[EventName]) => any)
+      | (EventListenerOptions & ExtraEventListenerOption),
+    options?: boolean | (EventListenerOptions & ExtraEventListenerOption),
+  ): this;
+
+  dispose(
+    options?: Pick<ExtraEventListenerOption, "behaviorTypes" | "key">,
+  ): void;
+
+  [key: string]: any;
+}

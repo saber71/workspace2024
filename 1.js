@@ -10,7 +10,11 @@
 //   console.log(hex.q, hex.r, hex.row, hex.col, hex.corners);
 // });
 
-import * as fs from "node:fs";
-import path from "node:path";
-
-console.log(process.argv, path.toNamespacedPath("D:\\usr\\bin\\bash"));
+const map = new Map();
+map.set(1, 2);
+map.set(2, 3);
+map.set(3, 4);
+for (let [key, value] of map.entries()) {
+  map.delete(key);
+  console.log(value);
+}

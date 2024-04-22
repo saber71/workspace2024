@@ -39,6 +39,10 @@ export class StartButtonInst extends VueComponent<StartButtonProps> {
       "hover",
     );
 
+  onUnmounted(): void {
+    this.styles.dispose();
+  }
+
   render(): VNodeChild {
     return (
       <div class={this.styles.classNames.startButton} title={"开始"}>

@@ -50,6 +50,10 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
       };
     });
 
+  onUnmounted(): void {
+    this.styles.dispose();
+  }
+
   render(): VNodeChild {
     const styles = this.styles;
     const desktop = useDesktop();
