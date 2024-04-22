@@ -10,7 +10,7 @@ export const useTaskbarSetting = defineStore("desktop.taskbar.setting", () => {
       enabled: false,
       forceShow: false,
     },
-    position: "left",
+    position: "bottom",
     small: false,
     lock: false,
   });

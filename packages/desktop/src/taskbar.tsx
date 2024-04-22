@@ -61,8 +61,8 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
 
   @Link() el: HTMLElement;
 
-  readonly styles = new Styles<"container">()
-    .addDynamic("container", () => {
+  readonly styles = new Styles<"taskbar">()
+    .addDynamic("taskbar", () => {
       const {
         deputySizeValue,
         deputySizeProp,
@@ -93,7 +93,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
       return result;
     })
     .addDynamic(
-      "container",
+      "taskbar",
       () => {
         const result: CSSStyle = {};
         return setContainerPosition(result, useTaskbarSetting().value, true);
@@ -113,7 +113,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     const { styles } = this;
     const setting = useTaskbarSetting().value;
     return (
-      <div ref={"el"} class={styles.classNames.container}>
+      <div ref={"el"} class={styles.classNames.taskbar}>
         <StartButton />
         <ContentArea />
         <InfoArea />

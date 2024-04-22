@@ -26,8 +26,6 @@ export const useDesktop = defineStore("desktop", () => {
     ) + 1;
   const scale = ref(1);
   const timestamp = shallowRef(new Date());
-  const formatTime = ref("");
-  const formatDate = ref("");
   let raqHandler = requestAnimationFrame(updateTimestamp);
   const eventBus = new EventEmitter<DesktopEvents>().on("close", () => {
     remove(opened.value, id);
@@ -60,8 +58,6 @@ export const useDesktop = defineStore("desktop", () => {
     mainAreaInst,
     taskbarInst,
     timestamp,
-    formatDate,
-    formatTime,
     cursor,
     resetCursor,
   };
@@ -72,23 +68,7 @@ export const useDesktop = defineStore("desktop", () => {
 
   function updateTimestamp() {
     timestamp.value = new Date();
-    updateTime();
-    updateDate();
     raqHandler = requestAnimationFrame(updateTimestamp);
-  }
-
-  function updateTime() {
-    const date = timestamp.value;
-    formatTime.value = `${formatNumber(date.getHours())}:${formatNumber(date.getMinutes())}`;
-  }
-
-  function updateDate() {
-    const date = timestamp.value;
-    formatDate.value = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-  }
-
-  function formatNumber(num: number) {
-    return num <= 9 ? "0" + num : num;
   }
 });
 

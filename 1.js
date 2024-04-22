@@ -10,11 +10,16 @@
 //   console.log(hex.q, hex.r, hex.row, hex.col, hex.corners);
 // });
 
-const map = new Map();
-map.set(1, 2);
-map.set(2, 3);
-map.set(3, 4);
-for (let [key, value] of map.entries()) {
-  map.delete(key);
-  console.log(value);
-}
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "2-digit",
+});
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  weekday: "short",
+});
+console.log(
+  dateFormatter.format(),
+  timeFormatter.format(),
+  new Date().getDay(),
+);

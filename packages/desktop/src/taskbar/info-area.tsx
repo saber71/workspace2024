@@ -7,7 +7,8 @@ import {
   toNative,
   VueComponent,
 } from "vue-class";
-import { useDesktop, useTaskbarSetting } from "../stores";
+import { useTaskbarSetting } from "../stores";
+import Time from "./info-area/time";
 
 export interface InfoAreaProps extends VueComponentBaseProps {}
 
@@ -15,7 +16,7 @@ export interface InfoAreaProps extends VueComponentBaseProps {}
 export class InfoAreaInst extends VueComponent<InfoAreaProps> {
   static readonly defineProps: ComponentProps<InfoAreaProps> = ["inst"];
 
-  readonly styles = new Styles<"time" | "infoArea" | "blank">()
+  readonly styles = new Styles<"infoArea" | "blank">()
     .addDynamic("infoArea", () => {
       const { deputySizeProp, isHorizon } = useTaskbarSetting();
       return {
@@ -37,11 +38,6 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
       },
       "hover",
     )
-    .add("time", {
-      textAlign: "center",
-      fontSize: "0.75rem",
-      userSelect: "none",
-    })
     .addDynamic("blank", () => {
       const { deputySizeProp } = useTaskbarSetting();
       return {
@@ -57,13 +53,9 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
 
   render(): VNodeChild {
     const styles = this.styles;
-    const desktop = useDesktop();
     return (
       <div class={styles.classNames.infoArea}>
-        <div class={styles.classNames.time}>
-          <div>{desktop.formatTime}</div>
-          <div>{desktop.formatDate}</div>
-        </div>
+        <Time />
         <div class={styles.classNames.blank}></div>
       </div>
     );

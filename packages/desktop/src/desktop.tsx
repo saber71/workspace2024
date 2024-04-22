@@ -51,7 +51,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
 
   render(): VNodeChild {
     return (
-      <div class={this.styles.classNames.container}>
+      <div id={"desktop-container"} class={this.styles.classNames.container}>
         <div ref={"wrapperEl"} class={this.styles.classNames.wrapper}>
           <Main></Main>
           <Taskbar></Taskbar>
