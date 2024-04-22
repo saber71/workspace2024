@@ -6,6 +6,7 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Link,
 } from "vue-class";
 import Main from "./main-area";
 import { useDesktop, useTaskbarSetting } from "./stores";
@@ -16,6 +17,8 @@ export interface DesktopProps extends VueComponentBaseProps {}
 @Component()
 export class DesktopInst extends VueComponent<DesktopProps> {
   static readonly defineProps: ComponentProps<DesktopProps> = ["inst"];
+
+  @Link() wrapperEl: HTMLElement;
 
   readonly styles = new Styles<"container" | "wrapper">()
     .add("container", {
@@ -49,7 +52,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
   render(): VNodeChild {
     return (
       <div class={this.styles.classNames.container}>
-        <div class={this.styles.classNames.wrapper}>
+        <div ref={"wrapperEl"} class={this.styles.classNames.wrapper}>
           <Main></Main>
           <Taskbar></Taskbar>
         </div>

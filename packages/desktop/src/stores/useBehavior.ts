@@ -1,7 +1,5 @@
 import { defineStore } from "pinia";
-import { WebSocket } from "vite";
 import { ref } from "vue";
-import EventListenerOptions = WebSocket.EventListenerOptions;
 
 export const useBehavior = defineStore("desktop.behavior", () => {
   const curBehavior = ref<BehaviorType>("");

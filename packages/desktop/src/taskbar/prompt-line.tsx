@@ -22,14 +22,20 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
       deputySizeProp,
       principalSizeProp,
       isHorizon,
+      value,
     } = useTaskbarSetting();
+    let transform = "";
+    if (value.position === "left") transform = "translateX(50%)";
+    else if (value.position === "right") transform = "translateX(-50%)";
+    else if (value.position === "top") transform = "translateY(50%)";
+    else if (value.position === "bottom") transform = "translateY(-50%)";
     return {
       position: "absolute",
       [promptLinePositions[0]]: 0,
       [promptLinePositions[1]]: 0,
       [principalSizeProp]: "100%",
-      [deputySizeProp]: "3px",
-      transform: dynamic(isHorizon ? "translateX(-50%)" : "translateY(-50%)"),
+      [deputySizeProp]: "5px",
+      transform: dynamic(transform),
       cursor: dynamic(isHorizon ? "col-resize" : "row-resize"),
     };
   });
@@ -67,7 +73,10 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
             const { value, deputySizeProp } = useTaskbarSetting();
             const offsetX = e.x - downPosition.x;
             const offsetY = e.y - downPosition.y;
-            let deputySize = this.el.getBoundingClientRect()[deputySizeProp];
+            let deputySize =
+              useDesktop().taskbarInst.el.getBoundingClientRect()[
+                deputySizeProp
+              ];
             if (value.position === "left") {
               deputySize += offsetX;
             } else if (value.position === "right") {

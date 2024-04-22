@@ -1,24 +1,26 @@
 import { defineStore } from "pinia";
 import { computed, ref, watchEffect } from "vue";
-import { TASKBAR_INIT_HEIGHT } from "../constants";
-import { rem } from "./useDesktop";
+import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "../constants";
+import { rem, useDesktop } from "./useDesktop";
 
 export const useTaskbarSetting = defineStore("desktop.taskbar.setting", () => {
   const value = ref<TaskbarSetting>({
     deputySize: "",
     autoHide: {
-      enabled: true,
+      enabled: false,
       forceShow: false,
     },
-    position: "bottom",
+    position: "left",
     small: false,
     lock: false,
   });
-  const deputySizeValue = computed(
-    () => value.value.deputySize || rem(TASKBAR_INIT_HEIGHT),
-  );
   const isHorizon = computed(
     () => value.value.position === "left" || value.value.position === "right",
+  );
+  const deputySizeValue = computed(
+    () =>
+      value.value.deputySize ||
+      rem(isHorizon.value ? TASKBAR_INIT_WIDTH : TASKBAR_INIT_HEIGHT),
   );
   const principalSizeProp = computed(() =>
     isHorizon.value ? "height" : "width",
@@ -30,6 +32,7 @@ export const useTaskbarSetting = defineStore("desktop.taskbar.setting", () => {
   const promptLinePositions = ref(["top", "left"]);
 
   watchEffect(() => {
+    useDesktop().scale = value.value.small ? 0.75 : 1;
     const array = ["top", "left"];
     if (value.value.position === "top") array[0] = "bottom";
     else if (value.value.position === "left") array[1] = "right";

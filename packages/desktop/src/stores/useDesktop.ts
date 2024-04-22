@@ -13,7 +13,7 @@ interface DesktopEvents {
 }
 
 export const useDesktop = defineStore("desktop", () => {
-  const initCursor = document.documentElement.style.cursor;
+  const initCursor = "default";
   const cursor = ref(initCursor);
   const opened = useLocalStorage<number[]>("desktop.opened", []);
   const desktopInst = shallowRef<DesktopInst>(0 as any);
@@ -24,7 +24,7 @@ export const useDesktop = defineStore("desktop", () => {
       (previousValue, currentValue) => Math.max(previousValue, currentValue),
       -1,
     ) + 1;
-  const scale = useLocalStorage("desktop.scale", 1);
+  const scale = ref(1);
   const timestamp = shallowRef(new Date());
   const formatTime = ref("");
   const formatDate = ref("");
@@ -48,12 +48,13 @@ export const useDesktop = defineStore("desktop", () => {
   );
 
   watch(cursor, () => {
-    document.documentElement.style.cursor = cursor.value;
+    desktopInst.value.wrapperEl.style.cursor = cursor.value;
   });
 
   return {
     opened,
     id,
+    scale,
     eventBus,
     desktopInst,
     mainAreaInst,

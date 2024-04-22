@@ -40,6 +40,7 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
     .add("time", {
       textAlign: "center",
       fontSize: "0.75rem",
+      userSelect: "none",
     })
     .addDynamic("blank", () => {
       const { deputySizeProp } = useTaskbarSetting();

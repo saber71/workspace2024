@@ -47,7 +47,7 @@ export declare const Taskbar: DefineSetupFnComponent<TaskbarProps, {}, {}, Taskb
 
 declare class TaskbarInst extends VueComponent<TaskbarProps> {
     static readonly defineProps: ComponentProps<TaskbarProps>;
-    readonly styles: Styles<"time" | "container" | "promptLine" | "startButton" | "contentArea" | "infoArea" | "blank">;
+    readonly styles: Styles<"container">;
     setup(): void;
     onUnmounted(): void;
     render(): VNodeChild;
@@ -55,6 +55,17 @@ declare class TaskbarInst extends VueComponent<TaskbarProps> {
 
 declare interface TaskbarProps extends VueComponentBaseProps {
 }
+
+export declare const useBehavior: StoreDefinition<"desktop.behavior", _UnwrapAll<Pick<{
+curBehavior: Ref<BehaviorType>;
+wrapEventTarget: (eventTarget: EventTarget) => Behavior;
+}, "curBehavior">>, Pick<{
+curBehavior: Ref<BehaviorType>;
+wrapEventTarget: (eventTarget: EventTarget) => Behavior;
+}, never>, Pick<{
+curBehavior: Ref<BehaviorType>;
+wrapEventTarget: (eventTarget: EventTarget) => Behavior;
+}, "wrapEventTarget">>;
 
 export declare const useDesktop: StoreDefinition<"desktop", _UnwrapAll<Pick<{
 opened: RemovableRef<number[]>;
@@ -66,7 +77,9 @@ taskbarInst: ShallowRef<TaskbarInst>;
 timestamp: ShallowRef<Date>;
 formatDate: Ref<string>;
 formatTime: Ref<string>;
-}, "id" | "opened" | "eventBus" | "desktopInst" | "mainAreaInst" | "taskbarInst" | "timestamp" | "formatDate" | "formatTime">>, Pick<{
+cursor: Ref<string>;
+resetCursor: () => void;
+}, "id" | "cursor" | "opened" | "eventBus" | "desktopInst" | "mainAreaInst" | "taskbarInst" | "timestamp" | "formatDate" | "formatTime">>, Pick<{
 opened: RemovableRef<number[]>;
 id: number;
 eventBus: default_2<DesktopEvents, any>;
@@ -76,6 +89,8 @@ taskbarInst: ShallowRef<TaskbarInst>;
 timestamp: ShallowRef<Date>;
 formatDate: Ref<string>;
 formatTime: Ref<string>;
+cursor: Ref<string>;
+resetCursor: () => void;
 }, never>, Pick<{
 opened: RemovableRef<number[]>;
 id: number;
@@ -86,13 +101,18 @@ taskbarInst: ShallowRef<TaskbarInst>;
 timestamp: ShallowRef<Date>;
 formatDate: Ref<string>;
 formatTime: Ref<string>;
-}, never>>;
+cursor: Ref<string>;
+resetCursor: () => void;
+}, "resetCursor">>;
 
 export declare const useTaskbarSetting: StoreDefinition<"desktop.taskbar.setting", _UnwrapAll<Pick<{
 value: Ref<    {
 lock: boolean;
 deputySize: string | number;
-autoHide: boolean;
+autoHide: {
+enabled: boolean;
+forceShow: boolean;
+};
 small: boolean;
 position: "bottom" | "left" | "right" | "top";
 }>;
@@ -106,7 +126,10 @@ promptLinePositions: Ref<string[]>;
 value: Ref<    {
 lock: boolean;
 deputySize: string | number;
-autoHide: boolean;
+autoHide: {
+enabled: boolean;
+forceShow: boolean;
+};
 small: boolean;
 position: "bottom" | "left" | "right" | "top";
 }>;
@@ -120,7 +143,10 @@ promptLinePositions: Ref<string[]>;
 value: Ref<    {
 lock: boolean;
 deputySize: string | number;
-autoHide: boolean;
+autoHide: {
+enabled: boolean;
+forceShow: boolean;
+};
 small: boolean;
 position: "bottom" | "left" | "right" | "top";
 }>;

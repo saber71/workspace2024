@@ -6,6 +6,7 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Link,
 } from "vue-class";
 import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "./constants";
 import { rem, useDesktop, useTaskbarSetting } from "./stores";
@@ -57,6 +58,8 @@ export interface TaskbarProps extends VueComponentBaseProps {}
 @Component()
 export class TaskbarInst extends VueComponent<TaskbarProps> {
   static readonly defineProps: ComponentProps<TaskbarProps> = ["inst"];
+
+  @Link() el: HTMLElement;
 
   readonly styles = new Styles<"container">()
     .addDynamic("container", () => {
@@ -110,7 +113,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     const { styles } = this;
     const setting = useTaskbarSetting().value;
     return (
-      <div class={styles.classNames.container}>
+      <div ref={"el"} class={styles.classNames.container}>
         <StartButton />
         <ContentArea />
         <InfoArea />
