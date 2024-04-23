@@ -8,7 +8,11 @@ import {
   VueComponent,
   Link,
 } from "vue-class";
-import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "./constants";
+import {
+  BACKGROUND_COLOR,
+  TASKBAR_INIT_HEIGHT,
+  TASKBAR_INIT_WIDTH,
+} from "./constants";
 import { rem, useDesktop, useTaskbarSetting } from "./stores";
 import ContentArea from "./taskbar/content-area";
 import InfoArea from "./taskbar/info-area";
@@ -80,7 +84,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         display: "flex",
         flexDirection: dynamic(isHorizon ? "column" : "row"),
         flexShrink: "0",
-        background: "rgba(255, 255, 255, 0.5)",
+        background: BACKGROUND_COLOR,
         backdropFilter: "blur(10px)",
         position: dynamic(value.autoHide.enabled ? "absolute" : "relative"),
         transitionProperty: "transform",

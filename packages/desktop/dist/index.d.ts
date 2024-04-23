@@ -21,6 +21,7 @@ declare interface DesktopEvents {
 
 declare class DesktopInst extends VueComponent<DesktopProps> {
     static readonly defineProps: ComponentProps<DesktopProps>;
+    wrapperEl: HTMLElement;
     readonly styles: Styles<"container" | "wrapper">;
     setup(): void;
     render(): VNodeChild;
@@ -47,7 +48,8 @@ export declare const Taskbar: DefineSetupFnComponent<TaskbarProps, {}, {}, Taskb
 
 declare class TaskbarInst extends VueComponent<TaskbarProps> {
     static readonly defineProps: ComponentProps<TaskbarProps>;
-    readonly styles: Styles<"container">;
+    el: HTMLElement;
+    readonly styles: Styles<"taskbar">;
     setup(): void;
     onUnmounted(): void;
     render(): VNodeChild;
@@ -70,37 +72,34 @@ wrapEventTarget: (eventTarget: EventTarget) => Behavior;
 export declare const useDesktop: StoreDefinition<"desktop", _UnwrapAll<Pick<{
 opened: RemovableRef<number[]>;
 id: number;
+scale: Ref<number>;
 eventBus: default_2<DesktopEvents, any>;
 desktopInst: ShallowRef<DesktopInst>;
 mainAreaInst: ShallowRef<MainAreaInst>;
 taskbarInst: ShallowRef<TaskbarInst>;
 timestamp: ShallowRef<Date>;
-formatDate: Ref<string>;
-formatTime: Ref<string>;
 cursor: Ref<string>;
 resetCursor: () => void;
-}, "id" | "cursor" | "opened" | "eventBus" | "desktopInst" | "mainAreaInst" | "taskbarInst" | "timestamp" | "formatDate" | "formatTime">>, Pick<{
+}, "id" | "cursor" | "scale" | "opened" | "eventBus" | "desktopInst" | "mainAreaInst" | "taskbarInst" | "timestamp">>, Pick<{
 opened: RemovableRef<number[]>;
 id: number;
+scale: Ref<number>;
 eventBus: default_2<DesktopEvents, any>;
 desktopInst: ShallowRef<DesktopInst>;
 mainAreaInst: ShallowRef<MainAreaInst>;
 taskbarInst: ShallowRef<TaskbarInst>;
 timestamp: ShallowRef<Date>;
-formatDate: Ref<string>;
-formatTime: Ref<string>;
 cursor: Ref<string>;
 resetCursor: () => void;
 }, never>, Pick<{
 opened: RemovableRef<number[]>;
 id: number;
+scale: Ref<number>;
 eventBus: default_2<DesktopEvents, any>;
 desktopInst: ShallowRef<DesktopInst>;
 mainAreaInst: ShallowRef<MainAreaInst>;
 taskbarInst: ShallowRef<TaskbarInst>;
 timestamp: ShallowRef<Date>;
-formatDate: Ref<string>;
-formatTime: Ref<string>;
 cursor: Ref<string>;
 resetCursor: () => void;
 }, "resetCursor">>;
