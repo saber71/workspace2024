@@ -1,4 +1,3 @@
-///<reference types="../types.d.ts"/>
 import type { RuleObject } from "ant-design-vue/es/form";
 import validator from "validator";
 

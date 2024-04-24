@@ -1,6 +1,7 @@
+import type { CrudTypes } from "@/components/crud/types.ts";
 import { ref } from "vue";
 
-export function dict(option: DictOption): DictInstance {
+export function dict(option: CrudTypes.DictOption): CrudTypes.DictInstance {
   return {
     reload() {
       if (option.getData) {

@@ -1,5 +1,6 @@
-import { isMock, userApi } from "@/api.ts";
+import { userApi } from "@/api.ts";
 import { useUser } from "@/stores";
+import { Required } from "@/utils";
 import {
   Button,
   Card,
@@ -20,7 +21,6 @@ import {
   Mut,
   BindThis,
 } from "vue-class";
-import { Required } from "vue-form-rules";
 
 @Component()
 export class LoginInst extends VueComponent {

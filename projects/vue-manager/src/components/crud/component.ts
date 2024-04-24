@@ -1,4 +1,6 @@
-export const DefaultComponentProps: Partial<AntComponentPropsMap> = {
+import type { CrudTypes } from "@/components/crud/types.ts";
+
+export const DefaultComponentProps: Partial<CrudTypes.AntComponentPropsMap> = {
   Input: { allowClear: true, placeholder: "请输入" },
   InputSearch: { allowClear: true, placeholder: "请输入", enterButton: true },
   InputNumber: { placeholder: "请输入" },
@@ -7,7 +9,10 @@ export const DefaultComponentProps: Partial<AntComponentPropsMap> = {
   Table: { pagination: false, sticky: true, rowKey: "_id" },
 };
 
-export const ComponentVModal: Record<keyof AntComponentPropsMap, any> = {
+export const ComponentVModal: Record<
+  keyof CrudTypes.AntComponentPropsMap,
+  any
+> = {
   Input: "value",
   InputSearch: "value",
   InputPassword: "value",

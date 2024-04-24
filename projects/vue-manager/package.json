@@ -24,11 +24,10 @@
     "server-api-provider": "workspace:^",
     "styles": "workspace:^",
     "uuid": "^9.0.1",
+    "validator": "^13.11.0",
     "vue": "^3.4.23",
     "vue-auto-route": "workspace:^",
     "vue-class": "workspace:^",
-    "vue-crud": "workspace:^",
-    "vue-form-rules": "workspace:^",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {

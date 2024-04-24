@@ -1,3 +1,6 @@
+import Crud from "@/components/crud";
+import type { CrudTypes } from "@/components/crud/types.ts";
+import { Required } from "@/utils";
 import type { VNodeChild } from "vue";
 import {
   Component,
@@ -6,14 +9,12 @@ import {
   toNative,
   VueComponent,
 } from "vue-class";
-import Crud from "vue-crud/src/index";
-import { Required } from "vue-form-rules";
 
 @Component()
 export class TableViewInst extends VueComponent {
   static readonly defineProps: ComponentProps<VueComponentBaseProps> = ["inst"];
 
-  readonly options: CrudOptions = {
+  readonly options: CrudTypes.CrudOptions = {
     tableOption: {
       tableColumnType: {
         align: "center",
@@ -51,7 +52,7 @@ export class TableViewInst extends VueComponent {
     },
   };
 
-  readonly dataSource: PaginationResult = {
+  readonly dataSource: CrudTypes.PaginationResult = {
     data: [
       {
         name: "dsa",

@@ -9,7 +9,7 @@ import { createApp } from "vue";
 import antd from "ant-design-vue";
 import { autoRoutes } from "vue-auto-route";
 import { VueClass } from "vue-class";
-import "vue-crud/index.css";
+import "@/components/crud/index.css";
 import { createRouter, createWebHashHistory } from "vue-router";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -32,7 +32,7 @@ const routeRecords = await autoRoutes(
 const app = createApp(App).use(antd).use(createPinia());
 const router = createRouter({
   history: createWebHashHistory(),
-  routes: [routeRecords]
+  routes: [routeRecords],
 });
 
 await VueClass.install(app, router);

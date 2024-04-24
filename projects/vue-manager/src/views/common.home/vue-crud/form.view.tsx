@@ -1,3 +1,6 @@
+import Crud, { type CrudInst } from "@/components/crud";
+import type { CrudTypes } from "@/components/crud/types.ts";
+import { Required } from "@/utils";
 import { Button } from "ant-design-vue";
 import { type VNodeChild } from "vue";
 import {
@@ -9,8 +12,6 @@ import {
   Link,
   Hook,
 } from "vue-class";
-import Crud, { CrudInst } from "vue-crud/src/index";
-import { Required } from "vue-form-rules";
 
 @Component()
 export class FormViewInst extends VueComponent {
@@ -18,7 +19,7 @@ export class FormViewInst extends VueComponent {
 
   @Link() readonly crud: CrudInst;
 
-  readonly options: CrudOptions = {
+  readonly options: CrudTypes.CrudOptions = {
     tableOption: {
       show: false,
     },
