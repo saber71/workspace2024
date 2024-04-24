@@ -1,9 +1,53 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
+namespace Behavior {
+  export type Type = "" | "resize-taskbar";
+
+  export type EventMap = HTMLElementEventMap & WindowEventHandlersEventMap;
+
+  export interface ExtraEventListenerOption {
+    key?: any;
+    behaviorTypes?: Type[] | Type;
+    firedOnLeave?: boolean;
+  }
+
+  export interface Instance {
+    listenerMapKeyBehaviorTypes: Map<
+      Function,
+      {
+        key: any;
+        behaviorTypes: Type[];
+        behaviorListener: Function;
+        event: string;
+      }
+    >;
+
+    addEventListener<EventName extends keyof EventMap>(
+      event: EventName,
+      listener: (e: EventMap[EventName]) => any,
+      options?: boolean | (AddEventListenerOptions & ExtraEventListenerOption),
+    ): this;
+
+    removeEventListener<EventName extends keyof EventMap>(
+      event: EventName,
+      listenerOrOption:
+        | ((e: EventMap[EventName]) => any)
+        | (EventListenerOptions & ExtraEventListenerOption),
+      options?: boolean | (EventListenerOptions & ExtraEventListenerOption),
+    ): this;
+
+    dispose(
+      options?: Pick<ExtraEventListenerOption, "behaviorTypes" | "key">,
+    ): void;
+
+    [key: string]: any;
+  }
+}
+
 export const useBehavior = defineStore("desktop.behavior", () => {
-  const curBehavior = ref<BehaviorType>("");
-  const eventTargetMap = new WeakMap<EventTarget, Behavior>();
+  const curBehavior = ref<Behavior.Type>("");
+  const eventTargetMap = new WeakMap<EventTarget, Behavior.Instance>();
 
   return {
     curBehavior,
@@ -15,14 +59,14 @@ export const useBehavior = defineStore("desktop.behavior", () => {
     if (!behavior) {
       behavior = {
         listenerMapKeyBehaviorTypes: new Map(),
-        addEventListener<EventName extends keyof EventMap>(
+        addEventListener<EventName extends keyof Behavior.EventMap>(
           event: EventName,
-          listener: (e: EventMap[EventName]) => any,
+          listener: (e: Behavior.EventMap[EventName]) => any,
           options?:
             | boolean
-            | (AddEventListenerOptions & ExtraEventListenerOption),
+            | (AddEventListenerOptions & Behavior.ExtraEventListenerOption),
         ) {
-          let behaviorTypes: BehaviorType[], key: any, firedOnLeave: boolean;
+          let behaviorTypes: Behavior.Type[], key: any, firedOnLeave: boolean;
           if (typeof options === "object") {
             key = options.key;
             behaviorTypes = toBehaviorTypes(options.behaviorTypes, "");
@@ -49,12 +93,14 @@ export const useBehavior = defineStore("desktop.behavior", () => {
             });
           return this;
         },
-        removeEventListener<EventName extends keyof EventMap>(
+        removeEventListener<EventName extends keyof Behavior.EventMap>(
           event: EventName,
           listenerOrOption:
-            | ((e: EventMap[EventName]) => any)
-            | (EventListenerOptions & ExtraEventListenerOption),
-          options?: boolean | (EventListenerOptions & ExtraEventListenerOption),
+            | ((e: Behavior.EventMap[EventName]) => any)
+            | (EventListenerOptions & Behavior.ExtraEventListenerOption),
+          options?:
+            | boolean
+            | (EventListenerOptions & Behavior.ExtraEventListenerOption),
         ) {
           if (typeof listenerOrOption === "function") {
             const data = this.listenerMapKeyBehaviorTypes.get(listenerOrOption);
@@ -138,9 +184,9 @@ export const useBehavior = defineStore("desktop.behavior", () => {
 });
 
 function toBehaviorTypes(
-  types?: BehaviorType | BehaviorType[],
-  defaultType?: BehaviorType,
-): BehaviorType[] {
+  types?: Behavior.Type | Behavior.Type[],
+  defaultType?: Behavior.Type,
+): Behavior.Type[] {
   if (!types) {
     if (typeof defaultType === "string") return [defaultType];
     else return [];

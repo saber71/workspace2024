@@ -1,3 +1,4 @@
+import { useBehavior } from "@/stores";
 import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -8,7 +9,7 @@ import {
   VueComponent,
   Link,
 } from "vue-class";
-import { useBehavior, useDesktop, useTaskbarSetting } from "../stores";
+import { useDesktop, useTaskbarSetting } from "../stores";
 
 export interface PromptLineProps extends VueComponentBaseProps {}
 

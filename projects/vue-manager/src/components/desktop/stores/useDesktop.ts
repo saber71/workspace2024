@@ -4,7 +4,7 @@ import EventEmitter from "eventemitter3";
 import { defineStore } from "pinia";
 import { ref, shallowRef, watch } from "vue";
 import { BASE_FONT_SIZE } from "../constants";
-import type { DesktopInst } from "../desktop";
+import type { DesktopInst } from "../index.tsx";
 import type { MainAreaInst } from "../main-area";
 import type { TaskbarInst } from "../taskbar";
 

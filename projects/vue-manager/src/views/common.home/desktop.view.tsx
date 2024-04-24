@@ -1,5 +1,5 @@
+import Desktop from "@/components/desktop";
 import { WindowsFilled } from "@ant-design/icons-vue";
-import { Desktop } from "desktop/src";
 import type { VNodeChild } from "vue";
 import {
   Component,

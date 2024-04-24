@@ -1,9 +1,10 @@
+import { useBehavior } from "@/stores";
 import { DownOutlined, UpOutlined } from "@ant-design/icons-vue";
-import { createPopper, Instance } from "@popperjs/core";
+import { createPopper, type Instance } from "@popperjs/core";
 import { Button, Flex, Space } from "ant-design-vue";
 import { If } from "common";
 import { dynamic, Styles } from "styles";
-import { CSSProperties, nextTick, type VNodeChild } from "vue";
+import { type CSSProperties, nextTick, type VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
@@ -19,7 +20,7 @@ import {
   PRIMARY_COLOR,
   PRIMARY_HOVER_COLOR,
 } from "../../constants";
-import { rem, useBehavior, useDesktop, useTaskbarSetting } from "../../stores";
+import { rem, useDesktop, useTaskbarSetting } from "../../stores";
 
 const weekTexts = ["日", "一", "二", "三", "四", "五", "六"];
 const baseCalendarGridStyle: CSSProperties = {

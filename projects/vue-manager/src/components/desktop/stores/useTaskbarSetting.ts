@@ -1,10 +1,11 @@
+import type { DesktopTypes } from "@/components/desktop/types";
 import { defineStore } from "pinia";
 import { computed, ref, watchEffect } from "vue";
 import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "../constants";
 import { rem, useDesktop } from "./useDesktop";
 
 export const useTaskbarSetting = defineStore("desktop.taskbar.setting", () => {
-  const value = ref<TaskbarSetting>({
+  const value = ref<DesktopTypes.TaskbarSetting>({
     deputySize: "",
     autoHide: {
       enabled: false,
