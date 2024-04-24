@@ -89,4 +89,63 @@ function deepClone(obj, options = {}) {
     return collection;
 }
 
-export { composeUrl, deepAssign, deepClone, isTypedArray, remove, removeHeadTailChar };
+function If(cond) {
+    const record = {
+        if: {
+            then: undefined,
+            checkResult: checkCondition(cond)
+        },
+        elseIf: []
+    };
+    const object = {
+        then (value) {
+            if (record.if.then === undefined) record.if.then = value;
+            else if (record.else) {
+                if (!record.else.then) record.else.then = value;
+            } else {
+                const lastElseIf = record.elseIf.at(-1);
+                if (lastElseIf) lastElseIf.then = value;
+            }
+            return this;
+        },
+        else (value) {
+            if (!record.else) record.else = {};
+            record.else.then = value;
+            return object.done();
+        },
+        elseIf (cond) {
+            record.elseIf.push({
+                then: undefined,
+                cond
+            });
+            return this;
+        },
+        done () {
+            let result;
+            if (record.if.checkResult) result = getValue(record.if.then);
+            else {
+                let gotIt = false;
+                for (let item of record.elseIf){
+                    if (checkCondition(item.cond)) {
+                        result = getValue(item.then);
+                        gotIt = true;
+                        break;
+                    }
+                }
+                if (!gotIt) result = getValue(record.else);
+            }
+            return result;
+        }
+    };
+    return object;
+}
+function checkCondition(cond) {
+    if (typeof cond === "function") return cond();
+    return cond;
+}
+function getValue(val) {
+    if (typeof val === "function") return val();
+    return val;
+}
+
+export { If, composeUrl, deepAssign, deepClone, isTypedArray, remove, removeHeadTailChar };

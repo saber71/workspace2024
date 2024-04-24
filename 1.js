@@ -10,7 +10,16 @@
 //   console.log(hex.q, hex.r, hex.row, hex.col, hex.corners);
 // });
 
-import * as fs from "node:fs";
-import path from "node:path";
-
-console.log(process.argv, path.toNamespacedPath("D:\\usr\\bin\\bash"));
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "2-digit",
+});
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  weekday: "short",
+});
+console.log(
+  dateFormatter.format(),
+  timeFormatter.format(),
+  new Date().getDay(),
+);

@@ -1,6 +1,6 @@
 import { LoadableContainer, Injectable } from 'dependency-injection';
 export * from 'dependency-injection';
-import { getCurrentInstance, defineComponent, inject, provide, watchEffect, watch, onServerPrefetch, onRenderTriggered, onRenderTracked, onErrorCaptured, onDeactivated, onActivated, onUpdated, onBeforeUnmount, onBeforeMount, onUnmounted, onMounted, shallowRef, ref, shallowReadonly, readonly, computed } from 'vue';
+import { getCurrentInstance, defineComponent, onMounted, onUnmounted, inject, provide, watchEffect, watch, onServerPrefetch, onRenderTriggered, onRenderTracked, onErrorCaptured, onDeactivated, onActivated, onUpdated, onBeforeUnmount, onBeforeMount, shallowRef, ref, shallowReadonly, readonly, computed } from 'vue';
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router';
 
 const ModuleName = "vue-class";
@@ -171,12 +171,16 @@ class VueComponent {
     }
     render() {}
     setup() {}
+    onMounted() {}
+    onUnmounted() {}
 }
 function toNative(componentClass) {
     return defineComponent(()=>{
         const instance = VueClass.getInstance(componentClass);
         applyMetadata(componentClass, instance);
         instance.setup();
+        onMounted(instance.onMounted.bind(instance));
+        onUnmounted(instance.onUnmounted.bind(instance));
         return instance.render.bind(instance);
     }, {
         name: componentClass.name,

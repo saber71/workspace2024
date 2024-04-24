@@ -4,6 +4,8 @@ import {
   type VNodeChild,
   type EmitsOptions,
   type HTMLAttributes,
+  onMounted,
+  onUnmounted,
 } from "vue";
 import type { Router } from "vue-router";
 import { ROUTER } from "./constants";
@@ -55,6 +57,10 @@ export class VueComponent<
   render(): VNodeChild {}
 
   setup(): void {}
+
+  onMounted(): void {}
+
+  onUnmounted(): void {}
 }
 
 export function toNative<
@@ -68,6 +74,10 @@ export function toNative<
       applyMetadata(componentClass, instance);
 
       instance.setup();
+
+      onMounted(instance.onMounted.bind(instance));
+
+      onUnmounted(instance.onUnmounted.bind(instance));
 
       return instance.render.bind(instance);
     },
