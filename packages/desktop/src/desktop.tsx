@@ -25,6 +25,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
       width: "100%",
       height: "100%",
       overflow: "auto",
+      color: "black",
     })
     .addDynamic("wrapper", () => {
       const settings = useTaskbarSetting().value;

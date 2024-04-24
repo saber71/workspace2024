@@ -1,6 +1,7 @@
 import { DownOutlined, UpOutlined } from "@ant-design/icons-vue";
 import { createPopper, Instance } from "@popperjs/core";
-import { Button, Flex } from "ant-design-vue";
+import { Button, Flex, Space } from "ant-design-vue";
+import { If } from "common";
 import { dynamic, Styles } from "styles";
 import { CSSProperties, nextTick, type VNodeChild } from "vue";
 import {
@@ -22,8 +23,8 @@ import { rem, useBehavior, useDesktop, useTaskbarSetting } from "../../stores";
 
 const weekTexts = ["日", "一", "二", "三", "四", "五", "六"];
 const baseCalendarGridStyle: CSSProperties = {
-  width: rem(40),
-  height: rem(40),
+  width: rem(50),
+  height: rem(45),
   boxSizing: "border-box",
   display: "flex",
   justifyContent: "center",
@@ -92,18 +93,28 @@ export class TimeInst extends VueComponent<TimeProps> {
     | "popperCalendar"
     | "arrow"
     | "calendarGrid"
+    | "calendarGrid-selected"
     | "calendarGrid_inner"
     | "isToday"
     | "isToday_inner"
+    | "isToday_inner-selected"
     | "isAnotherMonth"
   >()
     .add("isToday_inner", {
+      border: "3px solid transparent",
+      boxSizing: "border-box",
+    })
+    .add("isToday_inner-selected", {
       border: "3px solid white",
       boxSizing: "border-box",
     })
     .add("calendarGrid", {
       ...baseCalendarGridStyle,
       border: "2px solid transparent",
+      "margin-bottom": "2px",
+    })
+    .add("calendarGrid-selected", {
+      borderColor: PRIMARY_COLOR,
     })
     .add(
       "calendarGrid",
@@ -112,10 +123,16 @@ export class TimeInst extends VueComponent<TimeProps> {
       },
       "hover",
     )
+    .add(
+      "calendarGrid-selected",
+      {
+        borderColor: PRIMARY_HOVER_COLOR,
+      },
+      "hover",
+    )
     .add("calendarGrid_inner", {
       width: "100%",
       height: "100%",
-      boxSizing: "border-box",
     })
     .add("isAnotherMonth", {
       opacity: "0.5",
@@ -141,14 +158,14 @@ export class TimeInst extends VueComponent<TimeProps> {
       "hover",
     )
     .add("popperCalendar", {
-      padding: rem(10),
+      padding: rem(15),
       borderBottom: "1px solid #aaa",
     })
     .add("popperHeaderTime", {
       fontSize: rem(40),
     })
     .add("popperHeader", {
-      padding: rem(10),
+      padding: rem(15),
       borderBottom: "1px solid #aaa",
       textAlign: "left",
     })
@@ -183,25 +200,18 @@ export class TimeInst extends VueComponent<TimeProps> {
     .addDynamic("popper", () => {
       const value = useTaskbarSetting().value;
       return {
-        width: "300px",
+        width: rem(392),
         background: BACKGROUND_COLOR,
         backdropFilter: "blur(10px)",
-        boxShadow: "0 2px 12px 0 rgba(0, 0, 0, 0.1)",
+        boxShadow: "0 2px 12px 0 rgba(0, 0, 0, 0.25)",
       };
     });
 
   @Link() timeEl: HTMLElement;
   @Link() popperEl: HTMLElement;
   @Mut() showPopper: boolean = false;
-  @Mut() calendars: Array<
-    Array<{
-      timestamp: number;
-      chineseDay: string;
-      day: number;
-      month: number;
-      isToday: boolean;
-    }>
-  > = [];
+  @Mut() calendars: Array<Array<CalendarGrid>> = [];
+  @Mut() selectedTime: number = 0;
   popperInstance?: Instance;
   year: number;
   month: number;
@@ -252,6 +262,9 @@ export class TimeInst extends VueComponent<TimeProps> {
       const date = useDesktop().timestamp;
       this.year = date.getFullYear();
       this.month = date.getMonth() + 1;
+      this.selectedTime = new Date(
+        `${this.year}/${this.month}/${date.getDate()}`,
+      ).getTime();
       nextTick(() => {
         const popper = createPopper(this.timeEl, this.popperEl, {
           placement: "top",
@@ -276,14 +289,13 @@ export class TimeInst extends VueComponent<TimeProps> {
     } else {
       this.popperInstance?.destroy();
       this.popperInstance = undefined;
-      useBehavior()
-        .wrapEventTarget(window)
-        .removeEventListener("click", { key: this });
+      this._disposeWindowBehavior();
     }
   }
 
   onUnmounted() {
     this.styles.dispose();
+    this._disposeWindowBehavior();
   }
 
   render(): VNodeChild {
@@ -339,41 +351,32 @@ export class TimeInst extends VueComponent<TimeProps> {
                   </div>
                 </Flex>
               </Flex>
-              <Flex>
+              <Space size={2}>
                 {weekTexts.map((val) => (
                   <span style={baseCalendarGridStyle}>{val}</span>
                 ))}
-              </Flex>
+              </Space>
               {this.calendars.map((arr) => (
-                <Flex>
+                <Space size={2}>
                   {arr.map((item) => (
                     <div
-                      class={
-                        styles.classNames.calendarGrid +
-                        " " +
-                        (item.isToday ? styles.classNames.isToday : "")
-                      }
+                      class={this._getCalendarClasses(item)}
+                      onClick={() => (this.selectedTime = item.timestamp)}
                     >
-                      <div
-                        class={
-                          styles.classNames.calendarGrid_inner +
-                          " " +
-                          (item.isToday
-                            ? styles.classNames.isToday_inner
-                            : "") +
-                          (item.month !== this.month
-                            ? styles.classNames.isAnotherMonth
-                            : "")
-                        }
+                      <Flex
+                        class={this._getCalendarGridInnerStyles(item)}
+                        vertical
+                        align={"center"}
+                        justify={"center"}
                       >
                         <div>{item.day}</div>
                         <div style={"opacity:0.6;font-size:0.75rem;"}>
                           {item.chineseDay}
                         </div>
-                      </div>
+                      </Flex>
                     </div>
                   ))}
-                </Flex>
+                </Space>
               ))}
             </div>
           </div>
@@ -381,6 +384,45 @@ export class TimeInst extends VueComponent<TimeProps> {
       </div>
     );
   }
+
+  private _getCalendarClasses(item: CalendarGrid) {
+    const styles = this.styles;
+    return [
+      styles.classNames.calendarGrid,
+      item.isToday ? styles.classNames.isToday : "",
+      If(item.timestamp === this.selectedTime)
+        .then(styles.classNames["calendarGrid-selected"])
+        .else(""),
+    ];
+  }
+
+  private _getCalendarGridInnerStyles(item: CalendarGrid) {
+    const styles = this.styles;
+    return [
+      styles.classNames.calendarGrid_inner,
+      If(item.isToday).then(styles.classNames.isToday_inner).else(""),
+      If(item.isToday && item.timestamp === this.selectedTime)
+        .then(styles.classNames["isToday_inner-selected"])
+        .else(""),
+      If(item.month !== this.month)
+        .then(styles.classNames.isAnotherMonth)
+        .else(""),
+    ];
+  }
+
+  private _disposeWindowBehavior() {
+    useBehavior()
+      .wrapEventTarget(window)
+      .removeEventListener("click", { key: this });
+  }
 }
 
 export default toNative<TimeProps>(TimeInst);
+
+interface CalendarGrid {
+  timestamp: number;
+  chineseDay: string;
+  day: number;
+  month: number;
+  isToday: boolean;
+}

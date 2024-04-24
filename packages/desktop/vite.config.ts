@@ -24,16 +24,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: [
-        "vue-class",
-        "vue",
+        "@ant-design/icons-vue",
+        "@popperjs/core",
         "@vueuse/core",
-        "pinia",
-        "uuid",
+        "ant-design-vue",
         "common",
         "eventemitter3",
-        "@ant-design/icons-vue",
-        "ant-design-vue",
+        "pinia",
         "styles",
+        "uuid",
+        "vue",
+        "vue-class",
       ],
     },
     lib: {
