@@ -8,3 +8,4 @@ export * from "./vue-class";
 export * from "./vue-component";
 export * from "./vue-directive";
 export * from "./vue-router-guard";
+export * from "./vue-service";

@@ -9,6 +9,7 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
+    "common": "workspace:^",
     "dependency-injection": "workspace:^",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"

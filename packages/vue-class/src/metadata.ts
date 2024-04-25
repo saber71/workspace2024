@@ -1,3 +1,4 @@
+import { deepClone } from "common";
 import {
   computed,
   inject,
@@ -31,6 +32,7 @@ import type { HookType, WatcherTarget } from "./decorators";
 import type { Class } from "./types";
 import { VueComponent } from "./vue-component";
 import { VueDirective } from "./vue-directive";
+import { VueService } from "./vue-service";
 
 export interface ComponentOption {
   provideThis?: string | boolean;
@@ -38,6 +40,7 @@ export interface ComponentOption {
 
 const childInstMapKey: InjectionKey<Record<string, VueComponent>> =
   Symbol("childInstMap");
+export const initMutKey = Symbol("init-mut");
 
 export class Metadata {
   isComponent = false;
@@ -203,8 +206,11 @@ export class Metadata {
   }
 
   handleMut(instance: object) {
+    let initMut = (instance as any)[initMutKey];
+    if (!initMut) initMut = (instance as any)[initMutKey] = {};
     for (let data of this.mutts) {
       const value = (instance as any)[data.propName];
+      initMut[value] = deepClone(value);
       const ref$ = data.shallow ? shallowRef(value) : ref(value);
       (instance as any)[Symbol.for(data.propName)] = ref$;
       Object.defineProperty(instance, data.propName, {
@@ -310,7 +316,7 @@ export function getMetadata(clazz: any) {
 
 const appliedSymbol = Symbol("__appliedMetadata__");
 
-export function applyMetadata(clazz: any, instance: VueComponent | object) {
+export function applyMetadata(clazz: any, instance: VueService | object) {
   if ((instance as any)[appliedSymbol]) return;
   (instance as any)[appliedSymbol] = true;
   const metadata = getMetadata(clazz);
@@ -325,6 +331,9 @@ export function applyMetadata(clazz: any, instance: VueComponent | object) {
     metadata.handleHook(instance);
     metadata.handlePropsWatchers(instance);
     metadata.handleComponentOption(instance);
+  }
+  if (instance instanceof VueService) {
+    instance.setup();
   }
 }
 

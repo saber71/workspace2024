@@ -116,7 +116,7 @@ export declare class VueClass {
     static install(app: App, router: Router): Promise<void>;
 }
 
-export declare class VueComponent<Props extends VueComponentBaseProps = VueComponentBaseProps, Emit extends EmitsOptions = {}> {
+export declare class VueComponent<Props extends VueComponentBaseProps = VueComponentBaseProps, Emit extends EmitsOptions = {}> extends VueService {
     static __test__: boolean;
     static readonly defineProps: ComponentProps<VueComponentBaseProps & any>;
     constructor();
@@ -127,7 +127,6 @@ export declare class VueComponent<Props extends VueComponentBaseProps = VueCompo
     get router(): Router;
     get route(): RouteLocationNormalizedLoaded;
     render(): VNodeChild;
-    setup(): void;
     onMounted(): void;
     onBeforeUnmounted(): void;
     onUnmounted(): void;
@@ -170,6 +169,11 @@ export declare class VueRouterGuard {
     beforeResolve(to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): void;
     afterEach(to: RouteLocationNormalized, from: RouteLocationNormalized): void;
     onError(error: Error, to: RouteLocationNormalized, from: RouteLocationNormalizedLoaded): void;
+}
+
+export declare class VueService {
+    setup(): void;
+    reset(): void;
 }
 
 export declare function Watcher<T extends VueComponent>(option?: {

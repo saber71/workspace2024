@@ -6,6 +6,39 @@ import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router';
 const ModuleName = "vue-class";
 const ROUTER = "router";
 
+function isTypedArray(arr) {
+    return arr instanceof Uint8Array || arr instanceof Uint8ClampedArray || arr instanceof Uint16Array || arr instanceof Uint32Array || arr instanceof Int8Array || arr instanceof Int16Array || arr instanceof Int32Array || arr instanceof Float32Array || arr instanceof Float64Array;
+}
+function deepClone(obj, options = {}) {
+    if (typeof obj !== "object" || obj === undefined || obj === null) return obj;
+    if (obj instanceof Set) {
+        const result = new Set();
+        obj.forEach((value)=>result.add(deepClone(value)));
+        return result;
+    } else if (obj instanceof Date) {
+        return new Date(obj);
+    } else if (obj instanceof Map) {
+        const result = new Map();
+        obj.forEach((value, key)=>{
+            if (options.cloneMapKey) key = deepClone(key, options);
+            result.set(key, deepClone(value));
+        });
+        return result;
+    } else if (isTypedArray(obj)) {
+        //@ts-ignore
+        return new obj.constructor(obj);
+    } else {
+        //@ts-ignore
+        const result = new (obj.constructor || Object)();
+        Object.assign(result, obj);
+        for(let objKey in obj){
+            const value = obj[objKey];
+            result[objKey] = deepClone(value, options);
+        }
+        return result;
+    }
+}
+
 class VueDirective {
     el;
     name;
@@ -141,12 +174,25 @@ class VueClass {
     }
 }
 
-class VueComponent {
+class VueService {
+    setup() {}
+    reset() {
+        const initMut = this[initMutKey];
+        if (initMut) {
+            for(let key in initMut){
+                this[key] = initMut[key];
+            }
+        }
+    }
+}
+
+class VueComponent extends VueService {
     static __test__ = false;
     static defineProps = [
         "inst"
     ];
     constructor(){
+        super();
         let curInstance = getCurrentInstance();
         if (!curInstance) {
             if (VueComponent.__test__) curInstance = {
@@ -170,7 +216,6 @@ class VueComponent {
         return this.router.currentRoute.value;
     }
     render() {}
-    setup() {}
     onMounted() {}
     onBeforeUnmounted() {}
     onUnmounted() {}
@@ -179,7 +224,6 @@ function toNative(componentClass) {
     return defineComponent(()=>{
         const instance = VueClass.getInstance(componentClass);
         applyMetadata(componentClass, instance);
-        instance.setup();
         onMounted(instance.onMounted.bind(instance));
         onBeforeUnmount(instance.onBeforeUnmounted.bind(instance));
         onUnmounted(instance.onUnmounted.bind(instance));
@@ -191,6 +235,7 @@ function toNative(componentClass) {
 }
 
 const childInstMapKey = Symbol("childInstMap");
+const initMutKey = Symbol("init-mut");
 class Metadata {
     isComponent = false;
     componentOption;
@@ -318,8 +363,11 @@ class Metadata {
         }
     }
     handleMut(instance) {
+        let initMut = instance[initMutKey];
+        if (!initMut) initMut = instance[initMutKey] = {};
         for (let data of this.mutts){
             const value = instance[data.propName];
+            initMut[value] = deepClone(value);
             const ref$ = data.shallow ? shallowRef(value) : ref(value);
             instance[Symbol.for(data.propName)] = ref$;
             Object.defineProperty(instance, data.propName, {
@@ -423,6 +471,9 @@ function applyMetadata(clazz, instance) {
         metadata.handleHook(instance);
         metadata.handlePropsWatchers(instance);
         metadata.handleComponentOption(instance);
+    }
+    if (instance instanceof VueService) {
+        instance.setup();
     }
 }
 function getOrCreateMetadata(clazz, ctx) {
@@ -568,4 +619,4 @@ function getName(arg) {
     return arg.name;
 }
 
-export { BindThis, Component, Computed, Directive, Hook, Link, ModuleName, Mut, PropsWatcher, ROUTER, Readonly, RouterGuard, Service, VueClass, VueComponent, VueDirective, VueInject, VueRouterGuard, Watcher, toNative };
+export { BindThis, Component, Computed, Directive, Hook, Link, ModuleName, Mut, PropsWatcher, ROUTER, Readonly, RouterGuard, Service, VueClass, VueComponent, VueDirective, VueInject, VueRouterGuard, VueService, Watcher, toNative };
