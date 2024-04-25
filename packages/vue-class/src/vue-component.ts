@@ -6,6 +6,7 @@ import {
   type HTMLAttributes,
   onMounted,
   onUnmounted,
+  onBeforeUnmount,
 } from "vue";
 import type { Router } from "vue-router";
 import { ROUTER } from "./constants";
@@ -60,6 +61,8 @@ export class VueComponent<
 
   onMounted(): void {}
 
+  onBeforeUnmounted(): void {}
+
   onUnmounted(): void {}
 }
 
@@ -76,6 +79,8 @@ export function toNative<
       instance.setup();
 
       onMounted(instance.onMounted.bind(instance));
+
+      onBeforeUnmount(instance.onBeforeUnmounted.bind(instance));
 
       onUnmounted(instance.onUnmounted.bind(instance));
 

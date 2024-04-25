@@ -26,7 +26,7 @@ export class ContentAreaInst extends VueComponent<ContentAreaProps> {
     },
   );
 
-  onUnmounted(): void {
+  onBeforeUnmounted(): void {
     this.styles.dispose();
   }
 

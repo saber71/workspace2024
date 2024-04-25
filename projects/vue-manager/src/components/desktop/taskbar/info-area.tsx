@@ -47,7 +47,7 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
       };
     });
 
-  onUnmounted(): void {
+  onBeforeUnmounted(): void {
     this.styles.dispose();
   }
 

@@ -39,7 +39,7 @@ export class StartButtonInst extends VueComponent<StartButtonProps> {
       "hover",
     );
 
-  onUnmounted(): void {
+  onBeforeUnmounted(): void {
     this.styles.dispose();
   }
 

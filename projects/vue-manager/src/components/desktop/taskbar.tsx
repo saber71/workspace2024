@@ -1,3 +1,4 @@
+import type { DesktopTypes } from "@/components/desktop/types.ts";
 import { type CSSStyle, dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -8,11 +9,7 @@ import {
   VueComponent,
   Link,
 } from "vue-class";
-import {
-  BACKGROUND_COLOR,
-  TASKBAR_INIT_HEIGHT,
-  TASKBAR_INIT_WIDTH,
-} from "./constants";
+import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "./constants";
 import { rem, useDesktop, useTaskbarSetting } from "./stores";
 import ContentArea from "./taskbar/content-area";
 import InfoArea from "./taskbar/info-area";
@@ -21,7 +18,7 @@ import StartButton from "./taskbar/start-button";
 
 function setContainerPosition(
   result: CSSStyle,
-  value: TaskbarSetting,
+  value: DesktopTypes.TaskbarSetting,
   show: boolean,
 ) {
   switch (value.position) {
@@ -84,7 +81,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         display: "flex",
         flexDirection: dynamic(isHorizon ? "column" : "row"),
         flexShrink: "0",
-        background: BACKGROUND_COLOR,
+        background: "rgba(240,250,250,0.5)",
         backdropFilter: "blur(10px)",
         position: dynamic(value.autoHide.enabled ? "absolute" : "relative"),
         transitionProperty: "transform",
@@ -109,7 +106,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
     useDesktop().taskbarInst = this as any;
   }
 
-  onUnmounted(): void {
+  onBeforeUnmounted(): void {
     this.styles.dispose();
   }
 

@@ -98,7 +98,7 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
       );
   }
 
-  onUnmounted(): void {
+  onBeforeUnmounted(): void {
     this.styles.dispose();
     useBehavior().wrapEventTarget(this.el).dispose();
     useBehavior().wrapEventTarget(window).dispose({ key: this });

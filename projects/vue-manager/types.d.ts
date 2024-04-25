@@ -1,6 +1,5 @@
 /// <reference types="vite/client" />
 ///<reference types="server-user/types.d.ts"/>
-///<reference types="vue-crud/types.d.ts"/>
 
 declare module "*.vue" {
   import { ComponentOptions } from "vue";
@@ -13,4 +12,5 @@ declare interface ViewMeta {
   order?: number;
   hidden?: boolean;
   icon?: any;
+  openInBlank?: boolean;
 }

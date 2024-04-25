@@ -294,7 +294,7 @@ export class TimeInst extends VueComponent<TimeProps> {
     }
   }
 
-  onUnmounted() {
+  onBeforeUnmounted() {
     this.styles.dispose();
     this._disposeWindowBehavior();
   }

@@ -129,6 +129,7 @@ export declare class VueComponent<Props extends VueComponentBaseProps = VueCompo
     render(): VNodeChild;
     setup(): void;
     onMounted(): void;
+    onBeforeUnmounted(): void;
     onUnmounted(): void;
 }
 
