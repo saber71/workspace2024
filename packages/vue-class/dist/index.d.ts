@@ -176,12 +176,12 @@ export declare class VueService {
     reset(): void;
 }
 
-export declare function Watcher<T extends VueComponent>(option?: {
+export declare function Watcher<T extends VueService>(option?: {
     source?: WatcherTarget<T> | WatcherTarget<T>[];
     option?: WatchOptions;
 }): (target: object, arg: any) => void;
 
-export declare type WatcherTarget<T extends VueComponent> = string | keyof T | ((instance: T) => any);
+export declare type WatcherTarget<T extends VueService> = string | keyof T | ((instance: T) => any);
 
 export declare type WithSlotTypes<Emit extends EmitsOptions, T extends {}> = Omit<SetupContext<Emit>, "slots"> & {
     slots: NonNullable<VueComponentProps<T>["v-slots"]>;

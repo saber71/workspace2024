@@ -11,8 +11,9 @@ import type { Class, VueComponentClass } from "./types";
 import { VueComponent, type VueComponentBaseProps } from "./vue-component";
 import type { VueDirective } from "./vue-directive";
 import type { VueRouterGuard } from "./vue-router-guard";
+import type { VueService } from "./vue-service";
 
-export type WatcherTarget<T extends VueComponent> =
+export type WatcherTarget<T extends VueService> =
   | string
   | keyof T
   | ((instance: T) => any);
@@ -178,7 +179,7 @@ export function PropsWatcher(option?: WatchOptions) {
 }
 
 /* 适用于方法 */
-export function Watcher<T extends VueComponent>(option?: {
+export function Watcher<T extends VueService>(option?: {
   source?: WatcherTarget<T> | WatcherTarget<T>[];
   option?: WatchOptions;
 }) {
