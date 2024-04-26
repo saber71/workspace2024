@@ -11,6 +11,7 @@ function isTypedArray(arr) {
 }
 function deepClone(obj, options = {}) {
     if (typeof obj !== "object" || obj === undefined || obj === null) return obj;
+    if (obj instanceof RegExp) return obj;
     if (obj instanceof Set) {
         const result = new Set();
         obj.forEach((value)=>result.add(deepClone(value)));
@@ -254,6 +255,9 @@ class Metadata {
     watchers = [];
     propsWatchers = [];
     computers = [];
+    clone() {
+        return deepClone(this);
+    }
     handleComponentOption(instance) {
         if (instance.props.inst) {
             const instMap = inject(childInstMapKey);
@@ -480,7 +484,12 @@ function getOrCreateMetadata(clazz, ctx) {
     if (!ctx || typeof ctx === "string") {
         if (typeof clazz === "object") clazz = clazz.constructor;
         let metadata = metadataMap.get(clazz);
-        if (!metadata) metadataMap.set(clazz, metadata = new Metadata());
+        if (!metadata) {
+            const parentClass = Object.getPrototypeOf(clazz);
+            const parentMetadata = metadataMap.get(parentClass);
+            if (parentMetadata) metadataMap.set(clazz, metadata = parentMetadata.clone());
+            else metadataMap.set(clazz, metadata = new Metadata());
+        }
         return metadata;
     } else {
         let metadata = ctx.metadata.metadata;

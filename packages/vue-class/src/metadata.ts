@@ -86,6 +86,10 @@ export class Metadata {
 
   readonly computers: string[] = [];
 
+  clone() {
+    return deepClone(this) as Metadata;
+  }
+
   handleComponentOption(instance: VueComponent) {
     if (instance.props.inst) {
       const instMap = inject(childInstMapKey);
@@ -347,7 +351,13 @@ export function getOrCreateMetadata(
   if (!ctx || typeof ctx === "string") {
     if (typeof clazz === "object") clazz = clazz.constructor as Class;
     let metadata = metadataMap.get(clazz);
-    if (!metadata) metadataMap.set(clazz, (metadata = new Metadata()));
+    if (!metadata) {
+      const parentClass = Object.getPrototypeOf(clazz);
+      const parentMetadata = metadataMap.get(parentClass);
+      if (parentMetadata)
+        metadataMap.set(clazz, (metadata = parentMetadata.clone()));
+      else metadataMap.set(clazz, (metadata = new Metadata()));
+    }
     return metadata;
   } else {
     let metadata = ctx.metadata.metadata;
