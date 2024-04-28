@@ -1,9 +1,9 @@
+import { DesktopConstants } from "@/components/desktop/constants.ts";
 import { useLocalStorage } from "@vueuse/core";
 import { remove } from "common";
 import EventEmitter from "eventemitter3";
 import { defineStore } from "pinia";
 import { ref, shallowRef, watch } from "vue";
-import { BASE_FONT_SIZE } from "../constants";
 import type { DesktopInst } from "../index.tsx";
 import type { MainAreaInst } from "../main-area";
 import type { TaskbarInst } from "../taskbar";
@@ -40,7 +40,7 @@ export const useDesktop = defineStore("desktop", () => {
     scale,
     () => {
       document.documentElement.style.fontSize =
-        scale.value * BASE_FONT_SIZE + "px";
+        scale.value * DesktopConstants.BASE_FONT_SIZE + "px";
     },
     { immediate: true },
   );
@@ -73,5 +73,5 @@ export const useDesktop = defineStore("desktop", () => {
 });
 
 export function rem(px: number) {
-  return px / BASE_FONT_SIZE + "rem";
+  return px / DesktopConstants.BASE_FONT_SIZE + "rem";
 }

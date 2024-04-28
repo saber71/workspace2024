@@ -1,7 +1,4 @@
-import {
-  TASKBAR_INIT_HEIGHT,
-  TASKBAR_INIT_WIDTH,
-} from "@/components/desktop/constants.ts";
+import { DesktopConstants } from "@/components/desktop/constants.ts";
 import { DesktopSettingService } from "@/components/desktop/services/DesktopSettingService.ts";
 import { rem } from "@/components/desktop/stores";
 import { Computed, Inject, Service, VueService } from "vue-class";
@@ -19,7 +16,12 @@ export class TaskbarHelper extends VueService {
     const deputySize = this.desktopSettingService.get("taskbar.deputySize");
     const isHorizon = this.isHorizon;
     return (
-      deputySize || rem(isHorizon ? TASKBAR_INIT_WIDTH : TASKBAR_INIT_HEIGHT)
+      deputySize ||
+      rem(
+        isHorizon
+          ? DesktopConstants.TASKBAR_INIT_WIDTH
+          : DesktopConstants.TASKBAR_INIT_HEIGHT,
+      )
     );
   }
 

@@ -1,10 +1,17 @@
 import type { DesktopInst } from "@/components/desktop";
-import { BASE_FONT_SIZE } from "@/components/desktop/constants.ts";
+import { DesktopConstants } from "@/components/desktop/constants.ts";
 import type { MainAreaInst } from "@/components/desktop/main-area.tsx";
 import type { TaskbarInst } from "@/components/desktop/taskbar.tsx";
 import { DesktopTypes } from "@/components/desktop/types.ts";
 import EventEmitter from "eventemitter3";
-import { BindThis, Mut, Service, VueService, Watcher } from "vue-class";
+import {
+  BindThis,
+  Mut,
+  Service,
+  VueClass,
+  VueService,
+  Watcher,
+} from "vue-class";
 
 @Service()
 export class DesktopService extends VueService {
@@ -13,10 +20,20 @@ export class DesktopService extends VueService {
   @Mut(true) taskbarInst: TaskbarInst;
   @Mut() cursor: string | "default" = "default";
   @Mut() scale: number = 1;
-  @Mut(false) timestamp = new Date();
+  @Mut(true) timestamp = new Date();
   readonly eventBus = new EventEmitter<DesktopTypes.Events>();
   private _raqHandler?: any;
   private _oldFontSize = document.documentElement.style.fontSize;
+
+  get linker(): DesktopTypes.Linker {
+    return VueClass.dependencyInjection.getValue(DesktopConstants.Label_Linker);
+  }
+
+  get settingStore(): DesktopTypes.SettingStore {
+    return VueClass.dependencyInjection.getValue(
+      DesktopConstants.Label_SettingStore,
+    );
+  }
 
   setup() {
     document.body.className = "";
@@ -24,6 +41,7 @@ export class DesktopService extends VueService {
     this.eventBus.on("close", () => {
       document.documentElement.style.fontSize = this._oldFontSize;
       cancelAnimationFrame(this._raqHandler);
+      this.eventBus.removeAllListeners();
     });
   }
 
@@ -33,7 +51,7 @@ export class DesktopService extends VueService {
 
   @Watcher() onScaleChange() {
     document.documentElement.style.fontSize =
-      this.scale * BASE_FONT_SIZE + "px";
+      this.scale * DesktopConstants.BASE_FONT_SIZE + "px";
   }
 
   @BindThis() private _updateTimestamp() {

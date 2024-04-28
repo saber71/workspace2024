@@ -1,3 +1,4 @@
+import { DesktopService } from "@/components/desktop/services";
 import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -7,6 +8,7 @@ import {
   toNative,
   VueComponent,
   Link,
+  Inject,
 } from "vue-class";
 import Main from "./main-area";
 import { useDesktop, useTaskbarSetting } from "./stores";
@@ -19,6 +21,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
   static readonly defineProps: ComponentProps<DesktopProps> = ["inst"];
 
   @Link() wrapperEl: HTMLElement;
+  @Inject() desktopService: DesktopService;
 
   readonly styles = new Styles<"container" | "wrapper">()
     .add("container", {
@@ -48,6 +51,10 @@ export class DesktopInst extends VueComponent<DesktopProps> {
 
   setup() {
     useDesktop().desktopInst = this as any;
+  }
+
+  onUnmounted() {
+    this.desktopService.eventBus.emit("close");
   }
 
   render(): VNodeChild {

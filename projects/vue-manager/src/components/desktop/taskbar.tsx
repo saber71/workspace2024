@@ -9,7 +9,7 @@ import {
   VueComponent,
   Link,
 } from "vue-class";
-import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "./constants";
+import { DesktopConstants } from "./constants";
 import { rem, useDesktop, useTaskbarSetting } from "./stores";
 import ContentArea from "./taskbar/content-area";
 import InfoArea from "./taskbar/info-area";
@@ -76,7 +76,11 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         [principalSizeProp]: "100%",
         [deputySizeProp]: dynamic(deputySizeValue),
         [deputyMinSizeProp]: dynamic(
-          rem(isHorizon ? TASKBAR_INIT_WIDTH : TASKBAR_INIT_HEIGHT),
+          rem(
+            isHorizon
+              ? DesktopConstants.TASKBAR_INIT_WIDTH
+              : DesktopConstants.TASKBAR_INIT_HEIGHT,
+          ),
         ),
         display: "flex",
         flexDirection: dynamic(isHorizon ? "column" : "row"),

@@ -34,4 +34,25 @@ export namespace DesktopTypes {
     /* 设置任务栏在桌面上的位置。 default bottom */
     "taskbar.position": TaskbarPosition;
   }
+
+  export interface SettingStore {
+    set<Key extends keyof Setting>(
+      key: Key,
+      value: Setting[Key],
+    ): Promise<void>;
+
+    get<Key extends keyof Setting>(key: Key): Promise<Setting[Key]>;
+
+    batchGet(keys: ReadonlyArray<keyof Setting>): Promise<string[]>;
+  }
+
+  export type LinkerKey = `desktop-setting:${keyof Setting}`;
+
+  export interface Linker {
+    startListen(cb: (key: LinkerKey, value: string) => void): void;
+
+    stopListen(): void;
+
+    dispatch(key: LinkerKey, value: string): Promise<void>;
+  }
 }

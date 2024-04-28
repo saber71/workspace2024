@@ -15,11 +15,7 @@ import {
   type VueComponentBaseProps,
   Watcher,
 } from "vue-class";
-import {
-  BACKGROUND_COLOR,
-  PRIMARY_COLOR,
-  PRIMARY_HOVER_COLOR,
-} from "../../constants";
+import { DesktopConstants } from "../../constants";
 import { rem, useDesktop, useTaskbarSetting } from "../../stores";
 
 const weekTexts = ["日", "一", "二", "三", "四", "五", "六"];
@@ -115,7 +111,7 @@ export class TimeInst extends VueComponent<TimeProps> {
       "margin-bottom": "2px",
     })
     .add("calendarGrid-selected", {
-      borderColor: PRIMARY_COLOR,
+      borderColor: DesktopConstants.PRIMARY_COLOR,
     })
     .add(
       "calendarGrid",
@@ -127,7 +123,7 @@ export class TimeInst extends VueComponent<TimeProps> {
     .add(
       "calendarGrid-selected",
       {
-        borderColor: PRIMARY_HOVER_COLOR,
+        borderColor: DesktopConstants.PRIMARY_HOVER_COLOR,
       },
       "hover",
     )
@@ -140,8 +136,8 @@ export class TimeInst extends VueComponent<TimeProps> {
     })
     .add("isToday", {
       color: "white",
-      background: PRIMARY_COLOR,
-      border: `2px solid ${PRIMARY_COLOR}`,
+      background: DesktopConstants.PRIMARY_COLOR,
+      border: `2px solid ${DesktopConstants.PRIMARY_COLOR}`,
     })
     .add(
       "isToday",
@@ -154,7 +150,7 @@ export class TimeInst extends VueComponent<TimeProps> {
     .add(
       "arrow",
       {
-        color: PRIMARY_HOVER_COLOR,
+        color: DesktopConstants.PRIMARY_HOVER_COLOR,
       },
       "hover",
     )
@@ -202,7 +198,7 @@ export class TimeInst extends VueComponent<TimeProps> {
       const value = useTaskbarSetting().value;
       return {
         width: rem(392),
-        background: BACKGROUND_COLOR,
+        background: DesktopConstants.BACKGROUND_COLOR,
         backdropFilter: "blur(10px)",
         boxShadow: "0 2px 12px 0 rgba(0, 0, 0, 0.25)",
       };

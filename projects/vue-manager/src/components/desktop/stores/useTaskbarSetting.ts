@@ -1,7 +1,7 @@
 import type { DesktopTypes } from "@/components/desktop/types";
 import { defineStore } from "pinia";
 import { computed, ref, watchEffect } from "vue";
-import { TASKBAR_INIT_HEIGHT, TASKBAR_INIT_WIDTH } from "../constants";
+import { DesktopConstants } from "../constants";
 import { rem, useDesktop } from "./useDesktop";
 
 export const useTaskbarSetting = defineStore("desktop.taskbar.setting", () => {
@@ -21,7 +21,11 @@ export const useTaskbarSetting = defineStore("desktop.taskbar.setting", () => {
   const deputySizeValue = computed(
     () =>
       value.value.deputySize ||
-      rem(isHorizon.value ? TASKBAR_INIT_WIDTH : TASKBAR_INIT_HEIGHT),
+      rem(
+        isHorizon.value
+          ? DesktopConstants.TASKBAR_INIT_WIDTH
+          : DesktopConstants.TASKBAR_INIT_HEIGHT,
+      ),
   );
   const principalSizeProp = computed(() =>
     isHorizon.value ? "height" : "width",

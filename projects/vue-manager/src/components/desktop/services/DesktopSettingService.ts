@@ -1,6 +1,8 @@
+import { DesktopConstants } from "@/components/desktop/constants.ts";
+import { DesktopService } from "@/components/desktop/services/DesktopService.ts";
 import type { DesktopTypes } from "@/components/desktop/types.ts";
 import { ref, type Ref } from "vue";
-import { Service, VueService } from "vue-class";
+import { Inject, Service, VueService } from "vue-class";
 
 @Service()
 export class DesktopSettingService extends VueService {
@@ -9,15 +11,12 @@ export class DesktopSettingService extends VueService {
     this.reset();
   }
 
+  @Inject() readonly desktopService: DesktopService;
   readonly refMap: Record<keyof DesktopTypes.Setting, Ref<string>>;
-  private readonly _initSetting: DesktopTypes.Setting = {
-    "taskbar.position": "bottom",
-    "taskbar.small": "false",
-    "taskbar.lock": "false",
-    "taskbar.autoHide.forceShow": "false",
-    "taskbar.autoHide.enabled": "false",
-    "taskbar.deputySize": "",
-  };
+  private readonly _initSetting: DesktopTypes.Setting = Object.assign(
+    {},
+    DesktopConstants.InitSetting,
+  );
 
   get<Key extends keyof DesktopTypes.Setting>(
     key: Key,
@@ -28,9 +27,21 @@ export class DesktopSettingService extends VueService {
   set<Key extends keyof DesktopTypes.Setting>(
     key: Key,
     value: DesktopTypes.Setting[Key],
+    store: boolean = true,
   ) {
     this.refMap[key].value = value;
+    if (store) this.desktopService.settingStore.set(key, value);
     return this;
+  }
+
+  setup() {
+    this.desktopService.settingStore
+      .batchGet(DesktopConstants.SettingKeys)
+      .then((values) => {
+        DesktopConstants.SettingKeys.forEach((key, i) => {
+          this.set(key, values[i] as any, false);
+        });
+      });
   }
 
   reset(initSetting?: DesktopTypes.Setting) {
