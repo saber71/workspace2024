@@ -1,3 +1,8 @@
+import {
+  DesktopService,
+  DesktopSettingService,
+  TaskbarHelper,
+} from "@/components/desktop/services";
 import type { DesktopTypes } from "@/components/desktop/types.ts";
 import { type CSSStyle, dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
@@ -8,9 +13,9 @@ import {
   toNative,
   VueComponent,
   Link,
+  Inject,
 } from "vue-class";
-import { DesktopConstants } from "./constants";
-import { rem, useDesktop, useTaskbarSetting } from "./stores";
+import { DesktopConstants, rem } from "./constants";
 import ContentArea from "./taskbar/content-area";
 import InfoArea from "./taskbar/info-area";
 import PromptLine from "./taskbar/prompt-line";
@@ -18,10 +23,10 @@ import StartButton from "./taskbar/start-button";
 
 function setContainerPosition(
   result: CSSStyle,
-  value: DesktopTypes.TaskbarSetting,
+  position: DesktopTypes.Setting["taskbar.position"],
   show: boolean,
 ) {
-  switch (value.position) {
+  switch (position) {
     case "bottom":
       result.bottom = "0";
       result.left = "0";
@@ -61,7 +66,9 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
   static readonly defineProps: ComponentProps<TaskbarProps> = ["inst"];
 
   @Link() el: HTMLElement;
-
+  @Inject() desktopService: DesktopService;
+  @Inject() desktopSettingService: DesktopSettingService;
+  @Inject() taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"taskbar">()
     .addDynamic("taskbar", () => {
       const {
@@ -70,8 +77,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         deputyMinSizeProp,
         principalSizeProp,
         isHorizon,
-        value,
-      } = useTaskbarSetting();
+      } = this.taskbarHelper;
       const result: CSSStyle = {
         [principalSizeProp]: "100%",
         [deputySizeProp]: dynamic(deputySizeValue),
@@ -87,13 +93,24 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
         flexShrink: "0",
         background: "rgba(240,250,250,0.5)",
         backdropFilter: "blur(10px)",
-        position: dynamic(value.autoHide.enabled ? "absolute" : "relative"),
+        position: dynamic(
+          this.desktopSettingService.get("taskbar.autoHide.enabled") === "true"
+            ? "absolute"
+            : "relative",
+        ),
         transitionProperty: "transform",
         transitionDuration: "200ms",
         transitionDelay: "500ms",
       };
-      if (value.autoHide.enabled) {
-        setContainerPosition(result, value, value.autoHide.forceShow);
+      if (
+        this.desktopSettingService.get("taskbar.autoHide.enabled") === "true"
+      ) {
+        setContainerPosition(
+          result,
+          this.desktopSettingService.get("taskbar.position"),
+          this.desktopSettingService.get("taskbar.autoHide.forceShow") ===
+            "true",
+        );
       }
       return result;
     })
@@ -101,13 +118,17 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
       "taskbar",
       () => {
         const result: CSSStyle = {};
-        return setContainerPosition(result, useTaskbarSetting().value, true);
+        return setContainerPosition(
+          result,
+          this.desktopSettingService.get("taskbar.position"),
+          true,
+        );
       },
       { pseudoClasses: "hover" },
     );
 
   setup() {
-    useDesktop().taskbarInst = this as any;
+    this.desktopService.taskbarInst = this as any;
   }
 
   onBeforeUnmounted(): void {
@@ -116,13 +137,14 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
 
   render(): VNodeChild {
     const { styles } = this;
-    const setting = useTaskbarSetting().value;
     return (
       <div ref={"el"} class={styles.classNames.taskbar}>
         <StartButton />
         <ContentArea />
         <InfoArea />
-        {setting.lock ? null : <PromptLine />}
+        {this.desktopSettingService.get("taskbar.lock") === "true" ? null : (
+          <PromptLine />
+        )}
       </div>
     );
   }

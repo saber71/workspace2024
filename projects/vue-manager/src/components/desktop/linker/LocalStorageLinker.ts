@@ -1,3 +1,4 @@
+import { DesktopConstants } from "@/components/desktop/constants.ts";
 import type { DesktopTypes } from "@/components/desktop/types.ts";
 import { BindThis, Service, VueService } from "vue-class";
 
@@ -15,14 +16,19 @@ export class LocalStorageLinker
 
   startListen(cb: (key: DesktopTypes.LinkerKey, value: string) => void): void {
     this._cb = cb;
-    window.addEventListener("storage", this._onSessionChanged);
+    window.addEventListener("storage", this._onStorageChanged);
   }
 
   stopListen(): void {
-    window.removeEventListener("storage", this._onSessionChanged);
+    window.removeEventListener("storage", this._onStorageChanged);
   }
 
-  @BindThis() private _onSessionChanged(e: StorageEvent) {
-    this._cb(e.key, e.newValue);
+  @BindThis() private _onStorageChanged(e: StorageEvent) {
+    for (let reg of DesktopConstants.LinkerKeyPrefix) {
+      if (reg.test(e.key!)) {
+        this._cb(e.key!, e.newValue);
+        return;
+      }
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { DesktopService, TaskbarHelper } from "@/components/desktop/services";
 import { Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -6,8 +7,8 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Inject,
 } from "vue-class";
-import { useDesktop, useTaskbarSetting } from "./stores";
 
 export interface MainAreaProps extends VueComponentBaseProps {}
 
@@ -15,8 +16,10 @@ export interface MainAreaProps extends VueComponentBaseProps {}
 export class MainAreaInst extends VueComponent<MainAreaProps> {
   static readonly defineProps: ComponentProps<MainAreaProps> = ["inst"];
 
+  @Inject() desktopService: DesktopService;
+  @Inject() taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"container">().addDynamic("container", () => {
-    const { deputySizeProp } = useTaskbarSetting();
+    const { deputySizeProp } = this.taskbarHelper;
     return {
       position: "relative",
       flexGrow: "1",
@@ -25,7 +28,7 @@ export class MainAreaInst extends VueComponent<MainAreaProps> {
   });
 
   setup() {
-    useDesktop().mainAreaInst = this as any;
+    this.desktopService.mainAreaInst = this;
   }
 
   render(): VNodeChild {

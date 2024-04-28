@@ -25,4 +25,12 @@ export class LocalStorageSettingStore
     localStorage.setItem(keyPrefix + key, value);
     return Promise.resolve();
   }
+
+  connect(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  disconnect(): Promise<void> {
+    return Promise.resolve();
+  }
 }

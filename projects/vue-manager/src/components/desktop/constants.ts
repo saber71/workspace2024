@@ -21,4 +21,9 @@ export namespace DesktopConstants {
   );
   export const Label_Linker = "Linker";
   export const Label_SettingStore = "SettingStore";
+  export const LinkerKeyPrefix = readonly<RegExp[]>([/^desktop-setting:/]);
+}
+
+export function rem(px: number) {
+  return px / DesktopConstants.BASE_FONT_SIZE + "rem";
 }

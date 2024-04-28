@@ -1,6 +1,6 @@
 import { DesktopConstants } from "@/components/desktop/constants.ts";
 import { DesktopSettingService } from "@/components/desktop/services/DesktopSettingService.ts";
-import { rem } from "@/components/desktop/stores";
+import { rem } from "@/components/desktop/constants.ts";
 import { Computed, Inject, Service, VueService } from "vue-class";
 
 @Service()

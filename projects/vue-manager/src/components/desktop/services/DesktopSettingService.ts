@@ -30,6 +30,8 @@ export class DesktopSettingService extends VueService {
     store: boolean = true,
   ) {
     this.refMap[key].value = value;
+    if (key === "taskbar.small")
+      this.desktopService.scale = value === "true" ? 0.75 : 1;
     if (store) this.desktopService.settingStore.set(key, value);
     return this;
   }

@@ -1,3 +1,8 @@
+import {
+  DesktopService,
+  DesktopSettingService,
+  TaskbarHelper,
+} from "@/components/desktop/services";
 import { useBehavior } from "@/stores";
 import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
@@ -8,8 +13,8 @@ import {
   toNative,
   VueComponent,
   Link,
+  Inject,
 } from "vue-class";
-import { useDesktop, useTaskbarSetting } from "../stores";
 
 export interface PromptLineProps extends VueComponentBaseProps {}
 
@@ -17,19 +22,22 @@ export interface PromptLineProps extends VueComponentBaseProps {}
 export class PromptLineInst extends VueComponent<PromptLineProps> {
   static readonly defineProps: ComponentProps<PromptLineProps> = ["inst"];
 
+  @Inject() desktopService: DesktopService;
+  @Inject() desktopSettingService: DesktopSettingService;
+  @Inject() taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"promptLine">().addDynamic("promptLine", () => {
     const {
       promptLinePositions,
       deputySizeProp,
       principalSizeProp,
       isHorizon,
-      value,
-    } = useTaskbarSetting();
+    } = this.taskbarHelper;
+    const position = this.desktopSettingService.get("taskbar.position");
     let transform = "";
-    if (value.position === "left") transform = "translateX(50%)";
-    else if (value.position === "right") transform = "translateX(-50%)";
-    else if (value.position === "top") transform = "translateY(50%)";
-    else if (value.position === "bottom") transform = "translateY(-50%)";
+    if (position === "left") transform = "translateX(50%)";
+    else if (position === "right") transform = "translateX(-50%)";
+    else if (position === "top") transform = "translateY(50%)";
+    else if (position === "bottom") transform = "translateY(-50%)";
     return {
       position: "absolute",
       [promptLinePositions[0]]: 0,
@@ -48,7 +56,7 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
     useBehavior()
       .wrapEventTarget(this.el)
       .addEventListener("mousedown", (e) => {
-        useDesktop().cursor = getComputedStyle(this.el).cursor;
+        this.desktopService.cursor = getComputedStyle(this.el).cursor;
         downPosition = e;
         useBehavior().curBehavior = "resize-taskbar";
       });
@@ -59,7 +67,7 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
         () => {
           downPosition = undefined;
           useBehavior().curBehavior = "";
-          useDesktop().resetCursor();
+          this.desktopService.cursor = "default";
         },
         {
           behaviorTypes: "resize-taskbar",
@@ -71,23 +79,27 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
         "mousemove",
         (e) => {
           if (downPosition) {
-            const { value, deputySizeProp } = useTaskbarSetting();
+            const { deputySizeProp } = this.taskbarHelper;
+            const position = this.desktopSettingService.get("taskbar.position");
             const offsetX = e.x - downPosition.x;
             const offsetY = e.y - downPosition.y;
             let deputySize =
-              useDesktop().taskbarInst.el.getBoundingClientRect()[
+              this.desktopService.taskbarInst.el.getBoundingClientRect()[
                 deputySizeProp
               ];
-            if (value.position === "left") {
+            if (position === "left") {
               deputySize += offsetX;
-            } else if (value.position === "right") {
+            } else if (position === "right") {
               deputySize -= offsetX;
-            } else if (value.position === "bottom") {
+            } else if (position === "bottom") {
               deputySize -= offsetY;
-            } else if (value.position === "top") {
+            } else if (position === "top") {
               deputySize += offsetY;
             }
-            value.deputySize = deputySize + "px";
+            this.desktopSettingService.set(
+              "taskbar.deputySize",
+              `${deputySize}px`,
+            );
             downPosition = e;
           }
         },

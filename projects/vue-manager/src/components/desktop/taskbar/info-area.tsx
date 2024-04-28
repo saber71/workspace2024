@@ -1,3 +1,4 @@
+import { TaskbarHelper } from "@/components/desktop/services";
 import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -6,8 +7,8 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Inject,
 } from "vue-class";
-import { useTaskbarSetting } from "../stores";
 import Time from "./info-area/time";
 
 export interface InfoAreaProps extends VueComponentBaseProps {}
@@ -16,9 +17,10 @@ export interface InfoAreaProps extends VueComponentBaseProps {}
 export class InfoAreaInst extends VueComponent<InfoAreaProps> {
   static readonly defineProps: ComponentProps<InfoAreaProps> = ["inst"];
 
+  @Inject() taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"infoArea" | "blank">()
     .addDynamic("infoArea", () => {
-      const { deputySizeProp, isHorizon } = useTaskbarSetting();
+      const { deputySizeProp, isHorizon } = this.taskbarHelper;
       return {
         flexShrink: 0,
         flexBasis: "100px",
@@ -39,7 +41,7 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
       "hover",
     )
     .addDynamic("blank", () => {
-      const { deputySizeProp } = useTaskbarSetting();
+      const { deputySizeProp } = this.taskbarHelper;
       return {
         flexBasis: "5px",
         [deputySizeProp]: "100%",

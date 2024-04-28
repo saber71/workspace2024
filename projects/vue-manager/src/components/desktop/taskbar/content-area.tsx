@@ -1,3 +1,4 @@
+import { TaskbarHelper } from "@/components/desktop/services";
 import { Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -6,8 +7,8 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Inject,
 } from "vue-class";
-import { useTaskbarSetting } from "../stores";
 
 export interface ContentAreaProps extends VueComponentBaseProps {}
 
@@ -15,10 +16,11 @@ export interface ContentAreaProps extends VueComponentBaseProps {}
 export class ContentAreaInst extends VueComponent<ContentAreaProps> {
   static readonly defineProps: ComponentProps<ContentAreaProps> = ["inst"];
 
+  @Inject() taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"contentArea">().addDynamic(
     "contentArea",
     () => {
-      const { deputySizeProp } = useTaskbarSetting();
+      const { deputySizeProp } = this.taskbarHelper;
       return {
         flexGrow: 1,
         [deputySizeProp]: "100%",

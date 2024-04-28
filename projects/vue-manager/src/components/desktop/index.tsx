@@ -1,4 +1,7 @@
-import { DesktopService } from "@/components/desktop/services";
+import {
+  DesktopService,
+  DesktopSettingService,
+} from "@/components/desktop/services";
 import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -11,7 +14,6 @@ import {
   Inject,
 } from "vue-class";
 import Main from "./main-area";
-import { useDesktop, useTaskbarSetting } from "./stores";
 import Taskbar from "./taskbar";
 
 export interface DesktopProps extends VueComponentBaseProps {}
@@ -22,6 +24,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
 
   @Link() wrapperEl: HTMLElement;
   @Inject() desktopService: DesktopService;
+  @Inject() desktopSettingService: DesktopSettingService;
 
   readonly styles = new Styles<"container" | "wrapper">()
     .add("container", {
@@ -31,11 +34,11 @@ export class DesktopInst extends VueComponent<DesktopProps> {
       color: "black",
     })
     .addDynamic("wrapper", () => {
-      const settings = useTaskbarSetting().value;
+      const position = this.desktopSettingService.get("taskbar.position");
       let flexDirection: any;
-      if (settings.position === "left") flexDirection = "row-reverse";
-      else if (settings.position === "right") flexDirection = "row";
-      else if (settings.position === "top") flexDirection = "column-reverse";
+      if (position === "left") flexDirection = "row-reverse";
+      else if (position === "right") flexDirection = "row";
+      else if (position === "top") flexDirection = "column-reverse";
       else flexDirection = "column";
       return {
         width: "100%",
@@ -50,7 +53,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
     });
 
   setup() {
-    useDesktop().desktopInst = this as any;
+    this.desktopService.desktopInst = this;
   }
 
   onUnmounted() {

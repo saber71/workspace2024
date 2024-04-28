@@ -1,3 +1,5 @@
+import { rem } from "@/components/desktop/constants.ts";
+import { TaskbarHelper } from "@/components/desktop/services";
 import { WindowsFilled } from "@ant-design/icons-vue";
 import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
@@ -7,8 +9,8 @@ import {
   type VueComponentBaseProps,
   toNative,
   VueComponent,
+  Inject,
 } from "vue-class";
-import { rem, useTaskbarSetting } from "../stores";
 
 export interface StartButtonProps extends VueComponentBaseProps {}
 
@@ -16,9 +18,10 @@ export interface StartButtonProps extends VueComponentBaseProps {}
 export class StartButtonInst extends VueComponent<StartButtonProps> {
   static readonly defineProps: ComponentProps<StartButtonProps> = ["inst"];
 
+  @Inject() taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"startButton">()
     .addDynamic("startButton", () => {
-      const { deputySizeProp } = useTaskbarSetting();
+      const { deputySizeProp } = this.taskbarHelper;
       return {
         flexShrink: 0,
         display: "flex",

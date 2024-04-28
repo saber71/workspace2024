@@ -21,6 +21,12 @@ export class DesktopService extends VueService {
   @Mut() cursor: string | "default" = "default";
   @Mut() scale: number = 1;
   @Mut(true) timestamp = new Date();
+  @Mut() linkerOption: any = {
+    type: "LocalStorageLinker",
+  };
+  @Mut() settingStoreOption: any = {
+    type: "LocalStorageSettingStore",
+  };
   readonly eventBus = new EventEmitter<DesktopTypes.Events>();
   private _raqHandler?: any;
   private _oldFontSize = document.documentElement.style.fontSize;
@@ -52,6 +58,38 @@ export class DesktopService extends VueService {
   @Watcher() onScaleChange() {
     document.documentElement.style.fontSize =
       this.scale * DesktopConstants.BASE_FONT_SIZE + "px";
+  }
+
+  @Watcher() onLinkerOptionChange() {
+    const container = VueClass.dependencyInjection;
+    if (container.hasLabel(DesktopConstants.Label_Linker))
+      this.linker.stopListen();
+    const linker = VueClass.dependencyInjection.getValue<DesktopTypes.Linker>(
+      this.linkerOption.type,
+    );
+    container.bindValue(DesktopConstants.Label_Linker, linker);
+    linker.startListen(async (key, value) => {
+      const desktopSettingPrefix = DesktopConstants.LinkerKeyPrefix[0];
+      if (desktopSettingPrefix.test(key)) {
+        await this.settingStore.set(
+          key.replace(desktopSettingPrefix, "") as any,
+          value,
+        );
+        return;
+      }
+    });
+  }
+
+  @Watcher() async onSettingStoreOptionChange() {
+    const container = VueClass.dependencyInjection;
+    if (container.hasLabel(DesktopConstants.Label_SettingStore))
+      await this.settingStore.disconnect();
+    const store =
+      VueClass.dependencyInjection.getValue<DesktopTypes.SettingStore>(
+        this.settingStoreOption.type,
+      );
+    container.bindValue(DesktopConstants.Label_SettingStore, store);
+    await store.connect();
   }
 
   @BindThis() private _updateTimestamp() {

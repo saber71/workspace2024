@@ -3,18 +3,6 @@ export namespace DesktopTypes {
     close: () => void;
   }
 
-  export interface TaskbarSetting {
-    lock: boolean;
-    deputySize: number | string;
-    autoHide: {
-      /* default false */
-      enabled: boolean;
-      forceShow: boolean;
-    };
-    small: boolean;
-    position: "top" | "right" | "bottom" | "left";
-  }
-
   type StringBoolean = "true" | "false";
   type StringNumber = `${number}`;
   type Px = `${number}px` | "";
@@ -44,6 +32,10 @@ export namespace DesktopTypes {
     get<Key extends keyof Setting>(key: Key): Promise<Setting[Key]>;
 
     batchGet(keys: ReadonlyArray<keyof Setting>): Promise<string[]>;
+
+    connect(): Promise<void>;
+
+    disconnect(): Promise<void>;
   }
 
   export type LinkerKey = `desktop-setting:${keyof Setting}`;

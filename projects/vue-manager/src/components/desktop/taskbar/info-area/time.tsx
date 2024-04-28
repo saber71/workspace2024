@@ -1,3 +1,4 @@
+import { DesktopService, TaskbarHelper } from "@/components/desktop/services";
 import { useBehavior } from "@/stores";
 import { DownOutlined, UpOutlined } from "@ant-design/icons-vue";
 import { createPopper, type Instance } from "@popperjs/core";
@@ -8,6 +9,7 @@ import { type CSSProperties, nextTick, type VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
+  Inject,
   Link,
   Mut,
   toNative,
@@ -15,8 +17,7 @@ import {
   type VueComponentBaseProps,
   Watcher,
 } from "vue-class";
-import { DesktopConstants } from "../../constants";
-import { rem, useDesktop, useTaskbarSetting } from "../../stores";
+import { DesktopConstants, rem } from "../../constants";
 
 const weekTexts = ["日", "一", "二", "三", "四", "五", "六"];
 const baseCalendarGridStyle: CSSProperties = {
@@ -81,6 +82,8 @@ export interface TimeProps extends VueComponentBaseProps {}
 export class TimeInst extends VueComponent<TimeProps> {
   static readonly defineProps: ComponentProps<TimeProps> = ["inst"];
 
+  @Inject() desktopService: DesktopService;
+  @Inject() taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<
     | "time"
     | "hoverableTime"
@@ -167,7 +170,7 @@ export class TimeInst extends VueComponent<TimeProps> {
       textAlign: "left",
     })
     .addDynamic("time", () => {
-      const { deputySizeProp } = useTaskbarSetting();
+      const { deputySizeProp } = this.taskbarHelper;
       return {
         fontSize: "0.75rem",
         userSelect: "none",
@@ -178,7 +181,7 @@ export class TimeInst extends VueComponent<TimeProps> {
       };
     })
     .addDynamic("hoverableTime", () => {
-      const { deputySizeProp } = useTaskbarSetting();
+      const { deputySizeProp } = this.taskbarHelper;
       return {
         width: "100%",
         height: "100%",
@@ -195,7 +198,6 @@ export class TimeInst extends VueComponent<TimeProps> {
       "hover",
     )
     .addDynamic("popper", () => {
-      const value = useTaskbarSetting().value;
       return {
         width: rem(392),
         background: DesktopConstants.BACKGROUND_COLOR,
@@ -216,7 +218,7 @@ export class TimeInst extends VueComponent<TimeProps> {
   @Watcher() updateCalendars() {
     this.calendars.length = 0;
     const monthOneDay = new Date(`${this.year}/${this.month}/1`);
-    const today = new Date(useDesktop().timestamp);
+    const today = new Date(this.desktopService.timestamp);
     today.setHours(0);
     today.setMinutes(0);
     today.setSeconds(0);
@@ -256,7 +258,7 @@ export class TimeInst extends VueComponent<TimeProps> {
   @Watcher() setupPopper() {
     if (this.showPopper) {
       if (this.popperInstance) return;
-      const date = useDesktop().timestamp;
+      const date = this.desktopService.timestamp;
       this.year = date.getFullYear();
       this.month = date.getMonth() + 1;
       this.selectedTime = new Date(
@@ -297,7 +299,7 @@ export class TimeInst extends VueComponent<TimeProps> {
 
   render(): VNodeChild {
     const styles = this.styles;
-    const desktop = useDesktop();
+    const desktop = this.desktopService;
     const cnDate = cnDateFormatter.format(desktop.timestamp);
     const week = weekFormatter.format(desktop.timestamp).replace("周", "星期");
     return (
