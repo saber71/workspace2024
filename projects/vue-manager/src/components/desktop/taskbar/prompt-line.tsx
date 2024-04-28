@@ -1,4 +1,4 @@
-import {
+import type {
   DesktopService,
   DesktopSettingService,
   TaskbarHelper,
@@ -22,9 +22,9 @@ export interface PromptLineProps extends VueComponentBaseProps {}
 export class PromptLineInst extends VueComponent<PromptLineProps> {
   static readonly defineProps: ComponentProps<PromptLineProps> = ["inst"];
 
-  @Inject() desktopService: DesktopService;
-  @Inject() desktopSettingService: DesktopSettingService;
-  @Inject() taskbarHelper: TaskbarHelper;
+  @Inject("DesktopService") desktopService: DesktopService;
+  @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
+  @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"promptLine">().addDynamic("promptLine", () => {
     const {
       promptLinePositions,

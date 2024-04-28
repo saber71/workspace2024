@@ -2,7 +2,7 @@ import type { DesktopInst } from "@/components/desktop";
 import { DesktopConstants } from "@/components/desktop/constants.ts";
 import type { MainAreaInst } from "@/components/desktop/main-area.tsx";
 import type { TaskbarInst } from "@/components/desktop/taskbar.tsx";
-import { DesktopTypes } from "@/components/desktop/types.ts";
+import type { DesktopTypes } from "@/components/desktop/types.ts";
 import EventEmitter from "eventemitter3";
 import {
   BindThis,

@@ -16,6 +16,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import dayjs from "dayjs";
 import "./guards";
+import "./components/desktop";
 
 dayjs.locale("zh-cn");
 dayjs.extend(relativeTime);
@@ -40,3 +41,5 @@ VueClass.dependencyInjection.bindValue(ROUTE_RECORDS, routeRecords);
 
 app.use(router).mount("#app");
 ///<reference types="../types"/>
+
+console.log(VueClass.dependencyInjection);

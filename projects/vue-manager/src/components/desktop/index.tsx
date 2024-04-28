@@ -1,4 +1,4 @@
-import {
+import type {
   DesktopService,
   DesktopSettingService,
 } from "@/components/desktop/services";
@@ -15,6 +15,9 @@ import {
 } from "vue-class";
 import Main from "./main-area";
 import Taskbar from "./taskbar";
+import "./linker";
+import "./setting-store";
+import "./services";
 
 export interface DesktopProps extends VueComponentBaseProps {}
 
@@ -23,8 +26,8 @@ export class DesktopInst extends VueComponent<DesktopProps> {
   static readonly defineProps: ComponentProps<DesktopProps> = ["inst"];
 
   @Link() wrapperEl: HTMLElement;
-  @Inject() desktopService: DesktopService;
-  @Inject() desktopSettingService: DesktopSettingService;
+  @Inject("DesktopService") desktopService: DesktopService;
+  @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
 
   readonly styles = new Styles<"container" | "wrapper">()
     .add("container", {

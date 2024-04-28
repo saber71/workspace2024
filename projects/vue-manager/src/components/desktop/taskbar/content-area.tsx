@@ -1,4 +1,4 @@
-import { TaskbarHelper } from "@/components/desktop/services";
+import type { TaskbarHelper } from "@/components/desktop/services";
 import { Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -16,7 +16,7 @@ export interface ContentAreaProps extends VueComponentBaseProps {}
 export class ContentAreaInst extends VueComponent<ContentAreaProps> {
   static readonly defineProps: ComponentProps<ContentAreaProps> = ["inst"];
 
-  @Inject() taskbarHelper: TaskbarHelper;
+  @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
   readonly styles = new Styles<"contentArea">().addDynamic(
     "contentArea",
     () => {

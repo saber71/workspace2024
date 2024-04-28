@@ -42,17 +42,19 @@ export class Styles<Class extends string> {
     callback: () => CSSStyle,
     options: DynamicOptions = {},
   ): this {
-    this._effectScope.run(() => {
-      const watchCallback = () => {
-        this._handleCSSProperties(
-          className,
-          getPseudoClasses(options.pseudoClasses),
-          callback(),
-        );
-      };
-      const { source } = options;
-      if (source) watch(source, watchCallback, { immediate: true });
-      else watchEffect(watchCallback);
+    setTimeout(() => {
+      this._effectScope.run(() => {
+        const watchCallback = () => {
+          this._handleCSSProperties(
+            className,
+            getPseudoClasses(options.pseudoClasses),
+            callback(),
+          );
+        };
+        const { source } = options;
+        if (source) watch(source, watchCallback, { immediate: true });
+        else watchEffect(watchCallback);
+      });
     });
     return this;
   }
@@ -106,6 +108,7 @@ export class Styles<Class extends string> {
   private _updateStyleElement() {
     if (this._timeoutHandler) return;
     this._timeoutHandler = setTimeout(() => {
+      this._timeoutHandler = undefined;
       let output = "";
       for (let css of this._selectorMapCSS.values()) {
         output += css + "\n";

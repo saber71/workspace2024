@@ -12,7 +12,7 @@ export class DesktopSettingService extends VueService {
   }
 
   @Inject() readonly desktopService: DesktopService;
-  readonly refMap: Record<keyof DesktopTypes.Setting, Ref<string>>;
+  readonly refMap: Record<keyof DesktopTypes.Setting, Ref<string>> = {} as any;
   private readonly _initSetting: DesktopTypes.Setting = Object.assign(
     {},
     DesktopConstants.InitSetting,

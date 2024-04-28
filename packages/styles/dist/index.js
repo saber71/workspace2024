@@ -32,15 +32,17 @@ class Styles {
         return this;
     }
     addDynamic(className, callback, options = {}) {
-        this._effectScope.run(()=>{
-            const watchCallback = ()=>{
-                this._handleCSSProperties(className, getPseudoClasses(options.pseudoClasses), callback());
-            };
-            const { source } = options;
-            if (source) watch(source, watchCallback, {
-                immediate: true
+        setTimeout(()=>{
+            this._effectScope.run(()=>{
+                const watchCallback = ()=>{
+                    this._handleCSSProperties(className, getPseudoClasses(options.pseudoClasses), callback());
+                };
+                const { source } = options;
+                if (source) watch(source, watchCallback, {
+                    immediate: true
+                });
+                else watchEffect(watchCallback);
             });
-            else watchEffect(watchCallback);
         });
         return this;
     }
@@ -82,6 +84,7 @@ class Styles {
     _updateStyleElement() {
         if (this._timeoutHandler) return;
         this._timeoutHandler = setTimeout(()=>{
+            this._timeoutHandler = undefined;
             let output = "";
             for (let css of this._selectorMapCSS.values()){
                 output += css + "\n";

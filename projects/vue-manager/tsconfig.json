@@ -16,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "verbatimModuleSyntax": false,
+    "verbatimModuleSyntax": true,
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "paths": {
