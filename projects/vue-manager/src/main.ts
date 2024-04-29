@@ -8,7 +8,6 @@ import { createApp } from "vue";
 import antd from "ant-design-vue";
 import { autoRoutes } from "vue-auto-route";
 import { VueClass } from "vue-class";
-import "@/components/crud/index.css";
 import { createRouter, createWebHistory } from "vue-router";
 import "./guards";
 import "./components/desktop";

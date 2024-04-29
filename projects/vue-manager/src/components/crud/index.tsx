@@ -18,6 +18,7 @@ import {
   type TableColumnProps,
   type TableProps,
 } from "ant-design-vue";
+import { Styles } from "styles";
 import {
   type VNodeChild,
   type Component as ComponentType,
@@ -45,6 +46,10 @@ export interface CrudProps extends VueComponentBaseProps {
   option: CrudTypes.CrudOptions;
   dataSource?: any[] | CrudTypes.PaginationResult;
 }
+
+new Styles().inject(".search-form .ant-form-item", {
+  "margin-bottom": "0",
+});
 
 @Component()
 export class CrudInst extends VueComponent<CrudProps> {
