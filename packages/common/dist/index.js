@@ -40,7 +40,8 @@ function deepAssign(dst, src) {
 }
 
 function deepClone(obj, options = {}) {
-    if (typeof obj !== "object" || !obj) return obj;
+    if (typeof obj !== "object" || obj === undefined || obj === null) return obj;
+    if (obj instanceof RegExp) return obj;
     if (obj instanceof Set) {
         const result = new Set();
         obj.forEach((value)=>result.add(deepClone(value)));

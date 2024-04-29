@@ -116,7 +116,7 @@ export declare class VueClass {
     static install(app: App, router: Router): Promise<void>;
 }
 
-export declare class VueComponent<Props extends VueComponentBaseProps = VueComponentBaseProps, Emit extends EmitsOptions = {}> {
+export declare class VueComponent<Props extends VueComponentBaseProps = VueComponentBaseProps, Emit extends EmitsOptions = {}> extends VueService {
     static __test__: boolean;
     static readonly defineProps: ComponentProps<VueComponentBaseProps & any>;
     constructor();
@@ -127,8 +127,8 @@ export declare class VueComponent<Props extends VueComponentBaseProps = VueCompo
     get router(): Router;
     get route(): RouteLocationNormalizedLoaded;
     render(): VNodeChild;
-    setup(): void;
     onMounted(): void;
+    onBeforeUnmounted(): void;
     onUnmounted(): void;
 }
 
@@ -171,12 +171,17 @@ export declare class VueRouterGuard {
     onError(error: Error, to: RouteLocationNormalized, from: RouteLocationNormalizedLoaded): void;
 }
 
-export declare function Watcher<T extends VueComponent>(option?: {
+export declare class VueService {
+    setup(): void;
+    reset(): void;
+}
+
+export declare function Watcher<T extends VueService>(option?: {
     source?: WatcherTarget<T> | WatcherTarget<T>[];
     option?: WatchOptions;
 }): (target: object, arg: any) => void;
 
-export declare type WatcherTarget<T extends VueComponent> = string | keyof T | ((instance: T) => any);
+export declare type WatcherTarget<T extends VueService> = string | keyof T | ((instance: T) => any);
 
 export declare type WithSlotTypes<Emit extends EmitsOptions, T extends {}> = Omit<SetupContext<Emit>, "slots"> & {
     slots: NonNullable<VueComponentProps<T>["v-slots"]>;

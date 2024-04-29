@@ -1,3 +1,4 @@
+import type { CrudTypes } from "@/components/crud/types.ts";
 import {
   DeleteFilled,
   EditFilled,
@@ -41,8 +42,8 @@ import Layout from "./layout.tsx";
 import * as AntComponent from "ant-design-vue";
 
 export interface CrudProps extends VueComponentBaseProps {
-  option: CrudOptions;
-  dataSource?: any[] | PaginationResult;
+  option: CrudTypes.CrudOptions;
+  dataSource?: any[] | CrudTypes.PaginationResult;
 }
 
 @Component()
@@ -81,11 +82,11 @@ export class CrudInst extends VueComponent<CrudProps> {
   @Mut() pageSize: number = 10;
   @Mut() total: number = 0;
   @Mut() paginationOption?: PaginationProps;
-  @Mut() renderFormElements: Array<RenderElement> = [];
-  @Mut() renderSearchFormElements: Array<RenderElement> = [];
-  @Mut() renderAddFormElements: Array<RenderElement> = [];
-  @Mut() renderEditFormElements: Array<RenderElement> = [];
-  @Mut() renderToolButtonElements: Array<RenderElement> = [];
+  @Mut() renderFormElements: Array<CrudTypes.RenderElement> = [];
+  @Mut() renderSearchFormElements: Array<CrudTypes.RenderElement> = [];
+  @Mut() renderAddFormElements: Array<CrudTypes.RenderElement> = [];
+  @Mut() renderEditFormElements: Array<CrudTypes.RenderElement> = [];
+  @Mut() renderToolButtonElements: Array<CrudTypes.RenderElement> = [];
   @Mut() visibleAddForm: boolean = false;
   @Mut() visibleEditForm: boolean = false;
   @Mut() loadingTable: boolean = false;
@@ -94,7 +95,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     return this.visibleAddForm || this.visibleEditForm || false;
   }
 
-  @Computed() get renderToolButtons(): RenderElement | undefined {
+  @Computed() get renderToolButtons(): CrudTypes.RenderElement | undefined {
     if (this.renderToolButtonElements.length) {
       return () => (
         <Space>{this.renderToolButtonElements.map((item) => item())}</Space>
@@ -109,7 +110,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     return prefix + (this.props.option.name ?? "");
   }
 
-  get renderModal(): RenderElement | undefined {
+  get renderModal(): CrudTypes.RenderElement | undefined {
     const onUpdateOpen = (val: boolean) =>
       (this.visibleEditForm = this.visibleAddForm = val);
     let fn: (e: MouseEvent) => void;
@@ -127,7 +128,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     );
   }
 
-  @Computed() get renderPagination(): RenderElement | undefined {
+  @Computed() get renderPagination(): CrudTypes.RenderElement | undefined {
     if (this.paginationOption)
       return () => (
         <Pagination
@@ -136,7 +137,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       );
   }
 
-  @Computed() get renderTable(): RenderElement | undefined {
+  @Computed() get renderTable(): CrudTypes.RenderElement | undefined {
     const dataSource = this.dataSource;
 
     if (this.tableColumnOptions.length) {
@@ -167,7 +168,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     }
   }
 
-  @Computed() get renderForm(): RenderElement | undefined {
+  @Computed() get renderForm(): CrudTypes.RenderElement | undefined {
     if (this.renderFormElements.length)
       return () => (
         <Form
@@ -182,7 +183,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       );
   }
 
-  @Computed() get renderAddForm(): RenderElement | undefined {
+  @Computed() get renderAddForm(): CrudTypes.RenderElement | undefined {
     if (this.renderAddFormElements.length)
       return () => (
         <Form
@@ -199,7 +200,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       );
   }
 
-  @Computed() get renderEditForm(): RenderElement | undefined {
+  @Computed() get renderEditForm(): CrudTypes.RenderElement | undefined {
     if (this.renderEditFormElements.length)
       return () => (
         <Form
@@ -216,7 +217,7 @@ export class CrudInst extends VueComponent<CrudProps> {
       );
   }
 
-  @Computed() get renderSearchForm(): RenderElement | undefined {
+  @Computed() get renderSearchForm(): CrudTypes.RenderElement | undefined {
     if (this.renderSearchFormElements.length)
       return () => (
         <Form
@@ -283,7 +284,8 @@ export class CrudInst extends VueComponent<CrudProps> {
     if (!this.showTable) return;
     const { crudColumnOptions } = this.props.option;
     for (let propName in crudColumnOptions) {
-      const columnOption: CrudColumnOption = crudColumnOptions[propName];
+      const columnOption: CrudTypes.CrudColumnOption =
+        crudColumnOptions[propName];
       if (columnOption.tableOption?.show === false) continue;
       const componentName = columnOption.tableOption?.component;
       const componentFn =
@@ -369,7 +371,7 @@ export class CrudInst extends VueComponent<CrudProps> {
     this.renderToolButtonElements.length = 0;
     if (!this.showTable) return;
     const toolButtons = Object.assign({}, this.props.option.toolButtons);
-    const addButton: ToolButtonOption = {
+    const addButton: CrudTypes.ToolButtonOption = {
       text: "新增",
       component: "Button",
       componentProps: {
@@ -377,7 +379,7 @@ export class CrudInst extends VueComponent<CrudProps> {
         onClick: () => (this.visibleAddForm = true),
       },
     };
-    const batchDeleteButton: ToolButtonOption = {
+    const batchDeleteButton: CrudTypes.ToolButtonOption = {
       text: "批量删除",
       component: "Button",
       componentProps: {
@@ -557,14 +559,15 @@ export class CrudInst extends VueComponent<CrudProps> {
       | "searchFormOption"
       | "editFormOption"
       | "formOption",
-    renderElements: RenderElement[],
+    renderElements: CrudTypes.RenderElement[],
     defaultShowInForm: boolean = true,
     defaultComponentProps: object = {},
     defaultComponentName: string = "Input",
   ) {
     const { crudColumnOptions } = this.props.option;
     for (let propName in crudColumnOptions) {
-      const columnOption: CrudColumnOption = crudColumnOptions[propName];
+      const columnOption: CrudTypes.CrudColumnOption =
+        crudColumnOptions[propName];
       const formOption = columnOption[formOptionName];
       let componentName =
         formOption?.component ?? columnOption.formOption?.component;

@@ -1,3 +1,7 @@
+import type {
+  DesktopService,
+  DesktopSettingService,
+} from "@/components/desktop/services";
 import { dynamic, Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -7,10 +11,13 @@ import {
   toNative,
   VueComponent,
   Link,
+  Inject,
 } from "vue-class";
 import Main from "./main-area";
-import { useDesktop, useTaskbarSetting } from "./stores";
 import Taskbar from "./taskbar";
+import "./linker";
+import "./setting-store";
+import "./services";
 
 export interface DesktopProps extends VueComponentBaseProps {}
 
@@ -19,6 +26,8 @@ export class DesktopInst extends VueComponent<DesktopProps> {
   static readonly defineProps: ComponentProps<DesktopProps> = ["inst"];
 
   @Link() wrapperEl: HTMLElement;
+  @Inject("DesktopService") desktopService: DesktopService;
+  @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
 
   readonly styles = new Styles<"container" | "wrapper">()
     .add("container", {
@@ -28,11 +37,11 @@ export class DesktopInst extends VueComponent<DesktopProps> {
       color: "black",
     })
     .addDynamic("wrapper", () => {
-      const settings = useTaskbarSetting().value;
+      const position = this.desktopSettingService.get("taskbar.position");
       let flexDirection: any;
-      if (settings.position === "left") flexDirection = "row-reverse";
-      else if (settings.position === "right") flexDirection = "row";
-      else if (settings.position === "top") flexDirection = "column-reverse";
+      if (position === "left") flexDirection = "row-reverse";
+      else if (position === "right") flexDirection = "row";
+      else if (position === "top") flexDirection = "column-reverse";
       else flexDirection = "column";
       return {
         width: "100%",
@@ -47,7 +56,11 @@ export class DesktopInst extends VueComponent<DesktopProps> {
     });
 
   setup() {
-    useDesktop().desktopInst = this as any;
+    this.desktopService.desktopInst = this;
+  }
+
+  onUnmounted() {
+    this.desktopService.eventBus.emit("close");
   }
 
   render(): VNodeChild {

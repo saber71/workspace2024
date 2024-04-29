@@ -45,7 +45,7 @@ namespace Behavior {
   }
 }
 
-export const useBehavior = defineStore("desktop.behavior", () => {
+export const useBehavior = defineStore("behavior", () => {
   const curBehavior = ref<Behavior.Type>("");
   const eventTargetMap = new WeakMap<EventTarget, Behavior.Instance>();
 

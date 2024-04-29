@@ -6,12 +6,14 @@ import {
   type HTMLAttributes,
   onMounted,
   onUnmounted,
+  onBeforeUnmount,
 } from "vue";
 import type { Router } from "vue-router";
 import { ROUTER } from "./constants";
 import { applyMetadata } from "./metadata";
 import type { ComponentProps, VueComponentClass, WithSlotTypes } from "./types";
 import { VueClass } from "./vue-class";
+import { VueService } from "./vue-service";
 
 export interface VueComponentBaseProps extends Partial<HTMLAttributes> {
   inst?: string;
@@ -20,13 +22,14 @@ export interface VueComponentBaseProps extends Partial<HTMLAttributes> {
 export class VueComponent<
   Props extends VueComponentBaseProps = VueComponentBaseProps,
   Emit extends EmitsOptions = {},
-> {
+> extends VueService {
   static __test__ = false;
   static readonly defineProps: ComponentProps<VueComponentBaseProps & any> = [
     "inst",
   ];
 
   constructor() {
+    super();
     let curInstance = getCurrentInstance()!;
 
     if (!curInstance) {
@@ -56,9 +59,9 @@ export class VueComponent<
 
   render(): VNodeChild {}
 
-  setup(): void {}
-
   onMounted(): void {}
+
+  onBeforeUnmounted(): void {}
 
   onUnmounted(): void {}
 }
@@ -73,9 +76,9 @@ export function toNative<
 
       applyMetadata(componentClass, instance);
 
-      instance.setup();
-
       onMounted(instance.onMounted.bind(instance));
+
+      onBeforeUnmount(instance.onBeforeUnmounted.bind(instance));
 
       onUnmounted(instance.onUnmounted.bind(instance));
 

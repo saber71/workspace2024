@@ -1,4 +1,8 @@
+import "./common.layout.ant-design-vue.scss";
+import "./common.layout.theme.css";
+import zhCN from "ant-design-vue/es/locale/zh_CN";
 import { userApi } from "@/api.ts";
+import { DesktopViewInst } from "@/views/desktop.view.tsx";
 import { ROUTE_RECORDS } from "@/constant.ts";
 import { useUser } from "@/stores";
 import LoginView from "@/views/login.view.tsx";
@@ -21,8 +25,10 @@ import {
   Space,
   SubMenu,
   Switch,
+  Button,
+  ConfigProvider,
 } from "ant-design-vue";
-import type { VNodeChild } from "vue";
+import { nextTick, type VNodeChild } from "vue";
 import {
   BindThis,
   Component,
@@ -44,14 +50,19 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
   static readonly defineProps: ComponentProps<CommonLayoutProps> = ["inst"];
 
   @Inject(ROUTE_RECORDS) readonly routeRecords: RouteRecordRaw;
-
   @Mut() sideCollapsed: boolean = false;
-
   @Mut() breadcrumbItems: {
     title: string;
     routeName: string;
     enableJump?: boolean;
   }[] = [];
+  @Mut() theme = {
+    token: {
+      colorBgBase: "white",
+      colorTextBase: "black",
+      colorBorder: "#d9d9d9",
+    },
+  };
 
   readonly userStore = useUser();
 
@@ -89,6 +100,7 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
             title: route.meta.title as string,
             //@ts-ignore
             order: route.meta.order ?? 0,
+            openInBlank: route.meta.openInBlank,
           };
           if (route.children?.length)
             (item as any).children = filter(route.children);
@@ -101,6 +113,19 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
         return result;
       });
     }
+  }
+
+  @Watcher() updateTheme() {
+    const userStore = useUser();
+    const theme = this.theme;
+    const isDark = userStore.isDarkTheme();
+    document.body.className = isDark ? "dark" : "light";
+    nextTick(() => {
+      const docStyle = getComputedStyle(document.body);
+      theme.token.colorBgBase = docStyle.getPropertyValue("--bg-base");
+      theme.token.colorTextBase = docStyle.getPropertyValue("--text-base");
+      theme.token.colorBorder = docStyle.getPropertyValue("--border-base");
+    });
   }
 
   @Watcher<CommonLayoutInst>({
@@ -159,116 +184,135 @@ export class CommonLayoutInst extends VueComponent<CommonLayoutProps> {
     }
   }
 
-  @BindThis() onClickMenuItem({ key }: any) {
+  @BindThis() onClickMenuItem(data: any) {
+    const { key } = data;
+    const openInBlank = data.item.openInBlank;
     if (key !== this.route.name) {
-      this.router.push({ name: key });
+      if (openInBlank) {
+        const url = this.router.resolve({ name: key });
+        window.open(url.path, "_blank");
+      } else {
+        this.router.push({ name: key });
+      }
     }
+  }
+
+  @BindThis() toDesktop() {
+    const url = this.router.resolve({ name: DesktopViewInst.name });
+    window.open(url.path, "_blank");
   }
 
   render(): VNodeChild {
     return (
-      <Layout class={"h-full"}>
-        <LayoutSider
-          collapsed={this.sideCollapsed}
-          collapsible={true}
-          trigger={null}
-        >
-          {/*顶部logo和系统名*/}
-          <Flex class={"p-2 select-none"} align={"center"} justify={"center"}>
-            <img src={"/vite.svg"} />
-            {/*侧边栏收起时不显示系统名*/}
-            {this.sideCollapsed ? null : (
-              <div class={"text-white whitespace-nowrap text-xl ml-1"}>
-                Vue-Manager
-              </div>
-            )}
-          </Flex>
-          {/*菜单栏*/}
-          <Menu
-            items={this.menu}
-            selectedKeys={this.activeMenuItem}
-            openKeys={this.activeMenuItem}
-            mode={"inline"}
-            theme={"dark"}
-            onClick={this.onClickMenuItem}
-          ></Menu>
-        </LayoutSider>
-        <Layout>
-          <header
-            class={
-              "bg-base h-12 flex items-center flex-shrink-0 px-6 justify-between"
-            }
+      <ConfigProvider locale={zhCN} theme={this.theme}>
+        <Layout class={"h-full"}>
+          <LayoutSider
+            collapsed={this.sideCollapsed}
+            collapsible={true}
+            trigger={null}
           >
-            {/*头部左侧*/}
-            <Space>
-              {/*侧边栏收起/展开触发器*/}
-              {this.sideCollapsed ? (
-                <MenuUnfoldOutlined
-                  onClick={() => (this.sideCollapsed = false)}
-                />
-              ) : (
-                <MenuFoldOutlined onClick={() => (this.sideCollapsed = true)} />
+            {/*顶部logo和系统名*/}
+            <Flex class={"p-2 select-none"} align={"center"} justify={"center"}>
+              <img src={"/vite.svg"} />
+              {/*侧边栏收起时不显示系统名*/}
+              {this.sideCollapsed ? null : (
+                <div class={"text-white whitespace-nowrap text-xl ml-1"}>
+                  Vue-Manager
+                </div>
               )}
-              {/*面包屑*/}
-              <Breadcrumb class={"ml-3 select-none"}>
-                {this.breadcrumbItems.map((item, index) => (
-                  <BreadcrumbItem>
-                    {item.enableJump ? (
-                      <RouterLink
-                        to={{ name: item.routeName }}
-                        class={"hover:bg-opacity-0 hover:bg-amber-200"}
-                      >
-                        {item.title}
-                      </RouterLink>
-                    ) : (
-                      <span class={index === 0 ? "not-link" : "cur-path"}>
-                        {item.title}
-                      </span>
-                    )}
-                  </BreadcrumbItem>
-                ))}
-              </Breadcrumb>
-              <Switch
-                checked={this.userStore.isDarkTheme()}
-                onUpdate:checked={(val) => this.userStore.setDarkTheme(!!val)}
-              ></Switch>
-            </Space>
-            {/*头部右侧*/}
-            <Space>
-              <Dropdown
-                arrow
-                placement={"bottom"}
-                trigger={"click"}
-                overlay={
-                  <Menu onClick={this.onClickUserDropdown}>
-                    <SubMenu key={"sub1"} title={"主题"}>
-                      <MenuItem key={"theme-light"}>浅色</MenuItem>
-                      <MenuItem key={"theme-dark"}>暗色</MenuItem>
-                    </SubMenu>
-                    <MenuItem key={"logout"}>退出登陆</MenuItem>
-                  </Menu>
-                }
-              >
-                <Space class={"cursor-pointer"}>
-                  <Avatar
-                    src={this.userAvatar}
-                    size={"small"}
-                    icon={this.userAvatar ? null : <UserOutlined />}
+            </Flex>
+            {/*菜单栏*/}
+            <Menu
+              items={this.menu}
+              selectedKeys={this.activeMenuItem}
+              openKeys={this.activeMenuItem}
+              mode={"inline"}
+              theme={"dark"}
+              onClick={this.onClickMenuItem}
+            ></Menu>
+          </LayoutSider>
+          <Layout>
+            <header
+              class={
+                "bg-base h-12 flex items-center flex-shrink-0 px-6 justify-between"
+              }
+            >
+              {/*头部左侧*/}
+              <Space>
+                {/*侧边栏收起/展开触发器*/}
+                {this.sideCollapsed ? (
+                  <MenuUnfoldOutlined
+                    onClick={() => (this.sideCollapsed = false)}
                   />
-                  {this.userStore.info.name}
-                </Space>
-              </Dropdown>
-            </Space>
-          </header>
-          <main class={"bg-secondary flex-grow relative"}>
-            <div class={"absolute top-0 left-0 w-full h-full p-6 box-border"}>
-              <RouterView
-                class={"bg-base h-full w-full p-6 box-border overflow-auto"}
-              />
-            </div>
-          </main>
+                ) : (
+                  <MenuFoldOutlined
+                    onClick={() => (this.sideCollapsed = true)}
+                  />
+                )}
+                {/*面包屑*/}
+                <Breadcrumb class={"ml-3 select-none"}>
+                  {this.breadcrumbItems.map((item, index) => (
+                    <BreadcrumbItem>
+                      {item.enableJump ? (
+                        <RouterLink
+                          to={{ name: item.routeName }}
+                          class={"hover:bg-opacity-0 hover:bg-amber-200"}
+                        >
+                          {item.title}
+                        </RouterLink>
+                      ) : (
+                        <span class={index === 0 ? "not-link" : "cur-path"}>
+                          {item.title}
+                        </span>
+                      )}
+                    </BreadcrumbItem>
+                  ))}
+                </Breadcrumb>
+                <Switch
+                  checked={this.userStore.isDarkTheme()}
+                  onUpdate:checked={(val) => this.userStore.setDarkTheme(!!val)}
+                ></Switch>
+              </Space>
+              {/*头部右侧*/}
+              <Space>
+                <Button type={"link"} onClick={this.toDesktop}>
+                  Desktop
+                </Button>
+                <Dropdown
+                  arrow
+                  placement={"bottom"}
+                  trigger={"click"}
+                  overlay={
+                    <Menu onClick={this.onClickUserDropdown}>
+                      <SubMenu key={"sub1"} title={"主题"}>
+                        <MenuItem key={"theme-light"}>浅色</MenuItem>
+                        <MenuItem key={"theme-dark"}>暗色</MenuItem>
+                      </SubMenu>
+                      <MenuItem key={"logout"}>退出登陆</MenuItem>
+                    </Menu>
+                  }
+                >
+                  <Space class={"cursor-pointer"}>
+                    <Avatar
+                      src={this.userAvatar}
+                      size={"small"}
+                      icon={this.userAvatar ? null : <UserOutlined />}
+                    />
+                    {this.userStore.info.name}
+                  </Space>
+                </Dropdown>
+              </Space>
+            </header>
+            <main class={"bg-secondary flex-grow relative"}>
+              <div class={"absolute top-0 left-0 w-full h-full p-6 box-border"}>
+                <RouterView
+                  class={"bg-base h-full w-full p-6 box-border overflow-auto"}
+                />
+              </div>
+            </main>
+          </Layout>
         </Layout>
-      </Layout>
+      </ConfigProvider>
     );
   }
 }
