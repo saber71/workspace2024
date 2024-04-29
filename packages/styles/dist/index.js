@@ -11,7 +11,13 @@ function isDynamicValue(arg) {
     return arg?.type === "dynamic-value";
 }
 
-let id = 0;
+let id = 0, selectorId = 0;
+const selectorMapId = {};
+function getSelectorId(selector) {
+    let id = selectorMapId[selector];
+    if (typeof id === "undefined") selectorMapId[selector] = id = selectorId++;
+    return id;
+}
 class Styles {
     constructor(){
         this.classNames = new Proxy({}, {
@@ -22,20 +28,38 @@ class Styles {
     }
     _id = id++;
     _effectScope = effectScope();
-    _cssPropertyNames = new Set();
     _selectorMapCSS = new Map();
     _styleEL;
     _timeoutHandler;
     classNames;
+    inject(selector, properties) {
+        this._handleCSSProperties(selector, properties, []);
+        return this;
+    }
     add(className, properties, pseudoClasses) {
-        this._handleCSSProperties(className, getPseudoClasses(pseudoClasses), properties);
+        this._handleCSSPropertiesByClassName(className, getPseudoClasses(pseudoClasses), properties);
         return this;
     }
     addDynamic(className, callback, options = {}) {
         setTimeout(()=>{
             this._effectScope.run(()=>{
                 const watchCallback = ()=>{
-                    this._handleCSSProperties(className, getPseudoClasses(options.pseudoClasses), callback());
+                    this._handleCSSPropertiesByClassName(className, getPseudoClasses(options.pseudoClasses), callback());
+                };
+                const { source } = options;
+                if (source) watch(source, watchCallback, {
+                    immediate: true
+                });
+                else watchEffect(watchCallback);
+            });
+        });
+        return this;
+    }
+    injectDynamic(selector, callback, options = {}) {
+        setTimeout(()=>{
+            this._effectScope.run(()=>{
+                const watchCallback = ()=>{
+                    this._handleCSSProperties(selector, callback(), []);
                 };
                 const { source } = options;
                 if (source) watch(source, watchCallback, {
@@ -57,17 +81,20 @@ class Styles {
             this._styleEL = undefined;
         }
     }
-    _handleCSSProperties(className, pseudoClasses, properties) {
+    _handleCSSPropertiesByClassName(className, pseudoClasses, properties) {
         className = this.classNames[className];
         let selector;
         if (pseudoClasses.length) selector = pseudoClasses.map((val)=>`.${className}:${val}`).join(",");
         else selector = `.${className}`;
+        this._handleCSSProperties(selector, properties, pseudoClasses);
+    }
+    _handleCSSProperties(selector, properties, pseudoClasses) {
         let css = "";
         for(let property in properties){
             const value = properties[property];
             if (typeof value === "object") {
                 if (isDynamicValue(value)) {
-                    const name = this._createCSSPropertyName(className, property, pseudoClasses);
+                    const name = this._createCSSPropertyName(selector, property, pseudoClasses);
                     document.documentElement.style.setProperty(name, value.value + "");
                     css += `${transformProperty(property)}:var(${name});`;
                 }
@@ -96,13 +123,8 @@ class Styles {
             this._styleEL.innerHTML = output;
         });
     }
-    _createCSSPropertyName(className, propertyName, pseudoClasses) {
-        const name = `--${className}-${pseudoClasses.join("-")}-${propertyName}-${this._id}`;
-        if (!this._cssPropertyNames.has(name)) {
-            this._cssPropertyNames.add(name);
-            document.documentElement.style.setProperty(name, "");
-        }
-        return name;
+    _createCSSPropertyName(selector, propertyName, pseudoClasses) {
+        return `--${getSelectorId(selector)}-${pseudoClasses.join("-")}-${propertyName}-${this._id}`;
     }
 }
 function getPseudoClasses(data) {

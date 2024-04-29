@@ -2,7 +2,15 @@ import { v4 } from "uuid";
 import { type CSSProperties, effectScope, watch, watchEffect } from "vue";
 import { isDynamicValue } from "./dynamic";
 
-let id = 0;
+let id = 0,
+  selectorId = 0;
+const selectorMapId: Record<string, number> = {};
+
+function getSelectorId(selector: string) {
+  let id = selectorMapId[selector];
+  if (typeof id === "undefined") selectorMapId[selector] = id = selectorId++;
+  return id;
+}
 
 export class Styles<Class extends string> {
   constructor() {
@@ -18,18 +26,22 @@ export class Styles<Class extends string> {
 
   private readonly _id = id++;
   private readonly _effectScope = effectScope();
-  private readonly _cssPropertyNames = new Set<string>();
   private readonly _selectorMapCSS = new Map<string, string>();
   private _styleEL?: HTMLStyleElement;
   private _timeoutHandler?: any;
   readonly classNames: Readonly<Record<Class, string>>;
+
+  inject(selector: string, properties: CSSStyle): this {
+    this._handleCSSProperties(selector, properties, []);
+    return this;
+  }
 
   add(
     className: Class,
     properties: CSSStyle,
     pseudoClasses?: DynamicOptions["pseudoClasses"],
   ) {
-    this._handleCSSProperties(
+    this._handleCSSPropertiesByClassName(
       className,
       getPseudoClasses(pseudoClasses),
       properties,
@@ -45,11 +57,29 @@ export class Styles<Class extends string> {
     setTimeout(() => {
       this._effectScope.run(() => {
         const watchCallback = () => {
-          this._handleCSSProperties(
+          this._handleCSSPropertiesByClassName(
             className,
             getPseudoClasses(options.pseudoClasses),
             callback(),
           );
+        };
+        const { source } = options;
+        if (source) watch(source, watchCallback, { immediate: true });
+        else watchEffect(watchCallback);
+      });
+    });
+    return this;
+  }
+
+  injectDynamic(
+    selector: Class,
+    callback: () => CSSStyle,
+    options: Omit<DynamicOptions, "pseudoClasses"> = {},
+  ): this {
+    setTimeout(() => {
+      this._effectScope.run(() => {
+        const watchCallback = () => {
+          this._handleCSSProperties(selector, callback(), []);
         };
         const { source } = options;
         if (source) watch(source, watchCallback, { immediate: true });
@@ -71,7 +101,7 @@ export class Styles<Class extends string> {
     }
   }
 
-  private _handleCSSProperties(
+  private _handleCSSPropertiesByClassName(
     className: string,
     pseudoClasses: PseudoClassType[],
     properties: CSSStyle,
@@ -81,13 +111,21 @@ export class Styles<Class extends string> {
     if (pseudoClasses.length)
       selector = pseudoClasses.map((val) => `.${className}:${val}`).join(",");
     else selector = `.${className}`;
+    this._handleCSSProperties(selector, properties, pseudoClasses);
+  }
+
+  private _handleCSSProperties(
+    selector: string,
+    properties: CSSStyle,
+    pseudoClasses: PseudoClassType[],
+  ) {
     let css = "";
     for (let property in properties) {
       const value = (properties as any)[property];
       if (typeof value === "object") {
         if (isDynamicValue(value)) {
           const name = this._createCSSPropertyName(
-            className,
+            selector,
             property,
             pseudoClasses,
           );
@@ -122,16 +160,11 @@ export class Styles<Class extends string> {
   }
 
   private _createCSSPropertyName(
-    className: string,
+    selector: string,
     propertyName: string,
     pseudoClasses: PseudoClassType[],
   ) {
-    const name = `--${className}-${pseudoClasses.join("-")}-${propertyName}-${this._id}`;
-    if (!this._cssPropertyNames.has(name)) {
-      this._cssPropertyNames.add(name);
-      document.documentElement.style.setProperty(name, "");
-    }
-    return name;
+    return `--${getSelectorId(selector)}-${pseudoClasses.join("-")}-${propertyName}-${this._id}`;
   }
 }
 
@@ -157,3 +190,8 @@ function transformProperty(property: string) {
 export type CSSStyle = {
   [P in keyof CSSProperties]: CSSProperties[P] | DynamicValue<CSSProperties[P]>;
 };
+
+export interface DynamicOptions {
+  source?: import("vue").WatchSource | import("vue").WatchSource[];
+  pseudoClasses?: PseudoClassType | PseudoClassType[];
+}

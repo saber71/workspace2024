@@ -3,11 +3,6 @@ declare interface DynamicValue<Value = string | number> {
   value: Value;
 }
 
-declare interface DynamicOptions {
-  source?: import("vue").WatchSource | import("vue").WatchSource[];
-  pseudoClasses?: PseudoClassType | PseudoClassType[];
-}
-
 declare type PseudoClassType =
   | "hover"
   | "fullscreen"
