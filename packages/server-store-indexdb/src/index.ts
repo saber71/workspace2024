@@ -1,6 +1,15 @@
-///<reference types="../types.d.ts"/>
-
-import { parseFilterCondition, sortData } from "filter";
+import {
+  type FilterCondition,
+  parseFilterCondition,
+  sortData,
+  type SortOrders,
+} from "filter";
+import type {
+  PaginationResult,
+  PartialStoreItem,
+  StoreAdapter,
+  StoreItem,
+} from "server-store";
 import { v4 } from "uuid";
 
 export function createServerStoreIndexdb(): StoreAdapter {

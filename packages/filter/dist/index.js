@@ -1,6 +1,5 @@
 import deepEqual from 'deep-equal';
 
-///<reference types="../types.d.ts"/>
 function matchFilterCondition(data, condition) {
     const filterPredicates = parseFilterCondition(condition);
     return filterPredicates.every((fn)=>fn(data));

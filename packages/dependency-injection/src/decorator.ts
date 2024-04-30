@@ -1,4 +1,11 @@
 import { Metadata } from "./metadata";
+import type {
+  Class,
+  InjectableOptions,
+  InjectOptions,
+  MethodParameterOption,
+  MethodParameterTypes,
+} from "./types";
 
 /* 透过装饰器第二个参数获取被装饰者名字 */
 export function getDecoratedName(ctx?: string | ClassMemberDecoratorContext) {

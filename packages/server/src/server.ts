@@ -1,4 +1,4 @@
-import { Container, LoadableContainer } from "dependency-injection";
+import { Container, LoadableContainer, type Class } from "dependency-injection";
 import { CONTEXT_LABEL, DEFAULT_PORT, MODULE_NAME, RUNTIME } from "./constant";
 import { ConsoleLogger } from "./logger";
 import { ResponseBodyImpl } from "./response-body";
@@ -6,6 +6,16 @@ import { RouteManager } from "./route-manager";
 import { RequestPipeline } from "./pipeline";
 import { ServerRequest } from "./request";
 import { ServerResponse } from "./response";
+import type {
+  GuardInterface,
+  LoggerInterface,
+  LogLevel,
+  Routes,
+  ServerBootstrapOption,
+  ServerCreateOption,
+  ServerPlatformAdapter,
+  ServerProxyOption,
+} from "./types";
 
 export class Server<PlatformInstance extends object = object> {
   /* 创建Server对象 */

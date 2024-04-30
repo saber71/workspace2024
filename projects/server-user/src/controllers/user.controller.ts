@@ -11,10 +11,12 @@ import {
   Collection,
   StoreCollection,
   ServerLog,
+  type RegularSessionData,
 } from "create-server";
 import validator from "validator";
 import { COLLECTION_ROLE, COLLECTION_USER } from "../constants";
 import { CreateUserDTO, LoginDTO, QueryDTO, UpdateUserDataDTO } from "../dto";
+import type { RoleModel, UserInfo, UserModel } from "../types";
 
 @Controller({ routePrefix: "/user" })
 export class UserController {

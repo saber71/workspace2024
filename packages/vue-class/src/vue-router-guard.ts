@@ -5,7 +5,7 @@ import {
   type Router,
 } from "vue-router";
 import { getAllMetadata, type Metadata } from "./metadata";
-import type { Class } from "./types";
+import type { Class } from "dependency-injection";
 import { VueClass } from "./vue-class";
 
 export class VueRouterGuard {

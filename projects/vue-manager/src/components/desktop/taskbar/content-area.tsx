@@ -8,6 +8,7 @@ import {
   toNative,
   VueComponent,
   Inject,
+  Disposable,
 } from "vue-class";
 
 export interface ContentAreaProps extends VueComponentBaseProps {}
@@ -17,7 +18,7 @@ export class ContentAreaInst extends VueComponent<ContentAreaProps> {
   static readonly defineProps: ComponentProps<ContentAreaProps> = ["inst"];
 
   @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
-  readonly styles = new Styles<"contentArea">().addDynamic(
+  @Disposable() styles = new Styles<"contentArea">().addDynamic(
     "contentArea",
     () => {
       const { deputySizeProp } = this.taskbarHelper;
@@ -27,10 +28,6 @@ export class ContentAreaInst extends VueComponent<ContentAreaProps> {
       };
     },
   );
-
-  onBeforeUnmounted(): void {
-    this.styles.dispose();
-  }
 
   render(): VNodeChild {
     return <div class={this.styles.classNames.contentArea}></div>;

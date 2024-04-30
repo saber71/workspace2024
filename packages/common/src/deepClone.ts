@@ -1,4 +1,5 @@
 import { isTypedArray } from "./isTypedArray";
+import type { DeepCloneOption } from "./types";
 
 export function deepClone<T>(obj: T, options: DeepCloneOption = {}): T {
   if (typeof obj !== "object" || obj === undefined || obj === null) return obj;
@@ -23,8 +24,8 @@ export function deepClone<T>(obj: T, options: DeepCloneOption = {}): T {
     //@ts-ignore
     const result = new (obj.constructor || Object)();
     Object.assign(result, obj);
-    for (let objKey in obj) {
-      const value = obj[objKey];
+    for (let objKey in obj as any) {
+      const value = (obj as any)[objKey];
       result[objKey] = deepClone(value, options);
     }
     return result;

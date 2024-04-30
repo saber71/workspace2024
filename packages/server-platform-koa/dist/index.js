@@ -9,7 +9,6 @@ import proxy from 'koa-proxies';
 import { v4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 
-/// <reference types="../types" />
 function createServerPlatformKoa() {
     const app = new Koa();
     const router = new Router();

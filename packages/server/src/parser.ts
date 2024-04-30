@@ -1,6 +1,8 @@
 import { getOrCreateMetadataUserData } from "./common";
 import { Parser } from "./decorators";
 import { ParseFailedError } from "./errors";
+import { type Class } from "dependency-injection";
+import type { ParserInterface } from "./types";
 
 @Parser()
 export class RegularParser implements ParserInterface {

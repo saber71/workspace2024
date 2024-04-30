@@ -1,10 +1,11 @@
-declare type Class<T = any> = { new (...args: any[]): T };
+import { Container } from "./container";
+import { Metadata } from "./metadata";
 
 /* 容器内成员 */
-declare interface ContainerMember {
+export interface ContainerMember {
   name: string;
   /* 只有通过装饰器Injectable装饰的类才会有此字段 */
-  metadata?: import("src").Metadata;
+  metadata?: Metadata;
   /* 访问时优先返回该值，若无值将依次尝试factory、getter */
   value?: any;
   /* 每次访问时都会执行生成一个新值 */
@@ -22,7 +23,7 @@ declare interface ContainerMember {
 }
 
 /* 加载被装饰器Injectable装饰过的内容时可用的选项 */
-declare interface LoadOption {
+export interface LoadOption {
   /* 指定要被加载的模块，与装饰器Injectable入参中的moduleName相同 */
   moduleName?: string;
 
@@ -31,10 +32,10 @@ declare interface LoadOption {
 }
 
 /* 自定义获取值的getter函数 */
-declare type TypeValueGetter = (container: import("src").Container) => any;
+export type TypeValueGetter = (container: Container) => any;
 
 /* 保存方法入参类型信息 */
-declare interface MethodParameterTypes {
+export interface MethodParameterTypes {
   /* 入参类型 */
   types: string[];
 
@@ -46,7 +47,7 @@ declare interface MethodParameterTypes {
 }
 
 /* 定义一个可以指定入参类型和自定义入参获取方式的getter函数 */
-declare interface MethodParameterOption {
+export interface MethodParameterOption {
   /* 指定对应序号的入参类型 */
   paramtypes?: Record<number, string> | Array<string>;
 
@@ -55,7 +56,7 @@ declare interface MethodParameterOption {
 }
 
 /* 保存字段的类型信息 */
-declare interface FieldType {
+export interface FieldType {
   /* 字段类型 */
   type?: string;
 
@@ -63,29 +64,29 @@ declare interface FieldType {
   getter?: TypeValueGetter;
 }
 
-declare interface InjectOptions extends MethodParameterOption {
+export interface InjectOptions extends MethodParameterOption {
   typeLabel?: string;
   typeValueGetter?: TypeValueGetter;
   afterExecute?: (
-    metadata: import("src").Metadata,
+    metadata: Metadata,
     className: string,
     ...args: Array<string | number>
   ) => void;
   beforeCallMethod?: (
-    container: import("src").Container,
-    metadata: import("src").Metadata,
+    container: Container,
+    metadata: Metadata,
     args: any[],
   ) => void | Promise<void>;
   afterCallMethod?: (
-    container: import("src").Container,
-    metadata: import("src").Metadata,
+    container: Container,
+    metadata: Metadata,
     returnValue: any,
     args: any[],
     error?: Error,
   ) => any | Promise<any>;
 }
 
-declare interface InjectableOptions extends MethodParameterOption {
+export interface InjectableOptions extends MethodParameterOption {
   /* 指定类所属的模块名 */
   moduleName?: string;
   /* 指定类是否是单例的 */
@@ -98,3 +99,5 @@ declare interface InjectableOptions extends MethodParameterOption {
   overrideParent?: boolean;
   onCreate?: (instance: object) => void;
 }
+
+export type Class<T = any> = { new (...args: any[]): T };

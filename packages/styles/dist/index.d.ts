@@ -1,5 +1,3 @@
-/// <reference types="../types.d.ts" />
-
 import { CSSProperties } from 'vue';
 import { WatchSource } from 'vue';
 
@@ -14,7 +12,14 @@ export declare interface DynamicOptions {
     pseudoClasses?: PseudoClassType | PseudoClassType[];
 }
 
+export declare interface DynamicValue<Value = string | number> {
+    type: "dynamic-value";
+    value: Value;
+}
+
 export declare function isDynamicValue(arg: any): arg is DynamicValue;
+
+export declare type PseudoClassType = "hover" | "fullscreen" | "modal" | "picture-in-picture" | "autofill" | "enabled" | "disabled" | "read-only" | "read-write" | "placeholder-shown" | "default" | "checked" | "indeterminate" | "blank" | "valid" | "invalid" | "in-range" | "out-of-range" | "required" | "optional" | "user-valid" | "user-invalid" | "dir" | "lang" | "any-link" | "link" | "visited" | "local-link" | "target" | "target-within" | "scope" | "playing" | "paused" | "current" | "past" | "future" | "root" | "empty" | "nth-child" | "nth-of-type" | "nth-last-child" | "first-child" | "last-child" | "only-child" | "nth-last-of-type" | "first-of-type" | "last-of-type" | "only-of-type" | "active" | "focus" | "focus-visible" | "focus-within" | "is" | "not" | "where" | "has" | "";
 
 export declare class Styles<Class extends string> {
     constructor();

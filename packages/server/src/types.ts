@@ -1,7 +1,9 @@
-/// <reference types="dependency-injection/types"/>
-
 /* 上传的文件类型 */
-declare interface ServerFile {
+import type { Class, MethodParameterOption } from "dependency-injection";
+import type { ServerRequest } from "./request";
+import type { ServerResponse } from "./response";
+
+export interface ServerFile {
   /**
    * The size of the uploaded file in bytes. If the file is still being uploaded (see `'fileBegin'`
    * event), this property says how many bytes of the file have been written to disk yet.
@@ -26,7 +28,7 @@ declare interface ServerFile {
 }
 
 /* 创建Server对象时传入的选项 */
-declare interface ServerCreateOption<PlatformInstance extends object> {
+export interface ServerCreateOption<PlatformInstance extends object> {
   /* 上下文环境名。默认server */
   contextName?: string;
 
@@ -45,23 +47,20 @@ declare interface ServerCreateOption<PlatformInstance extends object> {
   guards?: Class<GuardInterface>[];
 }
 
-declare type RouteHandlerObject = {
-  handle: (
-    req: import("src").ServerRequest,
-    res: import("src").ServerResponse,
-  ) => any;
+export type RouteHandlerObject = {
+  handle: (req: ServerRequest, res: ServerResponse) => any;
   catchError: (
     err: Error,
-    req: import("src").ServerRequest,
-    res: import("src").ServerResponse,
+    req: ServerRequest,
+    res: ServerResponse,
   ) => void | Promise<void>;
   methodTypes: Set<MethodType>;
 };
 
-declare type Routes = Record<string, RouteHandlerObject>;
+export type Routes = Record<string, RouteHandlerObject>;
 
 /* Web框架适配器，比如适配express、koa等 */
-declare interface ServerPlatformAdapter<
+export interface ServerPlatformAdapter<
   PlatformInstance extends object = object,
 > {
   /* Web框架名字 */
@@ -88,7 +87,7 @@ declare interface ServerPlatformAdapter<
 }
 
 /* 代理转发配置 */
-declare interface ServerProxyOption {
+export interface ServerProxyOption {
   /* 源地址 */
   src: string;
 
@@ -103,7 +102,7 @@ declare interface ServerProxyOption {
 }
 
 /* 服务器的启动参数 */
-declare interface ServerBootstrapOption {
+export interface ServerBootstrapOption {
   /* 服务监听的端口 */
   port?: number;
 
@@ -121,7 +120,7 @@ declare interface ServerBootstrapOption {
 }
 
 /* 保存控制器的方法中的路由 */
-declare interface ControllerMethod {
+export interface ControllerMethod {
   /* 方法类型 */
   type: MethodType;
 
@@ -136,10 +135,10 @@ declare interface ControllerMethod {
 }
 
 /* 类的类型 */
-declare type ServerClassType = "no-special" | "controller" | "parser" | "guard";
+export type ServerClassType = "no-special" | "controller" | "parser" | "guard";
 
 /* 保存类的自定义数据。挂在类的元数据上 */
-declare interface MetadataServerUserData {
+export interface MetadataServerUserData {
   /* 标记自定义数据是否初始化完成 */
   __server__: boolean;
 
@@ -158,36 +157,36 @@ declare interface MetadataServerUserData {
 }
 
 /* 请求类型 */
-declare type MethodType = "GET" | "POST" | "PUT" | "DELETE";
+export type MethodType = "GET" | "POST" | "PUT" | "DELETE";
 
 /* 一条路由下，请求类型映射一个控制器方法 */
-declare type RouteHandlerSet = Partial<
+export type RouteHandlerSet = Partial<
   Record<MethodType, RouteHandler | undefined>
 >;
 
 /* 保存处理一条路由对应的控制器方法 */
-declare interface RouteHandler {
+export interface RouteHandler {
   controllerClass: Class;
   methodName: string;
 }
 
 /* 处理请求后发送内容 */
-declare interface ResponseBodySenderInterface {
-  send(value: any, res: import("src").ServerResponse): void | Promise<void>;
+export interface ResponseBodySenderInterface {
+  send(value: any, res: ServerResponse): void | Promise<void>;
 }
 
 /* 用来转化数据，如将对象中的字符串转为number/boolean或反过来 */
-declare interface ParserInterface {
+export interface ParserInterface {
   parse(value: any, ...clazz: Array<Class | undefined | null>): any;
 }
 
 /* 配置转化器和验证器 */
-declare interface ParserAndValidator {
+export interface ParserAndValidator {
   parsers?: Class<ParserInterface> | Class<ParserInterface>[] | null;
   validator?: boolean;
 }
 
-declare type MethodParameterOptions = ParserAndValidator & {
+export type MethodParameterOptions = ParserAndValidator & {
   typeValueGetter: (container: import("dependency-injection").Container) => any;
   afterExecute?: (
     metadata: import("dependency-injection").Metadata,
@@ -197,7 +196,7 @@ declare type MethodParameterOptions = ParserAndValidator & {
 };
 
 /* 日志等级 */
-declare type LogLevel =
+export type LogLevel =
   | "log"
   | "error"
   | "warn"
@@ -207,21 +206,18 @@ declare type LogLevel =
   | string;
 
 /* 处理日志相关 */
-declare interface LoggerInterface {
-  log(
-    level: LogLevel,
-    message: string | Error | import("src").ServerRequest,
-  ): void;
+export interface LoggerInterface {
+  log(level: LogLevel, message: string | Error | ServerRequest): void;
 }
 
 /* 在执行路由对应的方法前执行，如果请求不合法可以抛出错误打断请求流程 */
-declare interface GuardInterface {
+export interface GuardInterface {
   /* 调用时，入参将会通过依赖注入获取，所以该方法必须用Inject装饰 */
   guard(...args: any[]): void | Promise<void>;
 }
 
 /* 内置的响应体格式 */
-declare interface ResponseBody<T = undefined> {
+export interface ResponseBody<T = undefined> {
   code: number;
   object: T;
   success: boolean;
@@ -229,12 +225,12 @@ declare interface ResponseBody<T = undefined> {
 }
 
 /* 内置的session数据格式 */
-declare interface RegularSessionData {
+export interface RegularSessionData {
   userId: string;
 }
 
 /* 用于生成Provider的元数据 */
-declare interface ProviderMetadata {
+export interface ProviderMetadata {
   [controllerClassName: string]: {
     [methodName: string]: {
       type: MethodType;
@@ -255,14 +251,14 @@ declare interface ProviderMetadata {
   };
 }
 
-declare type MethodOptions = Partial<
+export type MethodOptions = Partial<
   Pick<ControllerMethod, "route" | "routePrefix" | "type">
 > &
   MethodParameterOption;
 
-declare type WithoutTypeMethodOptions = Omit<MethodOptions, "type">;
+export type WithoutTypeMethodOptions = Omit<MethodOptions, "type">;
 
-declare interface ServerRuntimeAdapter {
+export interface ServerRuntimeAdapter {
   fs: typeof import("node:fs/promises");
   path: typeof import("node:path");
 }

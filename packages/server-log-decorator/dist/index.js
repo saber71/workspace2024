@@ -1,7 +1,6 @@
 import { Session, AfterCallMethod, ServerRequest } from 'server';
 import { ServerStore } from 'server-store';
 
-///<reference types="../types.d.ts"/>
 const SERVER_LOG_COLLECTION = "server-log-collection";
 function ServerLog(description, options = {}) {
     if (!options.creatorGetter) options.creatorGetter = (container)=>container.getValue(Session).get("userId");
@@ -11,7 +10,7 @@ function ServerLog(description, options = {}) {
             const collectionName = container.getValue(SERVER_LOG_COLLECTION);
             const creator = options.creatorGetter(container);
             const request = container.getValue(ServerRequest);
-            const store = container.getValue(ServerStore);
+            const store = container.getValue(ServerStore.name);
             const collection = store.collection(collectionName);
             collection.add({
                 creator,
@@ -19,7 +18,8 @@ function ServerLog(description, options = {}) {
                 query: request.query,
                 body: request.body,
                 url: request.url,
-                data: typeof options.data === "function" ? options.data(container) : options.data
+                data: typeof options.data === "function" ? options.data(container) : options.data,
+                createTime: Date.now()
             });
         }
         return returnValue;

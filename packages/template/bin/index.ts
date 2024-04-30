@@ -187,13 +187,7 @@ function setupTypesAndSrc() {
     },
     {
       path: path.resolve(projectPath, "src", "index.ts"),
-      content: `///<reference types="../types.d.ts"/>\n`,
-    },
-    {
-      path: path.resolve(projectPath, "types.d.ts"),
-      content: workspaceDependencies
-        .map((name) => `///<reference types="${name}/types.d.ts"/>`)
-        .join("\n"),
+      content: ``,
     },
   );
 }

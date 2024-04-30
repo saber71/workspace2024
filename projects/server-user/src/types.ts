@@ -1,6 +1,6 @@
-/// <reference types="create-server/types"/>
+import type { StoreItem } from "create-server";
 
-declare interface UserModel extends StoreItem {
+export interface UserModel extends StoreItem {
   /* 显示名 */
   name: string;
   /* 登陆名 */
@@ -13,13 +13,13 @@ declare interface UserModel extends StoreItem {
   createTime: number;
 }
 
-declare interface RoleModel extends StoreItem {
+export interface RoleModel extends StoreItem {
   name: string;
   /* key为权限名，value为是否获得授权 */
   authorizations: Record<string, boolean>;
   createTime: number;
 }
 
-declare interface UserInfo
+export interface UserInfo
   extends Omit<UserModel, "password">,
     Pick<RoleModel, "authorizations"> {}

@@ -224,9 +224,14 @@ class VueComponent extends VueService {
 function toNative(componentClass) {
     return defineComponent(()=>{
         const instance = VueClass.getInstance(componentClass);
-        applyMetadata(componentClass, instance);
+        const metadata = applyMetadata(componentClass, instance);
         onMounted(instance.onMounted.bind(instance));
         onBeforeUnmount(instance.onBeforeUnmounted.bind(instance));
+        onBeforeUnmount(()=>{
+            for (let { propName, methodName } of metadata.disposables){
+                instance[propName]?.[methodName ?? "dispose"]?.();
+            }
+        });
         onUnmounted(instance.onUnmounted.bind(instance));
         return instance.render.bind(instance);
     }, {
@@ -247,6 +252,7 @@ class Metadata {
     routerGuardMatchTo;
     routerGuardMatchFrom;
     mutts = [];
+    disposables = [];
     readonlys = [];
     links = [];
     vueInject = [];
@@ -461,9 +467,9 @@ function getMetadata(clazz) {
 }
 const appliedSymbol = Symbol("__appliedMetadata__");
 function applyMetadata(clazz, instance) {
-    if (instance[appliedSymbol]) return;
-    instance[appliedSymbol] = true;
     const metadata = getMetadata(clazz);
+    if (instance[appliedSymbol]) return metadata;
+    instance[appliedSymbol] = true;
     metadata.handleMut(instance);
     metadata.handleReadonly(instance);
     metadata.handleVueInject(instance);
@@ -479,6 +485,7 @@ function applyMetadata(clazz, instance) {
     if (instance instanceof VueService) {
         instance.setup();
     }
+    return metadata;
 }
 function getOrCreateMetadata(clazz, ctx) {
     if (!ctx || typeof ctx === "string") {
@@ -547,6 +554,15 @@ function getOrCreateMetadata(clazz, ctx) {
             name = name[0].toLowerCase() + name.slice(1);
         }
         metadata.directiveName = name;
+    };
+}
+/* 适用于属性 */ function Disposable(methodName) {
+    return (target, arg)=>{
+        const metadata = getOrCreateMetadata(target, arg);
+        metadata.disposables.push({
+            propName: getName(arg),
+            methodName
+        });
     };
 }
 /* 适用于属性 */ function Mut(shallow) {
@@ -628,4 +644,4 @@ function getName(arg) {
     return arg.name;
 }
 
-export { BindThis, Component, Computed, Directive, Hook, Link, ModuleName, Mut, PropsWatcher, ROUTER, Readonly, RouterGuard, Service, VueClass, VueComponent, VueDirective, VueInject, VueRouterGuard, VueService, Watcher, toNative };
+export { BindThis, Component, Computed, Directive, Disposable, Hook, Link, ModuleName, Mut, PropsWatcher, ROUTER, Readonly, RouterGuard, Service, VueClass, VueComponent, VueDirective, VueInject, VueRouterGuard, VueService, Watcher, toNative };

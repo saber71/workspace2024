@@ -1,5 +1,12 @@
 import EventEmitter from "eventemitter3";
 import { Metadata } from "./metadata";
+import type {
+  Class,
+  ContainerMember,
+  FieldType,
+  LoadOption,
+  MethodParameterTypes,
+} from "./types";
 
 /* 用来管理需要进行依赖注入的实例的容器。这个类专门进行内容的管理 */
 export class Container extends EventEmitter<{

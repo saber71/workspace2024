@@ -493,7 +493,6 @@ const validatedKey = Symbol("validated");
         return this;
     }
     /* 更新会话对象 */ set(key, value) {
-        /* 在express-session中，id似乎是只读的，不能修改。干脆直接把对id的修改给禁了 */ if (key === "id") throw new ServerError("Session.id是只读属性不能修改");
         if (!this.res.session) this.res.session = {};
         this.res.session[key] = value;
         return this;

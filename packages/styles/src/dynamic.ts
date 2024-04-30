@@ -1,3 +1,5 @@
+import type { DynamicValue } from "./types";
+
 export function dynamic<Value>(value: Value): DynamicValue<Value> {
   return { type: "dynamic-value", value };
 }

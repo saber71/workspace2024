@@ -1,4 +1,3 @@
-/// <reference types="class-validator/types.d.ts"/>
 export * from "class-validator";
 export * from "dependency-injection";
 export * from "./common";
@@ -14,4 +13,4 @@ export * from "./response-body";
 export * from "./route-manager";
 export * from "./server";
 export * from "./session";
-/// <reference types="../types.d.ts"/>
+export * from "./types";

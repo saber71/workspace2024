@@ -19,5 +19,5 @@
     "jsx": "preserve",
     "jsxImportSource": "vue"
   },
-  "include": ["src", "shims-vue.d.ts"]
+  "include": ["src"]
 }

@@ -1,6 +1,5 @@
-///<reference types="../types.d.ts"/>
-
 import { Inject } from "dependency-injection";
+import type { FilterCondition, SortOrders } from "filter";
 
 export class ServerStore {
   private constructor(readonly adapter: StoreAdapter) {}
@@ -147,4 +146,73 @@ export function Collection(
     typeValueGetter: (container) =>
       container.getValue<ServerStore>(storeLabel).collection(name),
   });
+}
+
+export type TransactionRecord =
+  | {
+      type: "add" | "delete";
+      value: any;
+    }
+  | { type: "update"; oldValue: any };
+
+/* 保存数据的基础类型 */
+export interface StoreItem {
+  _id: string;
+}
+
+export type PartialStoreItem<T extends StoreItem> = Omit<T, "_id"> &
+  Partial<{
+    _id: string;
+  }>;
+
+/* 分页查询结果 */
+export interface PaginationResult<T extends StoreItem> {
+  data: T[];
+  curPage: number;
+  pageSize: number;
+  total: number;
+}
+
+/* 存储器的适配器，由子类实现具体的存储逻辑，以及查询逻辑 */
+export interface StoreAdapter {
+  /* 新增数据 */
+  add<T extends StoreItem = StoreItem>(
+    collectionName: string,
+    ...items: PartialStoreItem<T>[]
+  ): Promise<string[]>;
+
+  /* 更新数据 */
+  update<T extends StoreItem = StoreItem>(
+    collectionName: string,
+    ...items: PartialStoreItem<T>[]
+  ): Promise<void>;
+
+  /* 查询数据。查询条件为空返回所有数据 */
+  search<T extends StoreItem = StoreItem>(
+    collectionName: string,
+    condition?: FilterCondition<T> | null,
+    sortOrders?: SortOrders<T>,
+  ): Promise<T[]>;
+
+  /* 分页查询。查询条件为空则查询所有数据 */
+  paginationSearch<T extends StoreItem = StoreItem>(
+    collectionName: string,
+    condition: FilterCondition<T> | undefined | null,
+    curPage: number,
+    pageSize: number,
+    sortOrders?: SortOrders<T>,
+  ): Promise<PaginationResult<T>>;
+
+  /* 删除数据，返回被删除数据的id。查询条件为空删除所有数据 */
+  delete<T extends StoreItem = StoreItem>(
+    collectionName: string,
+    condition?: FilterCondition<T>,
+  ): Promise<T[]>;
+
+  getById<T extends StoreItem = StoreItem>(
+    collectionName: string,
+    id: string,
+  ): Promise<T | undefined>;
+
+  init(): Promise<void>;
 }

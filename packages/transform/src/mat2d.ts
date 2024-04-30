@@ -1,4 +1,5 @@
 import { ARRAY_TYPE, EPSILON } from "./common";
+import type { Mat2d, ReadonlyMat2d, ReadonlyVec2 } from "./types";
 
 /**
  * 2x3 Matrix
@@ -151,7 +152,7 @@ export namespace mat2d {
    * @param {ReadonlyMat2d} a the source matrix
    * @returns {Mat2d} out
    */
-  export function invert(out: Mat2d, a: ReadonlyMat2d) {
+  export function invert(out: Mat2d, a: ReadonlyMat2d): Mat2d | null {
     const aa = a[0],
       ab = a[1],
       ac = a[2],

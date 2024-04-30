@@ -1,4 +1,4 @@
-import { Injectable } from "dependency-injection";
+import { Injectable, type Class } from "dependency-injection";
 import { type WatchOptions } from "vue";
 import type { RouteLocationNormalized } from "vue-router";
 import { ModuleName } from "./constants";
@@ -7,7 +7,7 @@ import {
   type ComponentOption,
   getOrCreateMetadata,
 } from "./metadata";
-import type { Class, VueComponentClass } from "./types";
+import type { VueComponentClass } from "./types";
 import { VueComponent, type VueComponentBaseProps } from "./vue-component";
 import type { VueDirective } from "./vue-directive";
 import type { VueRouterGuard } from "./vue-router-guard";
@@ -101,6 +101,14 @@ export function Directive(name?: string) {
       name = name[0].toLowerCase() + name.slice(1);
     }
     metadata.directiveName = name;
+  };
+}
+
+/* 适用于属性 */
+export function Disposable(methodName?: string) {
+  return (target: object, arg: any) => {
+    const metadata = getOrCreateMetadata(target, arg);
+    metadata.disposables.push({ propName: getName(arg), methodName });
   };
 }
 

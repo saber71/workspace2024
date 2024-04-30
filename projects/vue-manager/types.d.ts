@@ -1,5 +1,4 @@
 /// <reference types="vite/client" />
-///<reference types="server-user/types.d.ts"/>
 
 declare module "*.vue" {
   import { ComponentOptions } from "vue";

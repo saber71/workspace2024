@@ -1,4 +1,4 @@
-/// <reference types="server-store/types.d.ts" />
+import { StoreAdapter } from 'server-store';
 
 export declare function createServerStoreIndexdb(): StoreAdapter;
 

@@ -1,11 +1,10 @@
-///<reference types="../types.d.ts"/>
 import {
   AfterCallMethod,
   type Container,
   ServerRequest,
   Session,
 } from "server";
-import { ServerStore } from "server-store";
+import { ServerStore, type StoreItem } from "server-store";
 
 export const SERVER_LOG_COLLECTION = "server-log-collection";
 
@@ -22,10 +21,10 @@ export function ServerLog(
   return AfterCallMethod((container, metadata, returnValue, args, error) => {
     if (error) return returnValue;
     if (container.hasLabel(SERVER_LOG_COLLECTION)) {
-      const collectionName = container.getValue(SERVER_LOG_COLLECTION);
+      const collectionName = container.getValue<string>(SERVER_LOG_COLLECTION);
       const creator = options.creatorGetter(container);
       const request = container.getValue(ServerRequest);
-      const store = container.getValue(ServerStore);
+      const store = container.getValue<ServerStore>(ServerStore.name);
       const collection = store.collection<LogModel>(collectionName);
       collection.add({
         creator,
@@ -37,8 +36,19 @@ export function ServerLog(
           typeof options.data === "function"
             ? options.data(container)
             : options.data,
+        createTime: Date.now(),
       });
     }
     return returnValue;
   });
+}
+
+export interface LogModel extends StoreItem {
+  creator: string;
+  createTime: number;
+  description: string;
+  query: any;
+  body: any;
+  url: string;
+  data?: any;
 }

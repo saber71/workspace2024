@@ -1,7 +1,13 @@
-///<reference types="../types.d.ts"/>
-import { AuthorizedGuard, Server, WHITE_LIST } from "server";
+import {
+  AuthorizedGuard,
+  Server,
+  type ServerBootstrapOption,
+  type ServerCreateOption,
+  type ServerRuntimeAdapter,
+  WHITE_LIST,
+} from "server";
 import { SERVER_LOG_COLLECTION } from "server-log-decorator";
-import { ServerStore } from "server-store";
+import { ServerStore, type StoreAdapter } from "server-store";
 
 export async function createServer<PlatformInstance extends object>(
   option: CreateServerOption<PlatformInstance>,
@@ -25,3 +31,20 @@ export async function createServer<PlatformInstance extends object>(
 export * from "server";
 export * from "server-store";
 export * from "server-log-decorator";
+
+export interface CreateServerOption<PlatformInstance extends object>
+  extends ServerCreateOption<PlatformInstance> {
+  contextName: string;
+
+  runtime: ServerRuntimeAdapter;
+
+  storeAdapter: StoreAdapter;
+
+  whiteList?: string[];
+
+  log?: {
+    serverLogCollection: string;
+  };
+
+  bootstrapOption?: ServerBootstrapOption;
+}

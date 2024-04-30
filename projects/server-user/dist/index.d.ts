@@ -1,15 +1,13 @@
-/// <reference types="../types.d.ts" />
-
+import { RegularSessionData } from 'create-server';
 import { Server } from 'create-server';
 import { ServerStore } from 'create-server';
 import { Session } from 'create-server';
 import { StoreCollection } from 'create-server';
+import { StoreItem } from 'create-server';
 
 export declare const COLLECTION_ROLE = "role";
 
 export declare const COLLECTION_USER = "user";
-
-export declare const CONTEXT_NAME = "server-user";
 
 export declare function createDefaultData(app: Server, store: ServerStore): Promise<void>;
 
@@ -48,6 +46,12 @@ export declare class RoleController {
     findById(query: QueryDTO, collection: StoreCollection<RoleModel>): Promise<RoleModel>;
 }
 
+export declare interface RoleModel extends StoreItem {
+    name: string;
+    authorizations: Record<string, boolean>;
+    createTime: number;
+}
+
 export declare class UpdateRoleDTO {
     id: string;
     toDelete?: boolean;
@@ -79,6 +83,20 @@ export declare class UserController {
     logout(session: Session<RegularSessionData>): Promise<void>;
     auth(session: Session<RegularSessionData>, userCollection: StoreCollection<UserModel>, roleCollection: StoreCollection<RoleModel>): Promise<UserInfo>;
     updateUserData(data: UpdateUserDataDTO, collection: StoreCollection<UserModel>): Promise<void>;
+}
+
+export declare interface UserInfo extends Omit<UserModel, "password">, Pick<RoleModel, "authorizations"> {
+}
+
+export declare interface UserModel extends StoreItem {
+    name: string;
+    loginName: string;
+    password: string;
+    roleId: string;
+    email?: string;
+    avatar?: string;
+    userData: Record<string, any>;
+    createTime: number;
 }
 
 export { }

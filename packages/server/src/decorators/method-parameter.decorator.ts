@@ -1,7 +1,13 @@
 import { NoValidationError, validate as classValidate } from "class-validator";
-import { Container, Inject, NotExistLabelError } from "dependency-injection";
+import {
+  Container,
+  Inject,
+  NotExistLabelError,
+  type Class,
+} from "dependency-injection";
 import { NotFoundValidatorError, ValidateFailedError } from "../errors";
 import { RegularParser } from "../parser";
+import type { MethodParameterOptions, ParserInterface } from "../types";
 
 const parsedKey = Symbol("parsed");
 const validatedKey = Symbol("validated");

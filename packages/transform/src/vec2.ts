@@ -1,4 +1,12 @@
 import { ARRAY_TYPE, EPSILON, RANDOM, round } from "./common";
+import type {
+  ReadonlyMat2,
+  ReadonlyMat2d,
+  ReadonlyVec2,
+  ReadonlyVec3,
+  Vec2,
+  Vec3,
+} from "./types";
 
 export namespace vec2 {
   /**

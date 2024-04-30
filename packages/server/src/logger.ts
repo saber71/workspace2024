@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { Logger } from "./decorators";
 import { ServerRequest } from "./request";
+import type { LoggerInterface, LogLevel } from "./types";
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   year: "numeric",

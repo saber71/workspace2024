@@ -21,7 +21,7 @@
     "esModuleInterop": true,
     "downlevelIteration": false
   },
-  "include": ["src", "types.d.ts","index.ts"],
+  "include": ["src"],
   "ts-node": {
     // It is faster to skip typechecking.
     // Remove if you want ts-node to do typechecking.

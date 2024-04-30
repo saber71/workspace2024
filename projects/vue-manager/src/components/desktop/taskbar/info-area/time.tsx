@@ -12,6 +12,7 @@ import { type CSSProperties, nextTick, type VNodeChild } from "vue";
 import {
   Component,
   type ComponentProps,
+  Disposable,
   Inject,
   Link,
   Mut,
@@ -87,7 +88,7 @@ export class TimeInst extends VueComponent<TimeProps> {
 
   @Inject("DesktopService") desktopService: DesktopService;
   @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
-  readonly styles = new Styles<
+  @Disposable() styles = new Styles<
     | "time"
     | "hoverableTime"
     | "popper"
@@ -296,7 +297,6 @@ export class TimeInst extends VueComponent<TimeProps> {
   }
 
   onBeforeUnmounted() {
-    this.styles.dispose();
     this._disposeWindowBehavior();
   }
 

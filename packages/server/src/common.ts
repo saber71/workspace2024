@@ -1,5 +1,6 @@
 import { Metadata } from "dependency-injection";
 import { ServerError } from "./errors";
+import type { ControllerMethod, MetadataServerUserData } from "./types";
 
 /* 得到或新建专给server库使用的userData */
 export function getOrCreateMetadataUserData(obj: any): MetadataServerUserData {

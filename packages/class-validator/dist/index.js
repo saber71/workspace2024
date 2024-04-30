@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import { getDecoratedName, Metadata } from 'dependency-injection';
 import validator from 'validator';
 
-/// <reference types="../types.d.ts" />
 const keyPrefix = "__class-validator__";
 /* 标识字段需要进行校验，同时指定校验规则 */ function Validation(option) {
     return (target, propName)=>{

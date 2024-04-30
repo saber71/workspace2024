@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-///<reference types="../types.d.ts"/>
 class ServerApiProvider {
     providerMetadata;
     axiosInstance;

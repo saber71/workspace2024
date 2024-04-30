@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { v4 } from 'uuid';
 
-///<reference types="../types.d.ts"/>
 function createServerPlatformBrowser(runtime) {
     const app = {
         runtime,

@@ -1,5 +1,6 @@
-import { getDecoratedName, Inject, Metadata } from "dependency-injection";
+import { getDecoratedName, Inject } from "dependency-injection";
 import { getOrCreateControllerMethod } from "../common";
+import type { MethodOptions, WithoutTypeMethodOptions } from "../types";
 
 /* 方法装饰器。标识此方法用来处理路由。只有在类上装饰了Controller装饰器时才会生效 */
 export function Method(option?: MethodOptions) {

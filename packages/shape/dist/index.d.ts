@@ -1,7 +1,4 @@
-/// <reference types="../types.d.ts" />
-/// <reference types="node" />
-
-import { events } from 'events';
+import { default as default_2 } from 'eventemitter3';
 import { Intersection } from 'svg-intersections';
 import { Shape as Shape_2 } from 'svg-intersections';
 import { Transform } from 'transform';
@@ -12,6 +9,13 @@ export declare class Circle extends Shape<{
     r: number;
 }> {
     protected _onPropsChanged(): void;
+}
+
+export declare interface Corner {
+    leftTop: number;
+    rightTop: number;
+    leftBottom: number;
+    rightBottom: number;
 }
 
 declare interface CornerStartEnd {
@@ -27,6 +31,10 @@ export declare class Ellipse extends Shape<{
 }> {
     protected _onPropsChanged(): void;
 }
+
+export declare type EventEmitters = default_2<{
+    updateShape: () => void;
+}>;
 
 export declare class PathBuilder {
     private _d;
@@ -80,12 +88,8 @@ export declare class Rect extends Shape<{
 }
 
 export declare abstract class Shape<Props = any> {
-    readonly eventEmitter?: events<    {
-    updateShape: () => void;
-    }> | undefined;
-    protected constructor(props?: Props, eventEmitter?: events<    {
-    updateShape: () => void;
-    }> | undefined);
+    readonly eventEmitter?: EventEmitters | undefined;
+    protected constructor(props?: Props, eventEmitter?: EventEmitters | undefined);
     static getPoints(svgPath: string): Vec2[];
     private readonly _props;
     get props(): Readonly<Props>;

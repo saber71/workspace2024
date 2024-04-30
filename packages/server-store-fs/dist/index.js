@@ -4,7 +4,6 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { v4 } from 'uuid';
 
-///<reference types="../types.d.ts"/>
 function createServerStoreFS(basePath = ".", saveOnExit = false) {
     basePath = path.resolve(basePath);
     const collections = initCollections();

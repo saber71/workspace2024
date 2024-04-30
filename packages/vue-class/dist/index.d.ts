@@ -1,4 +1,5 @@
 import { App } from 'vue';
+import { Class } from 'dependency-injection';
 import { ComponentCustomProps } from 'vue';
 import { ComponentPublicInstance } from 'vue';
 import { DefineSetupFnComponent } from 'vue';
@@ -29,11 +30,6 @@ export declare type AllowedComponentProps = {
 
 export declare function BindThis(): (target: object, arg: any) => void;
 
-declare type Class_2<T = any> = {
-    new (...args: any[]): T;
-};
-export { Class_2 as Class }
-
 export declare function Component<Props extends VueComponentBaseProps>(option?: ComponentOption): (clazz: VueComponentClass<Props>, ctx?: ClassDecoratorContext) => void;
 
 declare interface ComponentOption {
@@ -58,7 +54,10 @@ declare type DefaultSlots = {
 
 export declare type DefineEmits<Emit extends EmitsOptions> = Array<keyof Emit>;
 
-export declare function Directive(name?: string): (clazz: Class_2<VueDirective>, ctx?: any) => void;
+export declare function Directive(name?: string): (clazz: Class<VueDirective>, ctx?: any) => void;
+
+declare function Disposable_2(methodName?: string): (target: object, arg: any) => void;
+export { Disposable_2 as Disposable }
 
 export declare type DistributiveOmit<T, K extends keyof any> = T extends T ? Omit<T, K> : never;
 
@@ -100,9 +99,9 @@ export declare const ROUTER = "router";
 export declare function RouterGuard(option?: {
     matchTo?: RegExp | ((path: RouteLocationNormalized) => boolean);
     matchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
-}): (clazz: Class_2<VueRouterGuard>, ctx?: any) => void;
+}): (clazz: Class<VueRouterGuard>, ctx?: any) => void;
 
-export declare function Service(option?: Parameters<typeof Injectable>[0]): (clazz: Class_2, ctx?: any) => void;
+export declare function Service(option?: Parameters<typeof Injectable>[0]): (clazz: Class, ctx?: any) => void;
 
 export declare function toNative<Props extends VueComponentBaseProps, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>): DefineSetupFnComponent<Props, Emit, {}, Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K in `on${Capitalize<string & keyof Emit>}`]?: (K extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {}), PublicProps>;
 
@@ -112,7 +111,7 @@ export declare type TransformModelValue<T extends {}> = "v-model:modelValue" ext
 
 export declare class VueClass {
     static readonly dependencyInjection: LoadableContainer;
-    static getInstance<T>(clazz: Class_2<T>): T;
+    static getInstance<T>(clazz: Class<T>): T;
     static install(app: App, router: Router): Promise<void>;
 }
 
@@ -149,7 +148,7 @@ export declare class VueDirective<El extends HTMLElement | ComponentPublicInstan
     private static readonly _elMapVueDirective;
     private static readonly _directiveNameMapVueDirective;
     static install(app: App): void;
-    static getInstance<T extends VueDirective>(el: any, directiveName: string, clazz?: Class_2<T>): T;
+    static getInstance<T extends VueDirective>(el: any, directiveName: string, clazz?: Class<T>): T;
     constructor(el: El, name: string);
     mountedAndUpdated(binding: DirectiveBinding<Value>): void;
     created(binding: DirectiveBinding<Value>): void;

@@ -1,5 +1,6 @@
 import { default as default_2 } from 'koa';
 import { ParameterizedContext } from 'koa';
+import { ServerPlatformAdapter } from 'server';
 import { ServerRequest } from 'server';
 import { ServerResponse } from 'server';
 

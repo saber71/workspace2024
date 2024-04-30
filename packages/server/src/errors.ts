@@ -1,3 +1,5 @@
+import type { LogLevel } from "./types";
+
 /* server自定义错误的根类型 */
 export class ServerError extends Error {
   code = 500;

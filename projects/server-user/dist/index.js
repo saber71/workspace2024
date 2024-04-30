@@ -1,12 +1,11 @@
 import { Validation, ToBoolean, ToObject, ToArray, Injectable, ServerLog, Post, ReqBody, Collection, Get, ReqQuery, Controller, NotFoundObjectError, StoreCollection, ReqSession, UnauthorizedError, Session } from 'create-server';
 import validator from 'validator';
 
-const CONTEXT_NAME = "server-user";
 const COLLECTION_ROLE = "role";
 const COLLECTION_USER = "user";
 
 function _ts_decorate$2(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    var c = arguments.length, r = c < 3 ? target : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
@@ -486,8 +485,6 @@ UserController = _ts_decorate([
     })
 ], UserController);
 
-// @ts-ignore
-///<reference types="../types.d.ts"/>
 async function createDefaultData(app, store) {
     const roleCollection = store.collection(COLLECTION_ROLE);
     const userCollection = store.collection(COLLECTION_USER);
@@ -517,4 +514,4 @@ async function createDefaultData(app, store) {
     }
 }
 
-export { COLLECTION_ROLE, COLLECTION_USER, CONTEXT_NAME, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleController, UpdateRoleDTO, UpdateUserDTO, UpdateUserDataDTO, UserController, createDefaultData };
+export { COLLECTION_ROLE, COLLECTION_USER, CreateRoleDTO, CreateUserDTO, LoginDTO, QueryDTO, RoleController, UpdateRoleDTO, UpdateUserDTO, UpdateUserDataDTO, UserController, createDefaultData };

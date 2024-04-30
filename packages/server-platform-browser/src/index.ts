@@ -1,7 +1,16 @@
-///<reference types="../types.d.ts"/>
-
 import axios from "axios";
-import type { ServerRequest, ServerResponse } from "server";
+import type {
+  MethodType,
+  RouteHandlerObject,
+  Routes,
+  ServerBootstrapOption,
+  ServerFile,
+  ServerPlatformAdapter,
+  ServerProxyOption,
+  ServerRequest,
+  ServerResponse,
+  ServerRuntimeAdapter,
+} from "server";
 import { v4 } from "uuid";
 
 export function createServerPlatformBrowser(
@@ -199,4 +208,25 @@ export function createServerResponse(
     if (token) res.headers[field] = token;
     else delete res.headers[field];
   }
+}
+
+export interface App {
+  runtime: ServerRuntimeAdapter;
+  apply(
+    url: string,
+    option?: AppApplyOption,
+  ): Promise<{ data: any; status: number; headers: Record<string, any> }>;
+}
+
+export interface AppApplyOption {
+  headers?: any;
+  body?: any;
+  method?: MethodType;
+}
+
+export interface UrlOption {
+  type: "route" | "assets" | "proxy";
+  filePath?: string;
+  routeHandler?: RouteHandlerObject;
+  proxy?: ServerProxyOption;
 }

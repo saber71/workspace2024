@@ -1,7 +1,7 @@
-///<reference types="../types.d.ts"/>
-
 import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import axios from "axios";
+import type { ExtractPromiseGenericType } from "common";
+import type { ProviderMetadata, ResponseBody } from "server";
 
 export class ServerApiProvider {
   constructor(

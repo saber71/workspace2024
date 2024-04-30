@@ -23,12 +23,13 @@
     "styles": "workspace:^",
     "uuid": "^9.0.1",
     "validator": "^13.11.0",
-    "vue": "^3.4.25",
+    "vue": "^3.4.26",
     "vue-auto-route": "workspace:^",
     "vue-class": "workspace:^",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
+    "server": "workspace:^",
     "server-user": "workspace:^",
     "vite-plugin-node-polyfills": "^0.21.0"
   }

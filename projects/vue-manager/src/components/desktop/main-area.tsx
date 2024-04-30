@@ -11,6 +11,7 @@ import {
   toNative,
   VueComponent,
   Inject,
+  Disposable,
 } from "vue-class";
 
 export interface MainAreaProps extends VueComponentBaseProps {}
@@ -21,14 +22,17 @@ export class MainAreaInst extends VueComponent<MainAreaProps> {
 
   @Inject("DesktopService") desktopService: DesktopService;
   @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
-  readonly styles = new Styles<"container">().addDynamic("container", () => {
-    const { deputySizeProp } = this.taskbarHelper;
-    return {
-      position: "relative",
-      flexGrow: "1",
-      [deputySizeProp]: "100%",
-    };
-  });
+  @Disposable() styles = new Styles<"container">().addDynamic(
+    "container",
+    () => {
+      const { deputySizeProp } = this.taskbarHelper;
+      return {
+        position: "relative",
+        flexGrow: "1",
+        [deputySizeProp]: "100%",
+      };
+    },
+  );
 
   setup() {
     this.desktopService.mainAreaInst = this;

@@ -1,3 +1,5 @@
+import type { Class, FieldType, MethodParameterTypes } from "./types";
+
 /* 收集类的元信息，包括字段类型、构造函数入参类型 */
 export class Metadata {
   /* 类名映射Metadata对象，如果存在子类，会用子类的Metadata对象合并父类的Metadata对象 */

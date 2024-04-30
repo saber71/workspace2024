@@ -1,9 +1,18 @@
-///<reference types="../types.d.ts"/>
-
 import { deepAssign, deepClone } from "common";
-import { parseFilterCondition, sortData } from "filter";
+import {
+  type FilterCondition,
+  parseFilterCondition,
+  sortData,
+  type SortOrders,
+} from "filter";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import type {
+  PaginationResult,
+  PartialStoreItem,
+  StoreAdapter,
+  StoreItem,
+} from "server-store";
 import { v4 } from "uuid";
 
 export function createServerStoreFS(
@@ -174,4 +183,9 @@ export function createServerStoreFS(
     if (sortOrders) sortData(result, sortOrders);
     return result.map((value) => deepClone(value)) as T[];
   }
+}
+
+export interface Collection {
+  path: string;
+  data: Record<string, StoreItem>;
 }

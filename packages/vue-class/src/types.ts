@@ -9,8 +9,6 @@ import {
 } from "vue";
 import type { VueComponent, VueComponentBaseProps } from "./vue-component";
 
-export type Class<T = any> = { new (...args: any[]): T };
-
 export type VueComponentClass<
   Props extends VueComponentBaseProps = VueComponentBaseProps,
   Emit extends EmitsOptions = {},

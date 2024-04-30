@@ -8,6 +8,7 @@ import {
   toNative,
   VueComponent,
   Inject,
+  Disposable,
 } from "vue-class";
 import Time from "./info-area/time";
 
@@ -18,7 +19,7 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
   static readonly defineProps: ComponentProps<InfoAreaProps> = ["inst"];
 
   @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
-  readonly styles = new Styles<"infoArea" | "blank">()
+  @Disposable() styles = new Styles<"infoArea" | "blank">()
     .addDynamic("infoArea", () => {
       const { deputySizeProp, isHorizon } = this.taskbarHelper;
       return {
@@ -48,10 +49,6 @@ export class InfoAreaInst extends VueComponent<InfoAreaProps> {
         transition: "all 0.1s",
       };
     });
-
-  onBeforeUnmounted(): void {
-    this.styles.dispose();
-  }
 
   render(): VNodeChild {
     const styles = this.styles;

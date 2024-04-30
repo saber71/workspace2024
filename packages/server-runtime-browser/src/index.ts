@@ -1,7 +1,6 @@
-///<reference types="../types.d.ts"/>
-
 import { FsaNodeFs } from "memfs/lib/fsa-to-node";
 import path from "path-browserify";
+import type { ServerRuntimeAdapter } from "server";
 
 export async function createServerRuntimeBrowser(): Promise<ServerRuntimeAdapter> {
   const root = await navigator.storage.getDirectory();

@@ -1,10 +1,12 @@
-/// <reference types="../types" />
-
 import { default as default_2 } from 'eventemitter3';
 
 export declare function AfterCallMethod(cb: InjectOptions["afterCallMethod"]): (target: any, methodName: any) => void;
 
 export declare function BeforeCallMethod(cb: InjectOptions["beforeCallMethod"]): (target: any, methodName: any) => void;
+
+export declare type Class<T = any> = {
+    new (...args: any[]): T;
+};
 
 export declare class Container extends default_2<{
     loadClass: (clazz: Class, member: ContainerMember) => void;
@@ -64,10 +66,27 @@ export declare class Container extends default_2<{
     protected _newMember(name: string, metadata?: Metadata): ContainerMember;
 }
 
+export declare interface ContainerMember {
+    name: string;
+    metadata?: Metadata;
+    value?: any;
+    factory?: (...args: any[]) => any;
+    factoryContext?: any;
+    getter?: () => any;
+    getterContext?: any;
+    getterValue?: any;
+    isExtend?: boolean;
+}
+
 export declare class ContainerRepeatLoadError extends Error {
 }
 
 export declare class DependencyCycleError extends Error {
+}
+
+export declare interface FieldType {
+    type?: string;
+    getter?: TypeValueGetter;
 }
 
 export declare function fillInMethodParameterTypes(parameterTypes: MethodParameterTypes, option?: MethodParameterOption, types?: Function[]): void;
@@ -92,7 +111,24 @@ export declare function Inject(option?: InjectOptions | string): (clazz: any, pr
  */
 export declare function Injectable(option?: InjectableOptions): (clazz: Class, ctx?: any) => void;
 
+export declare interface InjectableOptions extends MethodParameterOption {
+    moduleName?: string;
+    singleton?: boolean;
+    createImmediately?: boolean;
+    overrideConstructor?: boolean;
+    overrideParent?: boolean;
+    onCreate?: (instance: object) => void;
+}
+
 export declare class InjectNotFoundTypeError extends Error {
+}
+
+export declare interface InjectOptions extends MethodParameterOption {
+    typeLabel?: string;
+    typeValueGetter?: TypeValueGetter;
+    afterExecute?: (metadata: Metadata, className: string, ...args: Array<string | number>) => void;
+    beforeCallMethod?: (container: Container, metadata: Metadata, args: any[]) => void | Promise<void>;
+    afterCallMethod?: (container: Container, metadata: Metadata, returnValue: any, args: any[], error?: Error) => any | Promise<any>;
 }
 
 export declare class InvalidValueError extends Error {
@@ -112,6 +148,11 @@ export declare class LoadableContainer extends Container {
     loadFromMetadata(metadataArray: Metadata[], option?: LoadOption): void;
     loadFromClass(clazz: Class[], option?: LoadOption): void;
     private _getFieldValue;
+}
+
+export declare interface LoadOption {
+    moduleName?: string;
+    overrideParent?: boolean;
 }
 
 export declare class Metadata {
@@ -145,7 +186,21 @@ export declare class Metadata {
 export declare class MethodNotDecoratedInjectError extends Error {
 }
 
+export declare interface MethodParameterOption {
+    paramtypes?: Record<number, string> | Array<string>;
+    paramGetters?: Record<number, TypeValueGetter> | Array<TypeValueGetter>;
+}
+
+export declare interface MethodParameterTypes {
+    types: string[];
+    getters: Record<number, TypeValueGetter>;
+    beforeCallMethods: InjectOptions["beforeCallMethod"][];
+    afterCallMethods: InjectOptions["afterCallMethod"][];
+}
+
 export declare class NotExistLabelError extends Error {
 }
+
+export declare type TypeValueGetter = (container: Container) => any;
 
 export { }

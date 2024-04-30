@@ -1,4 +1,3 @@
-/// <reference types="../types" />
 import Koa, { ParameterizedContext } from "koa";
 import { koaBody } from "koa-body";
 import mount from "koa-mount";
@@ -6,7 +5,13 @@ import Router from "koa-router";
 import send from "koa-send";
 import staticServe from "koa-static";
 import path from "node:path";
-import type { ServerRequest, ServerResponse } from "server";
+import type {
+  MethodType,
+  RouteHandlerObject,
+  ServerPlatformAdapter,
+  ServerRequest,
+  ServerResponse,
+} from "server";
 import proxy from "koa-proxies";
 import { v4 } from "uuid";
 import jwt from "jsonwebtoken";

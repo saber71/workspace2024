@@ -1,13 +1,14 @@
 import { type Transform, vec2 } from "transform";
 import { intersect, shape, Shape as SvgShape } from "svg-intersections";
 import { PathBuilder } from "./PathBuilder";
+import type { EventEmitters } from "./types";
 
 let pathEl: SVGPathElement | undefined;
 
 export abstract class Shape<Props = any> {
   protected constructor(
     props: Props = {} as any,
-    readonly eventEmitter?: EventEmitter,
+    readonly eventEmitter?: EventEmitters,
   ) {
     this.setProps(props);
   }

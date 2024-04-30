@@ -1,4 +1,5 @@
 import { vec2 } from "transform";
+import type { Corner } from "./types";
 
 const pi = Math.PI,
   tau = 2 * pi,

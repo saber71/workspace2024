@@ -2,6 +2,8 @@ import {
   DuplicateRouteHandlerError,
   NotFoundRouteHandlerError,
 } from "./errors";
+import { type Class } from "dependency-injection";
+import type { MethodType, RouteHandler, RouteHandlerSet } from "./types";
 
 /* 保存和查找路由和对应的控制器方法 */
 export namespace RouteManager {

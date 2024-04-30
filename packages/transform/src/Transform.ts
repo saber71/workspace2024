@@ -1,5 +1,6 @@
 import EventEmitter from "eventemitter3";
 import { mat2d } from "./mat2d";
+import type { ReadonlyVec2, Vec2 } from "./types";
 import { vec2 } from "./vec2";
 
 const scratchInverseWorld = mat2d.create();

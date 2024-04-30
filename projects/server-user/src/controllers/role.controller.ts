@@ -11,6 +11,7 @@ import {
 } from "create-server";
 import { COLLECTION_ROLE } from "../constants";
 import { CreateRoleDTO, QueryDTO, UpdateRoleDTO } from "../dto";
+import type { RoleModel } from "../types";
 
 @Controller({ routePrefix: "/role" })
 export class RoleController {

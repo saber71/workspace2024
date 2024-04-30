@@ -10,6 +10,7 @@ import {
   toNative,
   VueComponent,
   Inject,
+  Disposable,
 } from "vue-class";
 
 export interface StartButtonProps extends VueComponentBaseProps {}
@@ -19,7 +20,7 @@ export class StartButtonInst extends VueComponent<StartButtonProps> {
   static readonly defineProps: ComponentProps<StartButtonProps> = ["inst"];
 
   @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
-  readonly styles = new Styles<"startButton">()
+  @Disposable() styles = new Styles<"startButton">()
     .addDynamic("startButton", () => {
       const { deputySizeProp } = this.taskbarHelper;
       return {
@@ -41,10 +42,6 @@ export class StartButtonInst extends VueComponent<StartButtonProps> {
       },
       "hover",
     );
-
-  onBeforeUnmounted(): void {
-    this.styles.dispose();
-  }
 
   render(): VNodeChild {
     return (

@@ -80,6 +80,7 @@ class Styles {
             document.head.removeChild(this._styleEL);
             this._styleEL = undefined;
         }
+        this._selectorMapCSS.clear();
     }
     _handleCSSPropertiesByClassName(className, pseudoClasses, properties) {
         className = this.classNames[className];

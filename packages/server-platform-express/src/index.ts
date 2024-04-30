@@ -9,7 +9,14 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { URL } from "node:url";
 import * as qs from "node:querystring";
 import * as path from "node:path";
-import type { ServerRequest, ServerResponse } from "server";
+import type {
+  MethodType,
+  RouteHandlerObject,
+  ServerBootstrapOption,
+  ServerPlatformAdapter,
+  ServerRequest,
+  ServerResponse,
+} from "server";
 import { v4 } from "uuid";
 import jwt from "jsonwebtoken";
 

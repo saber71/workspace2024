@@ -1,4 +1,5 @@
 import { isTypedArray } from "./isTypedArray";
+import type { TypedArray } from "./types";
 
 export function deepAssign<T extends object>(dst: any, src: T): T {
   if (typeof dst !== "object" || !dst) return src;

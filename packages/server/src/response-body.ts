@@ -1,5 +1,5 @@
-import type { Container } from "dependency-injection";
 import { ServerResponse } from "./response";
+import type { ResponseBody } from "./types";
 
 const filePath = Symbol("__FilePath__");
 

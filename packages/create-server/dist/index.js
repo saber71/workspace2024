@@ -5,7 +5,6 @@ export * from 'server-log-decorator';
 import { ServerStore } from 'server-store';
 export * from 'server-store';
 
-///<reference types="../types.d.ts"/>
 async function createServer(option) {
     if (!option.guards) option.guards = [
         AuthorizedGuard

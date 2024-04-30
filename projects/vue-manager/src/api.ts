@@ -8,6 +8,7 @@ import serverUserJson from "server-user/dist/provider.json";
 import type { UserController, RoleController } from "server-user";
 import { VueClass } from "vue-class";
 import type { Router } from "vue-router";
+import type { ResponseBody } from "server";
 
 export const isMock = !!import.meta.env.VITE_MOCK;
 if (isMock) {

@@ -12,6 +12,7 @@ import {
   VueComponent,
   Link,
   Inject,
+  Disposable,
 } from "vue-class";
 import Main from "./main-area";
 import Taskbar from "./taskbar";
@@ -28,8 +29,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
   @Link() wrapperEl: HTMLElement;
   @Inject("DesktopService") desktopService: DesktopService;
   @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
-
-  readonly styles = new Styles<"container" | "wrapper">()
+  @Disposable() styles = new Styles<"container" | "wrapper">()
     .add("container", {
       width: "100%",
       height: "100%",

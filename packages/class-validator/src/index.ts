@@ -1,8 +1,18 @@
-/// <reference types="../types.d.ts" />
-
 import "reflect-metadata";
 import { getDecoratedName, Metadata } from "dependency-injection";
 import validator from "validator";
+import type {
+  ArrayValidatorArgMap,
+  CommonValidatorArgMap,
+  DateValidatorArgMap,
+  NumberValidatorArgMap,
+  ObjectValidatorArgMap,
+  StringValidatorArgMap,
+  TypeValidationArgMap,
+  ValidationArgMap,
+  ValidationOption,
+  Validators,
+} from "./types";
 
 const keyPrefix = "__class-validator__";
 
@@ -291,3 +301,5 @@ const validatorMap: Record<keyof ValidationArgMap, any> = {
   ...stringValidationMap,
   ...arrayValidations,
 };
+
+export * from "./types";

@@ -1,4 +1,4 @@
-import { ServerError, SessionKeyNotExistError } from "./errors";
+import { SessionKeyNotExistError } from "./errors";
 import { ServerRequest } from "./request";
 import { ServerResponse } from "./response";
 

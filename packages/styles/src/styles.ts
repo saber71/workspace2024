@@ -1,6 +1,7 @@
 import { v4 } from "uuid";
 import { type CSSProperties, effectScope, watch, watchEffect } from "vue";
 import { isDynamicValue } from "./dynamic";
+import type { DynamicValue, PseudoClassType } from "./types";
 
 let id = 0,
   selectorId = 0;
@@ -99,6 +100,7 @@ export class Styles<Class extends string> {
       document.head.removeChild(this._styleEL);
       this._styleEL = undefined;
     }
+    this._selectorMapCSS.clear();
   }
 
   private _handleCSSPropertiesByClassName(

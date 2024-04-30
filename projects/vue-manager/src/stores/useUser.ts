@@ -1,6 +1,7 @@
 import { userApi } from "@/api.ts";
 import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
+import type { UserInfo } from "server-user";
 import { ref } from "vue";
 
 export enum UserData {

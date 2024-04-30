@@ -5,4 +5,4 @@ export * from "./Polygon";
 export * from "./Polyline";
 export * from "./Rect";
 export * from "./Shape";
-///<reference types="../types.d.ts"/>
+export * from "./types";

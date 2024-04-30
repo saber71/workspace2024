@@ -1,9 +1,9 @@
-declare interface DynamicValue<Value = string | number> {
+export interface DynamicValue<Value = string | number> {
   type: "dynamic-value";
   value: Value;
 }
 
-declare type PseudoClassType =
+export type PseudoClassType =
   | "hover"
   | "fullscreen"
   | "modal"

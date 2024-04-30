@@ -29,7 +29,7 @@ import {
   type RouteLocationNormalized,
 } from "vue-router";
 import type { HookType, WatcherTarget } from "./decorators";
-import type { Class } from "./types";
+import type { Class } from "dependency-injection";
 import { VueComponent } from "./vue-component";
 import { VueDirective } from "./vue-directive";
 import { VueService } from "./vue-service";
@@ -60,6 +60,8 @@ export class Metadata {
   routerGuardMatchFrom?: RegExp | ((path: RouteLocationNormalized) => boolean);
 
   readonly mutts: { propName: string; shallow?: boolean }[] = [];
+
+  readonly disposables: { propName: string; methodName?: string }[] = [];
 
   readonly readonlys: { propName: string; shallow?: boolean }[] = [];
 
@@ -321,9 +323,9 @@ export function getMetadata(clazz: any) {
 const appliedSymbol = Symbol("__appliedMetadata__");
 
 export function applyMetadata(clazz: any, instance: VueService | object) {
-  if ((instance as any)[appliedSymbol]) return;
-  (instance as any)[appliedSymbol] = true;
   const metadata = getMetadata(clazz);
+  if ((instance as any)[appliedSymbol]) return metadata;
+  (instance as any)[appliedSymbol] = true;
   metadata.handleMut(instance);
   metadata.handleReadonly(instance);
   metadata.handleVueInject(instance);
@@ -339,6 +341,7 @@ export function applyMetadata(clazz: any, instance: VueService | object) {
   if (instance instanceof VueService) {
     instance.setup();
   }
+  return metadata;
 }
 
 export function getOrCreateMetadata(

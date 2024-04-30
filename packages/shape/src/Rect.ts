@@ -1,5 +1,6 @@
 import { PathBuilder } from "./PathBuilder";
 import { Shape } from "./Shape";
+import type { Corner } from "./types";
 
 export class Rect extends Shape<{
   width: number;

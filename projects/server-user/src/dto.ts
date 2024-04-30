@@ -5,6 +5,7 @@ import {
   ToObject,
   Validation,
 } from "create-server";
+import type { RoleModel, UserModel } from "./types";
 
 export class QueryDTO {
   @Validation({ validatorType: "isString" })

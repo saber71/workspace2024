@@ -1,6 +1,7 @@
 import type { URL } from "node:url";
 import type { IncomingHttpHeaders } from "node:http";
 import type { ParsedUrlQuery } from "node:querystring";
+import type { MethodType, ServerFile } from "./types";
 
 /* 本库封装的请求对象，抹除不同框架的请求对象的不同 */
 export class ServerRequest<Original extends object = object> {

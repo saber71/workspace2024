@@ -1,6 +1,7 @@
 import { Express as Express_2 } from 'express';
 import { Request as Request_2 } from 'express';
 import { Response as Response_2 } from 'express';
+import { ServerPlatformAdapter } from 'server';
 import { ServerRequest } from 'server';
 import { ServerResponse } from 'server';
 

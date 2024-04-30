@@ -74,11 +74,17 @@ export function toNative<
     () => {
       const instance = VueClass.getInstance(componentClass);
 
-      applyMetadata(componentClass, instance);
+      const metadata = applyMetadata(componentClass, instance);
 
       onMounted(instance.onMounted.bind(instance));
 
       onBeforeUnmount(instance.onBeforeUnmounted.bind(instance));
+
+      onBeforeUnmount(() => {
+        for (let { propName, methodName } of metadata.disposables) {
+          (instance as any)[propName]?.[methodName ?? "dispose"]?.();
+        }
+      });
 
       onUnmounted(instance.onUnmounted.bind(instance));
 

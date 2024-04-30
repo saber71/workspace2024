@@ -1,5 +1,8 @@
 import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
+import { ExtractPromiseGenericType } from 'common';
+import { ProviderMetadata } from 'server';
+import { ResponseBody } from 'server';
 
 export declare class NotFoundControllerError extends Error {
 }

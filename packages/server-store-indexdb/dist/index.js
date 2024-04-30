@@ -1,7 +1,6 @@
 import { parseFilterCondition, sortData } from 'filter';
 import { v4 } from 'uuid';
 
-///<reference types="../types.d.ts"/>
 function createServerStoreIndexdb() {
     const dbMap = new Map();
     return {

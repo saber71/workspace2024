@@ -1,6 +1,6 @@
 import type { App, ComponentPublicInstance, DirectiveBinding } from "vue";
 import { getAllMetadata, type Metadata } from "./metadata";
-import type { Class } from "./types";
+import type { Class } from "dependency-injection";
 
 export class VueDirective<
   El extends HTMLElement | ComponentPublicInstance = HTMLElement,

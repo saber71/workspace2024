@@ -1,6 +1,6 @@
-/// <reference types="dependency-injection/types" />
+import type { Class } from "dependency-injection";
 
-declare interface TypeValidationArgMap {
+export interface TypeValidationArgMap {
   isNumber: void;
   isString: void;
   isBoolean: void;
@@ -14,7 +14,7 @@ declare interface TypeValidationArgMap {
   isFalsy: void;
 }
 
-declare interface ArrayValidatorArgMap {
+export interface ArrayValidatorArgMap {
   isArray: void;
   isArrayStrict: void;
   arrayContains: any[];
@@ -25,7 +25,7 @@ declare interface ArrayValidatorArgMap {
   arrayUnique: void;
 }
 
-declare interface CommonValidatorArgMap {
+export interface CommonValidatorArgMap {
   hasKeys: (string | symbol)[];
   notHasKeys: (string | symbol)[];
   equals: any;
@@ -34,12 +34,12 @@ declare interface CommonValidatorArgMap {
   isNotInArray: any[];
 }
 
-declare interface DateValidatorArgMap {
+export interface DateValidatorArgMap {
   maxDate: Date | number;
   minDate: Date | number;
 }
 
-declare interface NumberValidatorArgMap {
+export interface NumberValidatorArgMap {
   isDivisibleBy: number;
   isNegative: void;
   isPositive: void;
@@ -47,12 +47,12 @@ declare interface NumberValidatorArgMap {
   min: number;
 }
 
-declare interface ObjectValidatorArgMap {
+export interface ObjectValidatorArgMap {
   isInstanceOf: Class[];
   isNotEmptyObject: void;
 }
 
-declare interface StringValidatorArgMap {
+export interface StringValidatorArgMap {
   isMatch: RegExp;
   isAlphanumeric: import("validator").AlphanumericLocale;
   isAlpha: import("validator").AlphaLocale;
@@ -123,7 +123,7 @@ declare interface StringValidatorArgMap {
   isVariableWidth: void;
 }
 
-declare interface ValidationArgMap
+export interface ValidationArgMap
   extends TypeValidationArgMap,
     ArrayValidatorArgMap,
     CommonValidatorArgMap,
@@ -132,7 +132,7 @@ declare interface ValidationArgMap
     ObjectValidatorArgMap,
     StringValidatorArgMap {}
 
-declare interface Validators {
+export interface Validators {
   onlyPassOne: boolean;
   validators: Array<{
     fn: Function;
@@ -145,7 +145,7 @@ declare interface Validators {
   }>;
 }
 
-declare interface ValidationOption<Key extends keyof ValidationArgMap> {
+export interface ValidationOption<Key extends keyof ValidationArgMap> {
   validatorType: Key;
   arg?: ValidationArgMap[Key];
   recursive?: boolean;

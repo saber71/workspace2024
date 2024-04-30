@@ -1,3 +1,5 @@
+import type { TypedArray } from "./types";
+
 export function isTypedArray(arr: any): arr is TypedArray {
   return (
     arr instanceof Uint8Array ||

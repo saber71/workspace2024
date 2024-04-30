@@ -1,4 +1,4 @@
-import { getDecoratedName, Injectable } from "dependency-injection";
+import { getDecoratedName, Injectable, type Class } from "dependency-injection";
 import { getOrCreateMetadataUserData } from "../common";
 import { MODULE_NAME } from "../constant";
 

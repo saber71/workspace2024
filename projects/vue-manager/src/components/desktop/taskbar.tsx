@@ -14,6 +14,7 @@ import {
   VueComponent,
   Link,
   Inject,
+  Disposable,
 } from "vue-class";
 import { DesktopConstants, rem } from "./constants";
 import ContentArea from "./taskbar/content-area";
@@ -69,7 +70,7 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
   @Inject("DesktopService") desktopService: DesktopService;
   @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
   @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
-  readonly styles = new Styles<"taskbar">()
+  @Disposable() styles = new Styles<"taskbar">()
     .addDynamic("taskbar", () => {
       const {
         deputySizeValue,
@@ -129,10 +130,6 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
 
   setup() {
     this.desktopService.taskbarInst = this as any;
-  }
-
-  onBeforeUnmounted(): void {
-    this.styles.dispose();
   }
 
   render(): VNodeChild {

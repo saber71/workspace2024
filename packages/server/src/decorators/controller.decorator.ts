@@ -1,4 +1,8 @@
-import { Injectable } from "dependency-injection";
+import {
+  Injectable,
+  type MethodParameterOption,
+  type Class,
+} from "dependency-injection";
 import { getOrCreateMetadataUserData } from "../common";
 import { composeUrl } from "common";
 import { MODULE_NAME } from "../constant";

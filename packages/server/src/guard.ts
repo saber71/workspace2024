@@ -4,6 +4,7 @@ import { Guard, ReqSession } from "./decorators";
 import { UnauthorizedError } from "./errors";
 import { ServerRequest } from "./request";
 import { Session } from "./session";
+import type { GuardInterface, RegularSessionData } from "./types";
 
 @Guard()
 export class AuthorizedGuard implements GuardInterface {

@@ -2,7 +2,7 @@ import { LoadableContainer } from "dependency-injection";
 import type { App } from "vue";
 import type { Router } from "vue-router";
 import { ModuleName, ROUTER } from "./constants";
-import type { Class } from "./types";
+import type { Class } from "dependency-injection";
 import { VueDirective } from "./vue-directive";
 import { VueRouterGuard } from "./vue-router-guard";
 

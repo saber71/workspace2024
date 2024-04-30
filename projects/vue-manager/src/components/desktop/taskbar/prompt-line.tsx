@@ -14,6 +14,7 @@ import {
   VueComponent,
   Link,
   Inject,
+  Disposable,
 } from "vue-class";
 
 export interface PromptLineProps extends VueComponentBaseProps {}
@@ -25,29 +26,32 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
   @Inject("DesktopService") desktopService: DesktopService;
   @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
   @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
-  readonly styles = new Styles<"promptLine">().addDynamic("promptLine", () => {
-    const {
-      promptLinePositions,
-      deputySizeProp,
-      principalSizeProp,
-      isHorizon,
-    } = this.taskbarHelper;
-    const position = this.desktopSettingService.get("taskbar.position");
-    let transform = "";
-    if (position === "left") transform = "translateX(50%)";
-    else if (position === "right") transform = "translateX(-50%)";
-    else if (position === "top") transform = "translateY(50%)";
-    else if (position === "bottom") transform = "translateY(-50%)";
-    return {
-      position: "absolute",
-      [promptLinePositions[0]]: 0,
-      [promptLinePositions[1]]: 0,
-      [principalSizeProp]: "100%",
-      [deputySizeProp]: "5px",
-      transform: dynamic(transform),
-      cursor: dynamic(isHorizon ? "col-resize" : "row-resize"),
-    };
-  });
+  @Disposable() styles = new Styles<"promptLine">().addDynamic(
+    "promptLine",
+    () => {
+      const {
+        promptLinePositions,
+        deputySizeProp,
+        principalSizeProp,
+        isHorizon,
+      } = this.taskbarHelper;
+      const position = this.desktopSettingService.get("taskbar.position");
+      let transform = "";
+      if (position === "left") transform = "translateX(50%)";
+      else if (position === "right") transform = "translateX(-50%)";
+      else if (position === "top") transform = "translateY(50%)";
+      else if (position === "bottom") transform = "translateY(-50%)";
+      return {
+        position: "absolute",
+        [promptLinePositions[0]]: 0,
+        [promptLinePositions[1]]: 0,
+        [principalSizeProp]: "100%",
+        [deputySizeProp]: "5px",
+        transform: dynamic(transform),
+        cursor: dynamic(isHorizon ? "col-resize" : "row-resize"),
+      };
+    },
+  );
 
   @Link() el: HTMLElement;
 
@@ -111,7 +115,6 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
   }
 
   onBeforeUnmounted(): void {
-    this.styles.dispose();
     useBehavior().wrapEventTarget(this.el).dispose();
     useBehavior().wrapEventTarget(window).dispose({ key: this });
   }
