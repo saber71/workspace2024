@@ -2,11 +2,29 @@ import EventEmitter from "eventemitter3";
 import { Metadata } from "./metadata";
 import type {
   Class,
+  ContainerLabel,
   ContainerMember,
   FieldType,
   LoadOption,
   MethodParameterTypes,
 } from "./types";
+
+const prefix = "__container-label__";
+
+export function containerLabel<T>(label: string): ContainerLabel<T> {
+  return Symbol(prefix + label);
+}
+
+export function isContainerLabel<T>(arg: any): arg is ContainerLabel<T> {
+  return (
+    typeof arg === "symbol" && new RegExp("^" + prefix).test(arg.description!)
+  );
+}
+
+function getLabel(label: string | ContainerLabel<any>) {
+  if (isContainerLabel(label)) return label.description!.replace(prefix, "");
+  return label;
+}
 
 /* 用来管理需要进行依赖注入的实例的容器。这个类专门进行内容的管理 */
 export class Container extends EventEmitter<{
@@ -75,7 +93,8 @@ export class Container extends EventEmitter<{
    * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
    * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
    */
-  bindValue(label: string, value: any) {
+  bindValue<T = any>(label: string | ContainerLabel<T>, value: T) {
+    label = getLabel(label);
     if (value === undefined)
       throw new InvalidValueError("绑定的值不能是undefined");
     let member = this._memberMap.get(label);
@@ -92,7 +111,12 @@ export class Container extends EventEmitter<{
    * 给指定的标识符绑定一个工厂函数，在每次访问时生成一个新值
    * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
    */
-  bindFactory(label: string, value: (...args: any[]) => any, context?: any) {
+  bindFactory<T = any>(
+    label: string | ContainerLabel<T>,
+    value: (...args: any[]) => T,
+    context?: any,
+  ) {
+    label = getLabel(label);
     let member = this._memberMap.get(label);
     if (!member) member = this._newMember(label);
     if (member.metadata)
@@ -108,7 +132,12 @@ export class Container extends EventEmitter<{
    * 给指定的标识符绑定一个getter，只在第一次访问时执行
    * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
    */
-  bindGetter(label: string, value: () => any, context?: any) {
+  bindGetter<T = any>(
+    label: string | ContainerLabel<T>,
+    value: () => T,
+    context?: any,
+  ) {
+    label = getLabel(label);
     let member = this._memberMap.get(label);
     if (!member) member = this._newMember(label);
     if (member.metadata)
@@ -149,8 +178,10 @@ export class Container extends EventEmitter<{
    * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
    * @throws NotExistLabelError 当从容器访问一个不存在的标识符时抛出
    */
-  getValue<T>(label: string | Class<T>, ...args: any[]): T {
-    if (typeof label !== "string") label = label.name;
+  getValue<T>(label: string | Class<T> | ContainerLabel<T>, ...args: any[]): T {
+    if (typeof label === "symbol" || isContainerLabel(label))
+      label = label.description!.replace(prefix, "");
+    else if (typeof label !== "string") label = label.name;
     const member = this._memberMap.get(label);
     if (!member) {
       if (this._extend) return this._extend.getValue(label, ...args);

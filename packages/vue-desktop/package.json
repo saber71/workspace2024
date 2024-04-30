@@ -9,6 +9,7 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
+    "dependency-injection": "workspace:^",
     "eventemitter3": "^5.0.1",
     "styles": "workspace:^",
     "vue": "^3.4.26",

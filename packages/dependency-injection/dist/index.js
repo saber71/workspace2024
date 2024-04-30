@@ -217,6 +217,17 @@ function AfterCallMethod(cb) {
 /* 在装饰器Inject无法确定被装饰者类型时抛出 */ class InjectNotFoundTypeError extends Error {
 }
 
+const prefix = "__container-label__";
+function containerLabel(label) {
+    return Symbol(prefix + label);
+}
+function isContainerLabel(arg) {
+    return typeof arg === "symbol" && new RegExp("^" + prefix).test(arg.description);
+}
+function getLabel(label) {
+    if (isContainerLabel(label)) return label.description.replace(prefix, "");
+    return label;
+}
 /* 用来管理需要进行依赖注入的实例的容器。这个类专门进行内容的管理 */ class Container extends EventEmitter {
     /* 缓存容器中的内容，名字映射Member对象 */ _memberMap = new Map();
     /* 父容器。在当前容器中找不到值时，会尝试在父容器中寻找 */ _extend;
@@ -264,6 +275,7 @@ function AfterCallMethod(cb) {
    * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
    * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
    */ bindValue(label, value) {
+        label = getLabel(label);
         if (value === undefined) throw new InvalidValueError("绑定的值不能是undefined");
         let member = this._memberMap.get(label);
         if (!member) member = this._newMember(label);
@@ -275,6 +287,7 @@ function AfterCallMethod(cb) {
    * 给指定的标识符绑定一个工厂函数，在每次访问时生成一个新值
    * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
    */ bindFactory(label, value, context) {
+        label = getLabel(label);
         let member = this._memberMap.get(label);
         if (!member) member = this._newMember(label);
         if (member.metadata) throw new ForbiddenOverrideInjectableError("不能覆盖可依赖注入的对象" + label);
@@ -286,6 +299,7 @@ function AfterCallMethod(cb) {
    * 给指定的标识符绑定一个getter，只在第一次访问时执行
    * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
    */ bindGetter(label, value, context) {
+        label = getLabel(label);
         let member = this._memberMap.get(label);
         if (!member) member = this._newMember(label);
         if (member.metadata) throw new ForbiddenOverrideInjectableError("不能覆盖可依赖注入的对象" + label);
@@ -315,7 +329,8 @@ function AfterCallMethod(cb) {
    * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
    * @throws NotExistLabelError 当从容器访问一个不存在的标识符时抛出
    */ getValue(label, ...args) {
-        if (typeof label !== "string") label = label.name;
+        if (typeof label === "symbol" || isContainerLabel(label)) label = label.description.replace(prefix, "");
+        else if (typeof label !== "string") label = label.name;
         const member = this._memberMap.get(label);
         if (!member) {
             if (this._extend) return this._extend.getValue(label, ...args);
@@ -479,4 +494,4 @@ function AfterCallMethod(cb) {
 /* 当要覆盖可依赖注入的对象时抛出 */ class ForbiddenOverrideInjectableError extends Error {
 }
 
-export { AfterCallMethod, BeforeCallMethod, Container, ContainerRepeatLoadError, DependencyCycleError, ForbiddenOverrideInjectableError, Inject, InjectNotFoundTypeError, Injectable, InvalidValueError, LoadableContainer, Metadata, MethodNotDecoratedInjectError, NotExistLabelError, fillInMethodParameterTypes, getDecoratedName };
+export { AfterCallMethod, BeforeCallMethod, Container, ContainerRepeatLoadError, DependencyCycleError, ForbiddenOverrideInjectableError, Inject, InjectNotFoundTypeError, Injectable, InvalidValueError, LoadableContainer, Metadata, MethodNotDecoratedInjectError, NotExistLabelError, containerLabel, fillInMethodParameterTypes, getDecoratedName, isContainerLabel };

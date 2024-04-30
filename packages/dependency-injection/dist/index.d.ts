@@ -29,17 +29,17 @@ export declare class Container extends default_2<{
      * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
      * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
      */
-    bindValue(label: string, value: any): this;
+    bindValue<T = any>(label: string | ContainerLabel<T>, value: T): this;
     /**
      * 给指定的标识符绑定一个工厂函数，在每次访问时生成一个新值
      * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
      */
-    bindFactory(label: string, value: (...args: any[]) => any, context?: any): this;
+    bindFactory<T = any>(label: string | ContainerLabel<T>, value: (...args: any[]) => T, context?: any): this;
     /**
      * 给指定的标识符绑定一个getter，只在第一次访问时执行
      * @throws ForbiddenOverrideInjectableError 当要覆盖可依赖注入的对象时抛出
      */
-    bindGetter(label: string, value: () => any, context?: any): this;
+    bindGetter<T = any>(label: string | ContainerLabel<T>, value: () => T, context?: any): this;
     unbind(label: string): this;
     unbindAll(): void;
     dispose(): void;
@@ -51,7 +51,7 @@ export declare class Container extends default_2<{
      * @throws InvalidValueError 当从容器获取值，如果值不合法时抛出
      * @throws NotExistLabelError 当从容器访问一个不存在的标识符时抛出
      */
-    getValue<T>(label: string | Class<T>, ...args: any[]): T;
+    getValue<T>(label: string | Class<T> | ContainerLabel<T>, ...args: any[]): T;
     /**
      * 调用方法，其入参必须支持依赖注入
      * @throws MethodNotDecoratedInjectError 试图调用一个未装饰Inject的方法时抛出
@@ -65,6 +65,11 @@ export declare class Container extends default_2<{
     protected _getMethodParameters(parameters?: MethodParameterTypes): any[];
     protected _newMember(name: string, metadata?: Metadata): ContainerMember;
 }
+
+export declare interface ContainerLabel<T> extends Symbol {
+}
+
+export declare function containerLabel<T>(label: string): ContainerLabel<T>;
 
 export declare interface ContainerMember {
     name: string;
@@ -133,6 +138,8 @@ export declare interface InjectOptions extends MethodParameterOption {
 
 export declare class InvalidValueError extends Error {
 }
+
+export declare function isContainerLabel<T>(arg: any): arg is ContainerLabel<T>;
 
 /**
  * 负责实现依赖注入的核心功能，包括得到依赖关系、生成实例、向实例注入依赖

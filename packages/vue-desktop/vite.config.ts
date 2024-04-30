@@ -27,7 +27,7 @@ export default defineConfig({
       external: ["vue-class", "styles", "vue"],
     },
     lib: {
-      entry: resolve(__dirname, "src/index.tsx"),
+      entry: resolve(__dirname, "src/index.ts"),
       fileName: "index",
       formats: ["es"],
     },
