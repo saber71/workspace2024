@@ -6,15 +6,11 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "vite build",
-    "watch": "vite build --watch",
-    "test": "vitest"
+    "watch": "vite build --watch"
   },
   "peerDependencies": {
     "dependency-injection": "workspace:^",
     "filter": "workspace:^",
     "server": "workspace:^"
-  },
-  "devDependencies": {
-    "server-store-fs": "workspace:*"
   }
 }
