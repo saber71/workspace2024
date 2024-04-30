@@ -1,4 +1,4 @@
-import { v4 } from 'uuid';
+import { randomString } from 'common';
 import { effectScope, watch, watchEffect } from 'vue';
 
 function dynamic(value) {
@@ -22,7 +22,7 @@ class Styles {
     constructor(){
         this.classNames = new Proxy({}, {
             get (target, p) {
-                return target[p] ?? (target[p] = p + "-" + v4());
+                return target[p] ?? (target[p] = p + "-" + randomString(6));
             }
         });
     }

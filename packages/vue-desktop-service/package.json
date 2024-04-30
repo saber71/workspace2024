@@ -1,5 +1,5 @@
 {
-  "name": "styles",
+  "name": "vue-desktop-service",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "watch": "vite build --watch"
   },
   "peerDependencies": {
-    "common": "workspace:^",
-    "vue": "^3.4.23"
+    "eventemitter3": "^5.0.1",
+    "vue-class": "workspace:^"
   }
 }

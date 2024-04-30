@@ -29,6 +29,14 @@ declare interface If_2<Result = any> {
 
 export declare function isTypedArray(arr: any): arr is TypedArray;
 
+export declare function randomArrayItem<T>(array: T[]): T;
+
+export declare function randomInt(min: number, max: number): number;
+
+export declare function randomNumber(min: number, max: number): number;
+
+export declare function randomString(len: number): string;
+
 export declare function remove<T>(collection: Array<T> | Set<T>, item?: T | ((item: T) => boolean), isPredicate?: boolean): T[] | Set<T>;
 
 export declare function removeHeadTailChar(str: string, char: string): string;

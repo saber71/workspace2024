@@ -9,17 +9,3 @@
 // grid.forEach((hex) => {
 //   console.log(hex.q, hex.r, hex.row, hex.col, hex.corners);
 // });
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  year: "numeric",
-  month: "short",
-  day: "2-digit",
-});
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
-  weekday: "short",
-});
-console.log(
-  dateFormatter.format(),
-  timeFormatter.format(),
-  new Date().getDay(),
-);

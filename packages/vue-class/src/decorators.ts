@@ -52,6 +52,7 @@ export function Service(option?: Parameters<typeof Injectable>[0]) {
     Object.assign(
       {
         moduleName: ModuleName,
+        singleton: true,
         onCreate: (instance: object) =>
           applyMetadata(instance.constructor, instance),
       },

@@ -216,7 +216,7 @@ export class Metadata {
     if (!initMut) initMut = (instance as any)[initMutKey] = {};
     for (let data of this.mutts) {
       const value = (instance as any)[data.propName];
-      initMut[value] = deepClone(value);
+      initMut[data.propName] = deepClone(value);
       const ref$ = data.shallow ? shallowRef(value) : ref(value);
       (instance as any)[Symbol.for(data.propName)] = ref$;
       Object.defineProperty(instance, data.propName, {

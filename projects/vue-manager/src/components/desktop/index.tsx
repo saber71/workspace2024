@@ -1,4 +1,4 @@
-import type {
+import {
   DesktopService,
   DesktopSettingService,
 } from "@/components/desktop/services";
@@ -27,8 +27,8 @@ export class DesktopInst extends VueComponent<DesktopProps> {
   static readonly defineProps: ComponentProps<DesktopProps> = ["inst"];
 
   @Link() wrapperEl: HTMLElement;
-  @Inject("DesktopService") desktopService: DesktopService;
-  @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
+  @Inject() desktopService: DesktopService;
+  @Inject() desktopSettingService: DesktopSettingService;
   @Disposable() styles = new Styles<"container" | "wrapper">()
     .add("container", {
       width: "100%",
@@ -57,6 +57,7 @@ export class DesktopInst extends VueComponent<DesktopProps> {
 
   setup() {
     this.desktopService.desktopInst = this;
+    console.log(this);
   }
 
   onUnmounted() {

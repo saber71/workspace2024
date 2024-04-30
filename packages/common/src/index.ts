@@ -6,3 +6,4 @@ export * from "./remove";
 export * from "./removeHeadTailChar";
 export * from "./If";
 export * from "./types";
+export * from "./random";

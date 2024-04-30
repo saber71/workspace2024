@@ -1,4 +1,4 @@
-import { v4 } from "uuid";
+import { randomString } from "common";
 import { type CSSProperties, effectScope, watch, watchEffect } from "vue";
 import { isDynamicValue } from "./dynamic";
 import type { DynamicValue, PseudoClassType } from "./types";
@@ -19,7 +19,7 @@ export class Styles<Class extends string> {
       {},
       {
         get(target: any, p: string): any {
-          return target[p] ?? (target[p] = p + "-" + v4());
+          return target[p] ?? (target[p] = p + "-" + randomString(6));
         },
       },
     ) as any;

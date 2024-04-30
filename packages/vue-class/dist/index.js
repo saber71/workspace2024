@@ -377,7 +377,7 @@ class Metadata {
         if (!initMut) initMut = instance[initMutKey] = {};
         for (let data of this.mutts){
             const value = instance[data.propName];
-            initMut[value] = deepClone(value);
+            initMut[data.propName] = deepClone(value);
             const ref$ = data.shallow ? shallowRef(value) : ref(value);
             instance[Symbol.for(data.propName)] = ref$;
             Object.defineProperty(instance, data.propName, {
@@ -520,6 +520,7 @@ function getOrCreateMetadata(clazz, ctx) {
 /* 适用于类 */ function Service(option) {
     const fn = Injectable(Object.assign({
         moduleName: ModuleName,
+        singleton: true,
         onCreate: (instance)=>applyMetadata(instance.constructor, instance)
     }, option));
     return (clazz, ctx)=>{
