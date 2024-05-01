@@ -170,7 +170,7 @@ class VueClass {
         provide(customContainerLabel, container);
     }
     static getContainer() {
-        return inject(customContainerLabel, this.dependencyInjection);
+        return inject(customContainerLabel) || this.dependencyInjection;
     }
     static async install(app, router) {
         this.dependencyInjection.load({
