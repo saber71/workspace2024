@@ -1,7 +1,4 @@
-import type {
-  DesktopService,
-  TaskbarHelper,
-} from "@/components/desktop/services";
+import { DesktopService, TaskbarHelper } from "@/components/desktop/services";
 import { useBehavior } from "@/stores";
 import { DownOutlined, UpOutlined } from "@ant-design/icons-vue";
 import { createPopper, type Instance } from "@popperjs/core";
@@ -86,8 +83,8 @@ export interface TimeProps extends VueComponentBaseProps {}
 export class TimeInst extends VueComponent<TimeProps> {
   static readonly defineProps: ComponentProps<TimeProps> = ["inst"];
 
-  @Inject("DesktopService") desktopService: DesktopService;
-  @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
+  @Inject() desktopService: DesktopService;
+  @Inject() taskbarHelper: TaskbarHelper;
   @Disposable() styles = new Styles<
     | "time"
     | "hoverableTime"

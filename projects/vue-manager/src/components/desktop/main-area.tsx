@@ -1,7 +1,4 @@
-import type {
-  DesktopService,
-  TaskbarHelper,
-} from "@/components/desktop/services";
+import { DesktopService, TaskbarHelper } from "@/components/desktop/services";
 import { Styles } from "styles";
 import type { VNodeChild } from "vue";
 import {
@@ -20,8 +17,8 @@ export interface MainAreaProps extends VueComponentBaseProps {}
 export class MainAreaInst extends VueComponent<MainAreaProps> {
   static readonly defineProps: ComponentProps<MainAreaProps> = ["inst"];
 
-  @Inject("DesktopService") desktopService: DesktopService;
-  @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
+  @Inject() desktopService: DesktopService;
+  @Inject() taskbarHelper: TaskbarHelper;
   @Disposable() styles = new Styles<"container">().addDynamic(
     "container",
     () => {

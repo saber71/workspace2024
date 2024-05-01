@@ -1,4 +1,4 @@
-import type {
+import {
   DesktopService,
   DesktopSettingService,
   TaskbarHelper,
@@ -67,9 +67,9 @@ export class TaskbarInst extends VueComponent<TaskbarProps> {
   static readonly defineProps: ComponentProps<TaskbarProps> = ["inst"];
 
   @Link() el: HTMLElement;
-  @Inject("DesktopService") desktopService: DesktopService;
-  @Inject("DesktopSettingService") desktopSettingService: DesktopSettingService;
-  @Inject("TaskbarHelper") taskbarHelper: TaskbarHelper;
+  @Inject() desktopService: DesktopService;
+  @Inject() desktopSettingService: DesktopSettingService;
+  @Inject() taskbarHelper: TaskbarHelper;
   @Disposable() styles = new Styles<"taskbar">()
     .addDynamic("taskbar", () => {
       const {
