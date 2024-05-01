@@ -1,8 +1,8 @@
 import { containerLabel } from "dependency-injection";
-import type { DefineSetupFnComponent, Ref, VNodeChild } from "vue";
+import type { DefineSetupFnComponent, Ref } from "vue";
 import type { RenderExtra } from "./types";
 
-export namespace DesktopConstants {
+export namespace VueDesktopConstants {
   export const APP_COMPONENT = containerLabel<
     DefineSetupFnComponent<{
       renderExtra: RenderExtra;

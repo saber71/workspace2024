@@ -50,7 +50,7 @@ export class VueComponent<
   }
 
   get router(): Router {
-    return VueClass.dependencyInjection.getValue(ROUTER);
+    return VueClass.getContainer().getValue(ROUTER);
   }
 
   get route() {
@@ -69,10 +69,15 @@ export class VueComponent<
 export function toNative<
   Props extends VueComponentBaseProps,
   Emit extends EmitsOptions = {},
->(componentClass: VueComponentClass<Props, Emit>) {
+>(
+  componentClass: VueComponentClass<Props, Emit>,
+  genInstance?: () => VueComponent<Props, Emit>,
+) {
   return defineComponent<Props, Emit>(
     () => {
-      const instance = VueClass.getInstance(componentClass);
+      const instance = genInstance
+        ? genInstance()
+        : VueClass.getInstance(componentClass);
 
       const metadata = applyMetadata(componentClass, instance);
 

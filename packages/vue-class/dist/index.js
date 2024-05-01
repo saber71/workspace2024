@@ -1,6 +1,6 @@
 import { LoadableContainer, Injectable } from 'dependency-injection';
 export * from 'dependency-injection';
-import { getCurrentInstance, defineComponent, onMounted, onBeforeUnmount, onUnmounted, inject, provide, watchEffect, watch, onServerPrefetch, onRenderTriggered, onRenderTracked, onErrorCaptured, onDeactivated, onActivated, onUpdated, onBeforeMount, shallowRef, ref, shallowReadonly, readonly, computed } from 'vue';
+import { provide, inject, getCurrentInstance, defineComponent, onMounted, onBeforeUnmount, onUnmounted, watchEffect, watch, onServerPrefetch, onRenderTriggered, onRenderTracked, onErrorCaptured, onDeactivated, onActivated, onUpdated, onBeforeMount, shallowRef, ref, shallowReadonly, readonly, computed } from 'vue';
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router';
 
 const ModuleName = "vue-class";
@@ -160,10 +160,17 @@ class VueRouterGuard {
     onError(error, to, from) {}
 }
 
+const customContainerLabel = Symbol("__vue_class__:custom-container");
 class VueClass {
     static dependencyInjection = new LoadableContainer();
     static getInstance(clazz) {
-        return this.dependencyInjection.getValue(clazz);
+        return this.getContainer().getValue(clazz);
+    }
+    static setCustomContainer(container) {
+        provide(customContainerLabel, container);
+    }
+    static getContainer() {
+        return inject(customContainerLabel, this.dependencyInjection);
     }
     static async install(app, router) {
         this.dependencyInjection.load({
@@ -211,7 +218,7 @@ class VueComponent extends VueService {
         return this.vueInstance.props;
     }
     get router() {
-        return VueClass.dependencyInjection.getValue(ROUTER);
+        return VueClass.getContainer().getValue(ROUTER);
     }
     get route() {
         return this.router.currentRoute.value;
@@ -221,9 +228,9 @@ class VueComponent extends VueService {
     onBeforeUnmounted() {}
     onUnmounted() {}
 }
-function toNative(componentClass) {
+function toNative(componentClass, genInstance) {
     return defineComponent(()=>{
-        const instance = VueClass.getInstance(componentClass);
+        const instance = genInstance ? genInstance() : VueClass.getInstance(componentClass);
         const metadata = applyMetadata(componentClass, instance);
         onMounted(instance.onMounted.bind(instance));
         onBeforeUnmount(instance.onBeforeUnmounted.bind(instance));

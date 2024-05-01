@@ -2,6 +2,7 @@ import { App } from 'vue';
 import { Class } from 'dependency-injection';
 import { ComponentCustomProps } from 'vue';
 import { ComponentPublicInstance } from 'vue';
+import { Container } from 'dependency-injection';
 import { DefineSetupFnComponent } from 'vue';
 import { DirectiveBinding } from 'vue';
 import { EmitsOptions } from 'vue';
@@ -103,7 +104,7 @@ export declare function RouterGuard(option?: {
 
 export declare function Service(option?: Parameters<typeof Injectable>[0]): (clazz: Class, ctx?: any) => void;
 
-export declare function toNative<Props extends VueComponentBaseProps, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>): DefineSetupFnComponent<Props, Emit, {}, Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K in `on${Capitalize<string & keyof Emit>}`]?: (K extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {}), PublicProps>;
+export declare function toNative<Props extends VueComponentBaseProps, Emit extends EmitsOptions = {}>(componentClass: VueComponentClass<Props, Emit>, genInstance?: () => VueComponent<Props, Emit>): DefineSetupFnComponent<Props, Emit, {}, Props & (Emit extends string[] ? { [K in `on${Capitalize<Emit[number]>}`]?: ((...args: any[]) => any) | undefined; } : Emit extends ObjectEmitsOptions ? { [K in `on${Capitalize<string & keyof Emit>}`]?: (K extends `on${infer C}` ? (...args: Emit[Uncapitalize<C>] extends (...args: infer P) => any ? P : Emit[Uncapitalize<C>] extends null ? any[] : never) => any : never) | undefined; } : {}), PublicProps>;
 
 export declare type TransformModelValue<T extends {}> = "v-model:modelValue" extends keyof T ? Omit<T, "v-model:modelValue"> & {
     ["v-model"]?: T["v-model:modelValue"];
@@ -112,6 +113,8 @@ export declare type TransformModelValue<T extends {}> = "v-model:modelValue" ext
 export declare class VueClass {
     static readonly dependencyInjection: LoadableContainer;
     static getInstance<T>(clazz: Class<T>): T;
+    static setCustomContainer(container: Container): void;
+    static getContainer(): Container;
     static install(app: App, router: Router): Promise<void>;
 }
 
