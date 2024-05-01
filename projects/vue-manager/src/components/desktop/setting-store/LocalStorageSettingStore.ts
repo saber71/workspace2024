@@ -24,9 +24,10 @@ export class LocalStorageSettingStore
     value: DesktopTypes.Setting[Key],
   ): Promise<void> {
     localStorage.setItem(keyPrefix + key, value);
-    VueClass.dependencyInjection
-      .getValue(DesktopService)
-      .linker.dispatch(`desktop-setting:${key}`, value);
+    VueClass.getInstance(DesktopService).linker.dispatch(
+      `desktop-setting:${key}`,
+      value,
+    );
     return Promise.resolve();
   }
 
