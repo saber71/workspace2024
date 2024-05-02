@@ -64,6 +64,14 @@ export class VueComponent<
   onBeforeUnmounted(): void {}
 
   onUnmounted(): void {}
+
+  getLinkElement(refName: string): HTMLElement {
+    return this.vueInstance.refs?.[refName] as any;
+  }
+
+  getLinkInst<Inst extends VueComponent = VueComponent>(name: string): Inst {
+    return this.childInstMap[name] as any;
+  }
 }
 
 export function toNative<

@@ -132,6 +132,8 @@ export declare class VueComponent<Props extends VueComponentBaseProps = VueCompo
     onMounted(): void;
     onBeforeUnmounted(): void;
     onUnmounted(): void;
+    getLinkElement(refName: string): HTMLElement;
+    getLinkInst<Inst extends VueComponent = VueComponent>(name: string): Inst;
 }
 
 export declare interface VueComponentBaseProps extends Partial<HTMLAttributes> {
