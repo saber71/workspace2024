@@ -44,11 +44,15 @@ export class DesktopService extends VueService {
   setup() {
     document.body.className = "";
     this._updateTimestamp();
-    this.eventBus.on("close", () => {
-      document.documentElement.style.fontSize = this._oldFontSize;
-      cancelAnimationFrame(this._raqHandler);
-      this.eventBus.removeAllListeners();
-    });
+    this.eventBus
+      .on("close", () => {
+        document.documentElement.style.fontSize = this._oldFontSize;
+        cancelAnimationFrame(this._raqHandler);
+        this.eventBus.removeAllListeners();
+      })
+      .on("setting:update", (key, value) => {
+        if (key === "taskbar.small") this.scale = value === "true" ? 0.75 : 1;
+      });
   }
 
   @Watcher<DesktopService>({ source: "cursor" }) onCursorChange() {

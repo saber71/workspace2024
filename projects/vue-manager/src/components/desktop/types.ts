@@ -1,6 +1,10 @@
 export namespace DesktopTypes {
   export interface Events {
     close: () => void;
+    "setting:update": <Key extends keyof Setting>(
+      key: Key,
+      newValue: Setting[Key],
+    ) => void;
   }
 
   type StringBoolean = "true" | "false";
@@ -21,6 +25,10 @@ export namespace DesktopTypes {
     "taskbar.small": StringBoolean;
     /* 设置任务栏在桌面上的位置。 default bottom */
     "taskbar.position": TaskbarPosition;
+    /* 开始按钮菜单的宽度，default empty string */
+    "start-button:popper-width": Px;
+    /* 开始按钮菜单的高度，default empty string */
+    "start-button:popper-height": Px;
   }
 
   export interface SettingStore {

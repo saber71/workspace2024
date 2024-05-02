@@ -62,7 +62,7 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
       .addEventListener("mousedown", (e) => {
         this.desktopService.cursor = getComputedStyle(this.el).cursor;
         downPosition = e;
-        useBehavior().curBehavior = "resize-taskbar";
+        useBehavior().curType = "resize-taskbar";
       });
     useBehavior()
       .wrapEventTarget(window)
@@ -70,7 +70,7 @@ export class PromptLineInst extends VueComponent<PromptLineProps> {
         "mouseup",
         () => {
           downPosition = undefined;
-          useBehavior().curBehavior = "";
+          useBehavior().curType = "";
           this.desktopService.cursor = "default";
         },
         {
