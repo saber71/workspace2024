@@ -203,7 +203,7 @@ export class TimeInst extends VueComponent<TimeProps> {
         width: rem(392),
         background: DesktopConstants.BACKGROUND_COLOR,
         backdropFilter: "blur(10px)",
-        boxShadow: "0 2px 12px 0 rgba(0, 0, 0, 0.25)",
+        boxShadow: DesktopConstants.BOX_SHADOW,
       };
     });
 

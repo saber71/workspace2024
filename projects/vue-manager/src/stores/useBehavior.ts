@@ -46,11 +46,11 @@ namespace Behavior {
 }
 
 export const useBehavior = defineStore("behavior", () => {
-  const curBehavior = ref<Behavior.Type>("");
+  const curType = ref<Behavior.Type>("");
   const eventTargetMap = new WeakMap<EventTarget, Behavior.Instance>();
 
   return {
-    curBehavior,
+    curType,
     wrapEventTarget,
   };
 
@@ -76,7 +76,7 @@ export const useBehavior = defineStore("behavior", () => {
             firedOnLeave = false;
           }
           const behaviorListener = (...args: any[]) => {
-            if (behaviorTypes.includes(curBehavior.value))
+            if (behaviorTypes.includes(curType.value))
               return (listener as any)(...args);
           };
           eventTarget.addEventListener(event, behaviorListener, options);
