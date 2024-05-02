@@ -22,7 +22,10 @@ export class VueClass {
   }
 
   static getContainer(): Container {
-    return inject(customContainerLabel) || this.dependencyInjection;
+    return (
+      inject(customContainerLabel, this.dependencyInjection) ||
+      this.dependencyInjection
+    );
   }
 
   static async install(app: App, router: Router) {

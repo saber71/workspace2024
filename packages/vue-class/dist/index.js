@@ -170,7 +170,7 @@ class VueClass {
         provide(customContainerLabel, container);
     }
     static getContainer() {
-        return inject(customContainerLabel) || this.dependencyInjection;
+        return inject(customContainerLabel, this.dependencyInjection) || this.dependencyInjection;
     }
     static async install(app, router) {
         this.dependencyInjection.load({
@@ -227,6 +227,12 @@ class VueComponent extends VueService {
     onMounted() {}
     onBeforeUnmounted() {}
     onUnmounted() {}
+    getLinkElement(refName) {
+        return this.vueInstance.refs?.[refName];
+    }
+    getLinkInst(name) {
+        return this.childInstMap[name];
+    }
 }
 function toNative(componentClass, genInstance) {
     return defineComponent(()=>{
